@@ -42,6 +42,7 @@ public class User implements Serializable {
 	@Column(nullable = false)
 	@Size(min = 8)
 	private String password;
+	
 
     @ManyToMany(fetch = FetchType.EAGER)
 	@JoinTable(
