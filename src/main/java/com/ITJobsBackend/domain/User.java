@@ -1,6 +1,7 @@
 package com.ITJobsBackend.domain;
 
 import java.io.Serializable;
+import java.security.Timestamp;
 import java.util.Set;
 
 import jakarta.persistence.*;
@@ -42,13 +43,14 @@ public class User implements Serializable {
 	@Column(nullable = false)
 	@Size(min = 8)
 	private String password;
-	
 
-    @ManyToMany(fetch = FetchType.EAGER)
-	@JoinTable(
-		name = "user_roles",
-		joinColumns = @JoinColumn(name = "user_id"),
-		inverseJoinColumns = @JoinColumn(name = "role_id")
-	) 
+	@ManyToMany(fetch = FetchType.EAGER)
+	@JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
 	private Set<Roles> roles;
+
+	@Column(name = "created_at", updatable = false)
+	private Timestamp createdAt;
+
+	@Column(name = "updated_at")
+	private Timestamp updatedAt;
 }

@@ -1,7 +1,7 @@
 package com.ITJobsBackend.domain;
 
 import java.io.Serializable;
-import java.security.Timestamp;
+import java.sql.Timestamp;
 import java.util.Set;
 
 import org.hibernate.annotations.CreationTimestamp;

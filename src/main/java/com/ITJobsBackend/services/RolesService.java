@@ -10,9 +10,6 @@ import com.ITJobsBackend.domain.Roles;
 import com.ITJobsBackend.dto.RolesDTO;
 import com.ITJobsBackend.repository.RolesRepository;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 @Service
 public class RolesService {
     private final RolesRepository rolesRepository;

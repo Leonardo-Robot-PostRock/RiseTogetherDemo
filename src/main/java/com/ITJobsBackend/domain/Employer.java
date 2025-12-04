@@ -17,7 +17,7 @@ public class Employer implements Serializable {
 
     // Como id viene de la tabla user, podemos usar @MapsId si hacemos relación uno a uno
     @Id
-    private Integer id;
+    private Long id;
 
     @Column(name = "company_name", nullable = false, length = 100)
     private String companyName;
@@ -45,7 +45,7 @@ public class Employer implements Serializable {
 
     // Relación con User
     @OneToOne
-    @MapsId  // Esto indica que el id de Employer es el mismo que el id del User
+    @MapsId  
     @JoinColumn(name = "id")
     private User user;
 }
