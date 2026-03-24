@@ -64,10 +64,4 @@ public class JpaUserRepositoryAdapter implements UserRepository {
     public boolean existsByEmail(Email email) {
         return jpaRepository.existsByEmail(email.value());
     }
-
-    @Override
-    public void delete(UserId id) {
-        Optional.ofNullable(id.value())
-                .ifPresent(jpaRepository::deleteById);
-    }
 }

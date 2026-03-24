@@ -62,10 +62,4 @@ public class JpaJobRepositoryAdapter implements JobRepository {
                 .map(mapper::toDomain)
                 .collect(Collectors.toList());
     }
-
-    @Override
-    public void delete(JobId id) {
-        Optional.ofNullable(id.value())
-                .ifPresent(jpaRepository::deleteById);
-    }
 }

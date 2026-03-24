@@ -11,5 +11,4 @@ public interface JobRepository {
     Optional<Job> findById(JobId id);
     List<Job> findAll();
     List<Job> searchByTitle(String title);
-    void delete(JobId id);
 }

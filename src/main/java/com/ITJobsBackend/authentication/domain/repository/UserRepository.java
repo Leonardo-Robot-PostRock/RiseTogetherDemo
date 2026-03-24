@@ -13,5 +13,4 @@ public interface UserRepository {
     Optional<User> findByEmail(Email email);
     Optional<User> findByUsername(Username username);
     boolean existsByEmail(Email email);
-    void delete(UserId id);
 }
