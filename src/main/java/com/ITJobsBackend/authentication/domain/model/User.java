@@ -3,6 +3,7 @@ package com.ITJobsBackend.authentication.domain.model;
 import com.ITJobsBackend.authentication.domain.valueobjects.HashedPassword;
 import com.ITJobsBackend.authentication.domain.valueobjects.Username;
 import com.ITJobsBackend.authentication.domain.exceptions.UserAlreadyActivatedException;
+import com.ITJobsBackend.authentication.domain.exceptions.UserAlreadyDeactivatedException;
 import com.ITJobsBackend.shared.domain.valueobjects.Email;
 import com.ITJobsBackend.shared.domain.valueobjects.UserId;
 import com.ITJobsBackend.shared.domain.valueobjects.Timestamp;
@@ -80,6 +81,14 @@ public class User {
             throw new UserAlreadyActivatedException("User is already active");
         }
         this.active = true;
+        this.updatedAt = Timestamp.now();
+    }
+
+    public void deactivate() {
+        if (!this.active) {
+            throw new UserAlreadyDeactivatedException("User is already deactivated");
+        }
+        this.active = false;
         this.updatedAt = Timestamp.now();
     }
 

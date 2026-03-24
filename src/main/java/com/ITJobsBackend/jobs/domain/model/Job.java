@@ -100,6 +100,11 @@ public class Job {
         this.updatedAt = Timestamp.now();
     }
 
+    public void deactivate() {
+        this.status = JobStatus.INACTIVE;
+        this.updatedAt = Timestamp.now();
+    }
+
     public void addSkill(String skill) {
         if (!this.skills.contains(skill)) {
             this.skills.add(skill);
