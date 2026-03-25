@@ -1,7 +1,8 @@
 package com.ITJobsBackend.jobs.infrastructure.adapters.out.persistence.jpa;
 
-import com.ITJobsBackend.jobs.domain.model.Job;
+import com.ITJobsBackend.jobs.domain.aggregate.JobAggregate;
 import com.ITJobsBackend.jobs.domain.repository.JobRepository;
+import com.ITJobsBackend.jobs.domain.specification.JobSpecification;
 import com.ITJobsBackend.jobs.domain.valueobjects.JobId;
 import com.ITJobsBackend.jobs.infrastructure.adapters.out.persistence.jpa.mappers.JobMapper;
 import org.springframework.stereotype.Repository;
@@ -23,7 +24,7 @@ public class JpaJobRepositoryAdapter implements JobRepository {
     }
 
     @Override
-    public Job save(Job job) {
+    public JobAggregate save(JobAggregate job) {
         var entity = mapper.toEntity(job);
 
         Optional.ofNullable(entity.getId())
@@ -42,7 +43,7 @@ public class JpaJobRepositoryAdapter implements JobRepository {
     }
 
     @Override
-    public Optional<Job> findById(JobId id) {
+    public Optional<JobAggregate> findById(JobId id) {
         return Optional.ofNullable(id.value())
                 .flatMap(jpaRepository::findById)
                 .map(mapper::toDomain)
@@ -50,14 +51,21 @@ public class JpaJobRepositoryAdapter implements JobRepository {
     }
 
     @Override
-    public List<Job> findAll() {
+    public List<JobAggregate> findAll() {
         return jpaRepository.findAll().stream()
                 .map(mapper::toDomain)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<Job> searchByTitle(String title) {
+    public List<JobAggregate> findAll(JobSpecification spec) {
+        return findAll().stream()
+                .filter(spec::isSatisfiedBy)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<JobAggregate> searchByTitle(String title) {
         return jpaRepository.searchByTitle(title).stream()
                 .map(mapper::toDomain)
                 .collect(Collectors.toList());

@@ -1,6 +1,6 @@
 package com.ITJobsBackend.authentication.infrastructure.adapters.out.persistence.jpa.mappers;
 
-import com.ITJobsBackend.authentication.domain.model.User;
+import com.ITJobsBackend.authentication.domain.aggregate.UserAggregate;
 import com.ITJobsBackend.authentication.domain.valueobjects.HashedPassword;
 import com.ITJobsBackend.authentication.domain.valueobjects.Username;
 import com.ITJobsBackend.authentication.infrastructure.adapters.out.persistence.jpa.entities.UserEntity;
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class UserMapper {
 
-    public UserEntity toEntity(User domain) {
+    public UserEntity toEntity(UserAggregate domain) {
         UserEntity entity = new UserEntity();
         entity.setId(domain.getId().value());
         entity.setUsername(domain.getUsername().value());
@@ -26,8 +26,8 @@ public class UserMapper {
         return entity;
     }
 
-    public User toDomain(UserEntity entity) {
-        return User.reconstitute(
+    public UserAggregate toDomain(UserEntity entity) {
+        return UserAggregate.reconstitute(
             UserId.of(entity.getId()),
             Username.of(entity.getUsername()),
             Email.of(entity.getEmail()),

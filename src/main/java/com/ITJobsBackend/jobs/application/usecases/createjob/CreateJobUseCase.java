@@ -1,9 +1,10 @@
 package com.ITJobsBackend.jobs.application.usecases.createjob;
 
-import com.ITJobsBackend.jobs.domain.model.Job;
+import com.ITJobsBackend.jobs.domain.aggregate.JobAggregate;
 import com.ITJobsBackend.jobs.domain.repository.JobRepository;
 import com.ITJobsBackend.jobs.domain.valueobjects.EmploymentType;
 import com.ITJobsBackend.jobs.domain.valueobjects.Salary;
+import com.ITJobsBackend.shared.application.ports.out.DomainEventPublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -15,18 +16,20 @@ public class CreateJobUseCase {
     private static final Logger log = LoggerFactory.getLogger(CreateJobUseCase.class);
 
     private final JobRepository jobRepository;
+    private final DomainEventPublisher domainEventPublisher;
 
-    public CreateJobUseCase(JobRepository jobRepository) {
+    public CreateJobUseCase(JobRepository jobRepository, DomainEventPublisher domainEventPublisher) {
         this.jobRepository = jobRepository;
+        this.domainEventPublisher = domainEventPublisher;
     }
 
-    public Job execute(CreateJobCommand command) {
+    public JobAggregate execute(CreateJobCommand command) {
         log.info("Creating new job: {}", command.title());
 
         Salary salary = Salary.of(command.salaryMin(), command.salaryMax(), command.currency());
         EmploymentType type = EmploymentType.valueOf(command.employmentType().toUpperCase());
 
-        Job job = Job.create(
+        JobAggregate job = JobAggregate.create(
             command.title(),
             command.description(),
             command.company(),
@@ -35,7 +38,8 @@ public class CreateJobUseCase {
             type
         );
 
-        Job savedJob = jobRepository.save(job);
+        JobAggregate savedJob = jobRepository.save(job);
+        domainEventPublisher.publishAll(savedJob.pullDomainEvents());
 
         log.info("Job created successfully with ID: {}", savedJob.getId());
 

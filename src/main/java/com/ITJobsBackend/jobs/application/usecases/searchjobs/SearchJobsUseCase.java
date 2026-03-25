@@ -1,7 +1,8 @@
 package com.ITJobsBackend.jobs.application.usecases.searchjobs;
 
-import com.ITJobsBackend.jobs.domain.model.Job;
+import com.ITJobsBackend.jobs.domain.aggregate.JobAggregate;
 import com.ITJobsBackend.jobs.domain.repository.JobRepository;
+import com.ITJobsBackend.jobs.domain.specification.TitleContainsSpecification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,9 +17,9 @@ public class SearchJobsUseCase {
         this.jobRepository = jobRepository;
     }
 
-    public List<Job> execute(SearchJobsQuery query) {
+    public List<JobAggregate> execute(SearchJobsQuery query) {
         if (query.title() != null && !query.title().isBlank()) {
-            return jobRepository.searchByTitle(query.title());
+            return jobRepository.findAll(new TitleContainsSpecification(query.title()));
         }
         return jobRepository.findAll();
     }

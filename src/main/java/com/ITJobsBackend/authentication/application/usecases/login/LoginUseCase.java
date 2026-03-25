@@ -5,8 +5,10 @@ import com.ITJobsBackend.authentication.application.ports.out.LoadUserPort;
 import com.ITJobsBackend.authentication.application.ports.out.PasswordEncoderPort;
 import com.ITJobsBackend.authentication.application.ports.out.TokenGeneratorPort;
 import com.ITJobsBackend.authentication.domain.exceptions.InvalidCredentialsException;
-import com.ITJobsBackend.authentication.domain.model.User;
+import com.ITJobsBackend.authentication.domain.aggregate.UserAggregate;
+import com.ITJobsBackend.authentication.domain.service.CredentialsVerifier;
 import com.ITJobsBackend.shared.domain.valueobjects.Email;
+import com.ITJobsBackend.shared.domain.valueobjects.Password;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -20,15 +22,18 @@ public class LoginUseCase implements LoginPort {
     private final LoadUserPort loadUserPort;
     private final PasswordEncoderPort passwordEncoder;
     private final TokenGeneratorPort tokenGenerator;
+    private final CredentialsVerifier credentialsVerifier;
 
     public LoginUseCase(
         LoadUserPort loadUserPort,
         PasswordEncoderPort passwordEncoder,
-        TokenGeneratorPort tokenGenerator
+        TokenGeneratorPort tokenGenerator,
+        CredentialsVerifier credentialsVerifier
     ) {
         this.loadUserPort = loadUserPort;
         this.passwordEncoder = passwordEncoder;
         this.tokenGenerator = tokenGenerator;
+        this.credentialsVerifier = credentialsVerifier;
     }
 
     @Override
@@ -37,12 +42,11 @@ public class LoginUseCase implements LoginPort {
 
         Email email = Email.of(command.email());
 
-        User user = loadUserPort.findByEmail(email)
+        UserAggregate user = loadUserPort.findByEmail(email)
             .orElseThrow(InvalidCredentialsException::new);
 
-        if (!passwordEncoder.matches(command.password(), user.getPassword().value())) {
-            throw new InvalidCredentialsException();
-        }
+        credentialsVerifier.verifyCredentials(user,
+            Password.of(command.password()), passwordEncoder);
 
         String accessToken = tokenGenerator.generateAccessToken(
             user.getId().value().toString(),

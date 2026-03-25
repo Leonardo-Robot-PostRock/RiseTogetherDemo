@@ -1,6 +1,6 @@
 package com.ITJobsBackend.authentication.infrastructure.adapters.out.persistence.jpa;
 
-import com.ITJobsBackend.authentication.domain.model.User;
+import com.ITJobsBackend.authentication.domain.aggregate.UserAggregate;
 import com.ITJobsBackend.authentication.domain.repository.UserRepository;
 import com.ITJobsBackend.authentication.domain.valueobjects.Username;
 import com.ITJobsBackend.authentication.infrastructure.adapters.out.persistence.jpa.mappers.UserMapper;
@@ -23,7 +23,7 @@ public class JpaUserRepositoryAdapter implements UserRepository {
     }
 
     @Override
-    public User save(User user) {
+    public UserAggregate save(UserAggregate user) {
         var entity = mapper.toEntity(user);
         Optional.ofNullable(entity.getId())
                 .ifPresent(id -> {
@@ -41,7 +41,7 @@ public class JpaUserRepositoryAdapter implements UserRepository {
     }
 
     @Override
-    public Optional<User> findById(UserId id) {
+    public Optional<UserAggregate> findById(UserId id) {
         return Optional.ofNullable(id.value())
                 .flatMap(jpaRepository::findById)
                 .map(mapper::toDomain)
@@ -49,13 +49,13 @@ public class JpaUserRepositoryAdapter implements UserRepository {
     }
 
     @Override
-    public Optional<User> findByEmail(Email email) {
+    public Optional<UserAggregate> findByEmail(Email email) {
         return jpaRepository.findByEmail(email.value())
                 .map(mapper::toDomain);
     }
 
     @Override
-    public Optional<User> findByUsername(Username username) {
+    public Optional<UserAggregate> findByUsername(Username username) {
         return jpaRepository.findByUsername(username.value())
                 .map(mapper::toDomain);
     }

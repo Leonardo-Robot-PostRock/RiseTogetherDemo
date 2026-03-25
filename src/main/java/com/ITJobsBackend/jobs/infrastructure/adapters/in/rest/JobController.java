@@ -4,7 +4,7 @@ import com.ITJobsBackend.jobs.application.usecases.createjob.CreateJobCommand;
 import com.ITJobsBackend.jobs.application.usecases.createjob.CreateJobUseCase;
 import com.ITJobsBackend.jobs.application.usecases.searchjobs.SearchJobsQuery;
 import com.ITJobsBackend.jobs.application.usecases.searchjobs.SearchJobsUseCase;
-import com.ITJobsBackend.jobs.domain.model.Job;
+import com.ITJobsBackend.jobs.domain.aggregate.JobAggregate;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,7 +30,7 @@ public class JobController {
 
     @PostMapping
     public ResponseEntity<Map<String, Object>> createJob(@Valid @RequestBody CreateJobCommand command) {
-        Job job = createJobUseCase.execute(command);
+        JobAggregate job = createJobUseCase.execute(command);
         return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(job));
     }
 
@@ -39,14 +39,14 @@ public class JobController {
         @RequestParam(required = false) String title
     ) {
         SearchJobsQuery query = new SearchJobsQuery(title);
-        List<Job> jobs = searchJobsUseCase.execute(query);
+        List<JobAggregate> jobs = searchJobsUseCase.execute(query);
         List<Map<String, Object>> response = jobs.stream()
             .map(this::toResponse)
             .collect(Collectors.toList());
         return ResponseEntity.ok(response);
     }
 
-    private Map<String, Object> toResponse(Job job) {
+    private Map<String, Object> toResponse(JobAggregate job) {
         return Map.of(
             "id", job.getId().value().toString(),
             "title", job.getTitle(),

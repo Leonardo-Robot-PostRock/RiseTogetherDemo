@@ -1,6 +1,6 @@
 package com.ITJobsBackend.jobs.infrastructure.adapters.out.persistence.jpa.mappers;
 
-import com.ITJobsBackend.jobs.domain.model.Job;
+import com.ITJobsBackend.jobs.domain.aggregate.JobAggregate;
 import com.ITJobsBackend.jobs.domain.valueobjects.JobId;
 import com.ITJobsBackend.jobs.domain.valueobjects.Salary;
 import com.ITJobsBackend.jobs.infrastructure.adapters.out.persistence.jpa.entities.JobEntity;
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class JobMapper {
 
-    public JobEntity toEntity(Job domain) {
+    public JobEntity toEntity(JobAggregate domain) {
         JobEntity entity = new JobEntity();
         entity.setId(domain.getId().value());
         entity.setTitle(domain.getTitle());
@@ -28,8 +28,8 @@ public class JobMapper {
         return entity;
     }
 
-    public Job toDomain(JobEntity entity) {
-        return Job.reconstitute(
+    public JobAggregate toDomain(JobEntity entity) {
+        return JobAggregate.reconstitute(
             JobId.of(entity.getId()),
             entity.getTitle(),
             entity.getDescription(),

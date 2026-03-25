@@ -1,14 +1,16 @@
 package com.ITJobsBackend.jobs.domain.repository;
 
-import com.ITJobsBackend.jobs.domain.model.Job;
+import com.ITJobsBackend.jobs.domain.aggregate.JobAggregate;
+import com.ITJobsBackend.jobs.domain.specification.JobSpecification;
 import com.ITJobsBackend.jobs.domain.valueobjects.JobId;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface JobRepository {
-    Job save(Job job);
-    Optional<Job> findById(JobId id);
-    List<Job> findAll();
-    List<Job> searchByTitle(String title);
+    JobAggregate save(JobAggregate job);
+    Optional<JobAggregate> findById(JobId id);
+    List<JobAggregate> findAll();
+    List<JobAggregate> findAll(JobSpecification spec);
+    List<JobAggregate> searchByTitle(String title);
 }
