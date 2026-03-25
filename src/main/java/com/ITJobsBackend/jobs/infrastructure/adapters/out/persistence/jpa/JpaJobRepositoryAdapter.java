@@ -27,17 +27,7 @@ public class JpaJobRepositoryAdapter implements JobRepository {
     public JobAggregate save(JobAggregate job) {
         var entity = mapper.toEntity(job);
 
-        Optional.ofNullable(entity.getId())
-                .ifPresent(id -> {
-                    if (id == null) {
-                        throw new IllegalArgumentException("Job ID cannot be null");
-                    }
-
-                    if (!jpaRepository.existsById(id)) {
-                        throw new IllegalArgumentException("Job with ID " + id + " does not exist");
-                    }
-                });
-
+        @SuppressWarnings("null")
         var savedEntity = jpaRepository.save(entity);
         return mapper.toDomain(savedEntity);
     }
@@ -46,8 +36,7 @@ public class JpaJobRepositoryAdapter implements JobRepository {
     public Optional<JobAggregate> findById(JobId id) {
         return Optional.ofNullable(id.value())
                 .flatMap(jpaRepository::findById)
-                .map(mapper::toDomain)
-                .or(Optional::empty);
+                .map(mapper::toDomain);
     }
 
     @Override

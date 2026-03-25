@@ -25,17 +25,8 @@ public class JpaUserRepositoryAdapter implements UserRepository {
     @Override
     public UserAggregate save(UserAggregate user) {
         var entity = mapper.toEntity(user);
-        Optional.ofNullable(entity.getId())
-                .ifPresent(id -> {
-                    if (id == null) {
-                        throw new IllegalArgumentException("User ID cannot be null");
-                    }
 
-                    if (!jpaRepository.existsById(id)) {
-                        throw new IllegalArgumentException("User with ID " + id + " does not exist");
-                    }
-                });
-
+        @SuppressWarnings("null")
         var savedEntity = jpaRepository.save(entity);
         return mapper.toDomain(savedEntity);
     }
@@ -44,8 +35,7 @@ public class JpaUserRepositoryAdapter implements UserRepository {
     public Optional<UserAggregate> findById(UserId id) {
         return Optional.ofNullable(id.value())
                 .flatMap(jpaRepository::findById)
-                .map(mapper::toDomain)
-                .or(Optional::empty);
+                .map(mapper::toDomain);
     }
 
     @Override

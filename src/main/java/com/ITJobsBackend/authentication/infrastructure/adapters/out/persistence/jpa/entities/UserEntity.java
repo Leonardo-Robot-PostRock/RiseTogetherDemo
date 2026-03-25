@@ -1,43 +1,51 @@
 package com.ITJobsBackend.authentication.infrastructure.adapters.out.persistence.jpa.entities;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+//Aggregate root entity for User, mapped to the "users" table in the database
+import com.ITJobsBackend.authentication.domain.aggregate.UserAggregate;
 
 @Entity
 @Table(name = "users", indexes = {
     @Index(name = "idx_email", columnList = "email", unique = true),
     @Index(name = "idx_username", columnList = "username", unique = true)
 })
+@Getter @NoArgsConstructor
 public class UserEntity {
     @Id
     @Column(columnDefinition = "CHAR(36)")
     private UUID id;
 
-    @Column(nullable = false, unique = true, length = 50)
+    @Setter @Column(nullable = false, unique = true, length = 50)
     private String username;
 
-    @Column(nullable = false, unique = true, length = 255)
+    @Setter @Column(nullable = false, unique = true, length = 255)
     private String email;
 
-    @Column(nullable = false, length = 255)
+    @Setter @Column(nullable = false, length = 255)
     private String password;
 
-    @Column(nullable = false)
+    @Setter @Column(nullable = false)
     private boolean active;
 
-    @Column(name = "email_verified", nullable = false)
+    @Setter @Column(name = "email_verified", nullable = false)
     private boolean emailVerified;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Setter @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
-    @Column(name = "updated_at", nullable = false)
+    @Setter @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
-    @ElementCollection(fetch = FetchType.EAGER)
+    @Setter @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
         name = "user_roles",
         joinColumns = @JoinColumn(name = "user_id")
@@ -45,33 +53,17 @@ public class UserEntity {
     @Column(name = "role")
     private List<String> roles = new ArrayList<>();
 
-    // Constructor vacío para JPA
-    public UserEntity() {}
-
-    public UUID getId() { return id; }
-    public void setId(UUID id) { this.id = id; }
-
-    public String getUsername() { return username; }
-    public void setUsername(String username) { this.username = username; }
-
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
-
-    public String getPassword() { return password; }
-    public void setPassword(String password) { this.password = password; }
-
-    public boolean isActive() { return active; }
-    public void setActive(boolean active) { this.active = active; }
-
-    public boolean isEmailVerified() { return emailVerified; }
-    public void setEmailVerified(boolean emailVerified) { this.emailVerified = emailVerified; }
-
-    public Instant getCreatedAt() { return createdAt; }
-    public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
-
-    public Instant getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }
-
-    public List<String> getRoles() { return roles; }
-    public void setRoles(List<String> roles) { this.roles = roles; }
+    public static UserEntity fromDomain(UserAggregate user) {
+        UserEntity entity = new UserEntity();
+        entity.id = user.getId().value();
+        entity.username = user.getUsername().value();
+        entity.email = user.getEmail().value();
+        entity.password = user.getPassword().value();
+        entity.active = user.isActive();
+        entity.emailVerified = user.isEmailVerified();
+        entity.createdAt = user.getCreatedAt().value();
+        entity.updatedAt = user.getUpdatedAt().value();
+        entity.roles = new ArrayList<>(user.getRoles());
+        return entity;
+    }
 }

@@ -1,6 +1,13 @@
 package com.ITJobsBackend.jobs.infrastructure.adapters.out.persistence.jpa.entities;
 
+import com.ITJobsBackend.jobs.domain.aggregate.JobAggregate;
+import com.ITJobsBackend.jobs.domain.valueobjects.EmploymentType;
+import com.ITJobsBackend.jobs.domain.valueobjects.JobStatus;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -8,95 +15,83 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "jobs", indexes = {
-    @Index(name = "idx_job_title", columnList = "title"),
-    @Index(name = "idx_job_company", columnList = "company")
+        @Index(name = "idx_job_title", columnList = "title"),
+        @Index(name = "idx_job_company", columnList = "company")
 })
+@Getter
+@NoArgsConstructor
 public class JobEntity {
     @Id
     @Column(columnDefinition = "CHAR(36)")
     private UUID id;
 
+    @Setter
     @Column(nullable = false, length = 200)
     private String title;
 
+    @Setter
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @Setter
     @Column(nullable = false, length = 100)
     private String company;
 
+    @Setter
     @Column(length = 100)
     private String location;
 
+    @Setter
     @Column(name = "salary_min")
     private double salaryMin;
 
+    @Setter
     @Column(name = "salary_max")
     private double salaryMax;
 
+    @Setter
     @Column(length = 10)
     private String currency;
 
+    @Setter
     @Column(name = "employment_type", nullable = false, length = 20)
     @Enumerated(EnumType.STRING)
-    private com.ITJobsBackend.jobs.domain.valueobjects.EmploymentType employmentType;
+    private EmploymentType employmentType;
 
+    @Setter
     @Column(nullable = false, length = 20)
     @Enumerated(EnumType.STRING)
-    private com.ITJobsBackend.jobs.domain.valueobjects.JobStatus status;
+    private JobStatus status;
 
+    @Setter
     @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(
-        name = "job_skills",
-        joinColumns = @JoinColumn(name = "job_id")
-    )
+    @CollectionTable(name = "job_skills", joinColumns = @JoinColumn(name = "job_id"))
     @Column(name = "skill")
     private List<String> skills = new ArrayList<>();
 
+    @Setter
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
+    @Setter
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
-    public JobEntity() {}
-
-    public UUID getId() { return id; }
-    public void setId(UUID id) { this.id = id; }
-
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
-
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
-
-    public String getCompany() { return company; }
-    public void setCompany(String company) { this.company = company; }
-
-    public String getLocation() { return location; }
-    public void setLocation(String location) { this.location = location; }
-
-    public double getSalaryMin() { return salaryMin; }
-    public void setSalaryMin(double salaryMin) { this.salaryMin = salaryMin; }
-
-    public double getSalaryMax() { return salaryMax; }
-    public void setSalaryMax(double salaryMax) { this.salaryMax = salaryMax; }
-
-    public String getCurrency() { return currency; }
-    public void setCurrency(String currency) { this.currency = currency; }
-
-    public com.ITJobsBackend.jobs.domain.valueobjects.EmploymentType getEmploymentType() { return employmentType; }
-    public void setEmploymentType(com.ITJobsBackend.jobs.domain.valueobjects.EmploymentType employmentType) { this.employmentType = employmentType; }
-
-    public com.ITJobsBackend.jobs.domain.valueobjects.JobStatus getStatus() { return status; }
-    public void setStatus(com.ITJobsBackend.jobs.domain.valueobjects.JobStatus status) { this.status = status; }
-
-    public List<String> getSkills() { return skills; }
-    public void setSkills(List<String> skills) { this.skills = skills; }
-
-    public Instant getCreatedAt() { return createdAt; }
-    public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
-
-    public Instant getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }
+    public static JobEntity fromDomain(JobAggregate job) {
+        JobEntity entity = new JobEntity();
+        entity.id = job.getId().value();
+        entity.title = job.getTitle();
+        entity.description = job.getDescription();
+        entity.company = job.getCompany();
+        entity.location = job.getLocation();
+        entity.salaryMin = job.getSalary().min();
+        entity.salaryMax = job.getSalary().max();
+        entity.currency = job.getSalary().currency();
+        entity.employmentType = job.getEmploymentType();
+        entity.status = job.getStatus();
+        entity.skills = new ArrayList<>(job.getSkills());
+        entity.createdAt = job.getCreatedAt().value();
+        entity.updatedAt = job.getUpdatedAt().value();
+        return entity;
+    }
 }

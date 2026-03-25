@@ -11,21 +11,7 @@ import org.springframework.stereotype.Component;
 public class JobMapper {
 
     public JobEntity toEntity(JobAggregate domain) {
-        JobEntity entity = new JobEntity();
-        entity.setId(domain.getId().value());
-        entity.setTitle(domain.getTitle());
-        entity.setDescription(domain.getDescription());
-        entity.setCompany(domain.getCompany());
-        entity.setLocation(domain.getLocation());
-        entity.setSalaryMin(domain.getSalary().min());
-        entity.setSalaryMax(domain.getSalary().max());
-        entity.setCurrency(domain.getSalary().currency());
-        entity.setEmploymentType(domain.getEmploymentType());
-        entity.setStatus(domain.getStatus());
-        entity.setSkills(domain.getSkills());
-        entity.setCreatedAt(domain.getCreatedAt().value());
-        entity.setUpdatedAt(domain.getUpdatedAt().value());
-        return entity;
+        return JobEntity.fromDomain(domain);
     }
 
     public JobAggregate toDomain(JobEntity entity) {

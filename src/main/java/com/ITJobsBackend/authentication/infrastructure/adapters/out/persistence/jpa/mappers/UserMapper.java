@@ -13,17 +13,7 @@ import org.springframework.stereotype.Component;
 public class UserMapper {
 
     public UserEntity toEntity(UserAggregate domain) {
-        UserEntity entity = new UserEntity();
-        entity.setId(domain.getId().value());
-        entity.setUsername(domain.getUsername().value());
-        entity.setEmail(domain.getEmail().value());
-        entity.setPassword(domain.getPassword().value());
-        entity.setActive(domain.isActive());
-        entity.setEmailVerified(domain.isEmailVerified());
-        entity.setCreatedAt(domain.getCreatedAt().value());
-        entity.setUpdatedAt(domain.getUpdatedAt().value());
-        entity.setRoles(domain.getRoles());
-        return entity;
+        return UserEntity.fromDomain(domain);
     }
 
     public UserAggregate toDomain(UserEntity entity) {
