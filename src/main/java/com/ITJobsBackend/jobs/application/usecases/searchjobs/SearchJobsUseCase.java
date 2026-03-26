@@ -1,7 +1,7 @@
 package com.ITJobsBackend.jobs.application.usecases.searchjobs;
 
 import com.ITJobsBackend.jobs.domain.aggregate.JobAggregate;
-import com.ITJobsBackend.jobs.domain.repository.JobRepository;
+import com.ITJobsBackend.jobs.domain.repository.JobReaderRepository;
 import com.ITJobsBackend.jobs.domain.specification.TitleContainsSpecification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,9 +11,9 @@ import java.util.List;
 @Service
 @Transactional(readOnly = true)
 public class SearchJobsUseCase {
-    private final JobRepository jobRepository;
+    private final JobReaderRepository jobRepository;
 
-    public SearchJobsUseCase(JobRepository jobRepository) {
+    public SearchJobsUseCase(JobReaderRepository jobRepository) {
         this.jobRepository = jobRepository;
     }
 

@@ -1,7 +1,7 @@
 package com.ITJobsBackend.jobs.application.usecases.createjob;
 
 import com.ITJobsBackend.jobs.domain.aggregate.JobAggregate;
-import com.ITJobsBackend.jobs.domain.repository.JobRepository;
+import com.ITJobsBackend.jobs.domain.repository.JobWriterRepository;
 import com.ITJobsBackend.jobs.domain.valueobjects.EmploymentType;
 import com.ITJobsBackend.jobs.domain.valueobjects.Salary;
 import com.ITJobsBackend.shared.application.ports.out.DomainEventPublisher;
@@ -15,10 +15,10 @@ import org.springframework.transaction.annotation.Transactional;
 public class CreateJobUseCase {
     private static final Logger log = ApplicationLogger.forClass(CreateJobUseCase.class);
 
-    private final JobRepository jobRepository;
+    private final JobWriterRepository jobRepository;
     private final DomainEventPublisher domainEventPublisher;
 
-    public CreateJobUseCase(JobRepository jobRepository, DomainEventPublisher domainEventPublisher) {
+    public CreateJobUseCase(JobWriterRepository jobRepository, DomainEventPublisher domainEventPublisher) {
         this.jobRepository = jobRepository;
         this.domainEventPublisher = domainEventPublisher;
     }
