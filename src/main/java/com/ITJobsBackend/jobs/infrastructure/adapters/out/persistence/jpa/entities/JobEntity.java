@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,12 +43,12 @@ public class JobEntity {
     private String location;
 
     @Setter
-    @Column(name = "salary_min")
-    private double salaryMin;
+    @Column(name = "salary_min", precision = 15, scale = 2)
+    private BigDecimal salaryMin;
 
     @Setter
-    @Column(name = "salary_max")
-    private double salaryMax;
+    @Column(name = "salary_max", precision = 15, scale = 2)
+    private BigDecimal salaryMax;
 
     @Setter
     @Column(length = 10)
