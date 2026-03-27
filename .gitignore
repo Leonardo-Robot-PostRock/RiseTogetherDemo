@@ -32,7 +32,7 @@ build/
 ### VS Code ###
 .vscode/
 .metadata
-/claude
+itjobs-docs/
 
 AGENTS.md
 .env

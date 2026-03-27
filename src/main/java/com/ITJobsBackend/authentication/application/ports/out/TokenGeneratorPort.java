@@ -7,4 +7,5 @@ public interface TokenGeneratorPort {
     String generateRefreshToken(String userId);
     boolean validateToken(String token);
     String extractUserId(String token);
+    List<String> extractRoles(String token);
 }

@@ -76,4 +76,21 @@ public class JwtTokenGeneratorAdapter implements TokenGeneratorPort {
             .getPayload()
             .getSubject();
     }
+
+    @Override
+    public List<String> extractRoles(String token) {
+        Object roles = Jwts.parser()
+            .verifyWith(secretKey)
+            .build()
+            .parseSignedClaims(token)
+            .getPayload()
+            .get("roles");
+
+        if(roles instanceof List<?> list){
+            return list.stream()
+                .map(String::valueOf)
+                .toList();
+        }
+        return List.of();
+    }
 }
