@@ -7,8 +7,6 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -25,7 +23,6 @@ import java.util.UUID;
 @NoArgsConstructor
 public class JobEntity {
     @Id
-    @JdbcTypeCode(SqlTypes.VARCHAR)
     @Column(columnDefinition = "CHAR(36)")
     private UUID id;
 
