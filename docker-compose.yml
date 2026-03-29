@@ -3,6 +3,7 @@ services:
     image: mysql:8.0
     container_name: itjobs-db
     restart: unless-stopped
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
@@ -28,10 +29,11 @@ services:
     ports:
       - "9090:9090"
     environment:
-      DB_URL: jdbc:mysql://db:3306/${MYSQL_DATABASE}?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      DB_URL: jdbc:mysql://db:3306/${MYSQL_DATABASE}?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=utf8
       DB_USERNAME: root
       DB_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
+      SPRING_PROFILES_ACTIVE: prod
 
 volumes:
   mysql-data:
