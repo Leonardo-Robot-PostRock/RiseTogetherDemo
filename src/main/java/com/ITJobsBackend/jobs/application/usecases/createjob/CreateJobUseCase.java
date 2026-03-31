@@ -5,15 +5,15 @@ import com.ITJobsBackend.jobs.domain.repository.JobWriterRepository;
 import com.ITJobsBackend.jobs.domain.valueobjects.EmploymentType;
 import com.ITJobsBackend.jobs.domain.valueobjects.Salary;
 import com.ITJobsBackend.shared.application.ports.out.DomainEventPublisher;
-import com.ITJobsBackend.shared.infrastructure.ApplicationLogger;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
 public class CreateJobUseCase {
-    private static final Logger log = ApplicationLogger.forClass(CreateJobUseCase.class);
+    private static final Logger log = LoggerFactory.getLogger(CreateJobUseCase.class);
 
     private final JobWriterRepository jobRepository;
     private final DomainEventPublisher domainEventPublisher;

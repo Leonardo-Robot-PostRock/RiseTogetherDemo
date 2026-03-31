@@ -10,15 +10,16 @@ import com.ITJobsBackend.authentication.domain.exceptions.UserAlreadyExistsExcep
 import com.ITJobsBackend.shared.application.ports.out.DomainEventPublisher;
 import com.ITJobsBackend.shared.domain.valueobjects.Email;
 import com.ITJobsBackend.shared.domain.valueobjects.Password;
-import com.ITJobsBackend.shared.infrastructure.ApplicationLogger;
+
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
 public class RegisterUserUseCase implements RegisterUserPort {
-    private static final Logger log = ApplicationLogger.forClass(RegisterUserUseCase.class);
+    private static final Logger log = LoggerFactory.getLogger(RegisterUserUseCase.class);
 
     private final SaveUserPort saveUserPort;
     private final PasswordEncoderPort passwordEncoder;
