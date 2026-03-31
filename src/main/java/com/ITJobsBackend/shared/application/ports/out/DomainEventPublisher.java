@@ -4,5 +4,5 @@ import com.ITJobsBackend.shared.domain.event.DomainEvent;
 import java.util.List;
 
 public interface DomainEventPublisher {
-    void publishAll(List<DomainEvent> events);
+  void publishAll(List<DomainEvent> events);
 }

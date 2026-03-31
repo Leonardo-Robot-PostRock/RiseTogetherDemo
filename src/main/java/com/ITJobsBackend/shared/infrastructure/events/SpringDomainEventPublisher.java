@@ -2,21 +2,20 @@ package com.ITJobsBackend.shared.infrastructure.events;
 
 import com.ITJobsBackend.shared.application.ports.out.DomainEventPublisher;
 import com.ITJobsBackend.shared.domain.event.DomainEvent;
+import java.util.List;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-
 @Component
 public class SpringDomainEventPublisher implements DomainEventPublisher {
-    private final ApplicationEventPublisher springPublisher;
+  private final ApplicationEventPublisher springPublisher;
 
-    public SpringDomainEventPublisher(ApplicationEventPublisher springPublisher) {
-        this.springPublisher = springPublisher;
-    }
+  public SpringDomainEventPublisher(ApplicationEventPublisher springPublisher) {
+    this.springPublisher = springPublisher;
+  }
 
-    @Override
-    public void publishAll(List<DomainEvent> events) {
-        events.forEach(springPublisher::publishEvent);
-    }
+  @Override
+  public void publishAll(List<DomainEvent> events) {
+    events.forEach(springPublisher::publishEvent);
+  }
 }
