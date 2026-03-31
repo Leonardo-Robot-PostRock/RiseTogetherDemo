@@ -6,6 +6,10 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -21,6 +25,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class UserEntity {
   @Id
+  @JdbcTypeCode(SqlTypes.CHAR)
   @Column(columnDefinition = "CHAR(36)")
   private UUID id;
 
