@@ -9,19 +9,19 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
-@Table(name = "jobs", indexes = {
-    @Index(name = "idx_job_title", columnList = "title"),
-    @Index(name = "idx_job_company", columnList = "company")
-})
+@Table(
+    name = "jobs",
+    indexes = {
+      @Index(name = "idx_job_title", columnList = "title"),
+      @Index(name = "idx_job_company", columnList = "company")
+    })
 @Getter
 @NoArgsConstructor
 public class JobEntity {
