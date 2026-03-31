@@ -4,5 +4,5 @@ import com.ITJobsBackend.authentication.application.usecases.register.RegisterUs
 import com.ITJobsBackend.authentication.application.usecases.register.RegisterUserResponse;
 
 public interface RegisterUserPort {
-    RegisterUserResponse execute(RegisterUserCommand command);
+  RegisterUserResponse execute(RegisterUserCommand command);
 }

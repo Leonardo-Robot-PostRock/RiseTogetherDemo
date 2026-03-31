@@ -8,10 +8,10 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class UserRegisteredEventListener {
-    private static final Logger log = LoggerFactory.getLogger(UserRegisteredEventListener.class);
+  private static final Logger log = LoggerFactory.getLogger(UserRegisteredEventListener.class);
 
-    @EventListener
-    public void on(UserRegisteredEvent event) {
-        log.info("New user registered with email: {}", event.getEmail());
-    }
+  @EventListener
+  public void on(UserRegisteredEvent event) {
+    log.info("New user registered with email: {}", event.getEmail());
+  }
 }

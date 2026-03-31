@@ -7,10 +7,10 @@ import com.ITJobsBackend.shared.domain.valueobjects.Password;
 
 public class CredentialsVerifier {
 
-    public void verifyCredentials(UserAggregate user, Password rawPassword,
-                                  PasswordEncoderPort encoder) {
-        if (!encoder.matches(rawPassword.value(), user.getPassword().value())) {
-            throw new InvalidCredentialsException();
-        }
+  public void verifyCredentials(
+      UserAggregate user, Password rawPassword, PasswordEncoderPort encoder) {
+    if (!encoder.matches(rawPassword.value(), user.getPassword().value())) {
+      throw new InvalidCredentialsException();
     }
+  }
 }

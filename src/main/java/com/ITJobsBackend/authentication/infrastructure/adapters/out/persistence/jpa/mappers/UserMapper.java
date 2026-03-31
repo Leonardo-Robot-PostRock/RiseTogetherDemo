@@ -12,21 +12,20 @@ import org.springframework.stereotype.Component;
 @Component
 public class UserMapper {
 
-    public UserEntity toEntity(UserAggregate domain) {
-        return UserEntity.fromDomain(domain);
-    }
+  public UserEntity toEntity(UserAggregate domain) {
+    return UserEntity.fromDomain(domain);
+  }
 
-    public UserAggregate toDomain(UserEntity entity) {
-        return UserAggregate.reconstitute(
-            UserId.of(entity.getId()),
-            Username.of(entity.getUsername()),
-            Email.of(entity.getEmail()),
-            HashedPassword.fromHash(entity.getPassword()),
-            entity.isActive(),
-            entity.isEmailVerified(),
-            Timestamp.of(entity.getCreatedAt()),
-            Timestamp.of(entity.getUpdatedAt()),
-            entity.getRoles()
-        );
-    }
+  public UserAggregate toDomain(UserEntity entity) {
+    return UserAggregate.reconstitute(
+        UserId.of(entity.getId()),
+        Username.of(entity.getUsername()),
+        Email.of(entity.getEmail()),
+        HashedPassword.fromHash(entity.getPassword()),
+        entity.isActive(),
+        entity.isEmailVerified(),
+        Timestamp.of(entity.getCreatedAt()),
+        Timestamp.of(entity.getUpdatedAt()),
+        entity.getRoles());
+  }
 }
