@@ -1,8 +1,10 @@
 package com.ITJobsBackend.authentication.infrastructure.config;
 
 import com.ITJobsBackend.authentication.infrastructure.adapters.out.security.JwtAuthenticationFilter;
+import com.ITJobsBackend.shared.infrastructure.exceptions.SecurityExceptionHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -13,10 +15,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class SecurityConfig {
 
+    private final SecurityExceptionHandler securityExceptionHandler;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+    SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, SecurityExceptionHandler securityExceptionHandler) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.securityExceptionHandler = securityExceptionHandler;
     }
 
     @Bean
@@ -24,9 +28,12 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(securityExceptionHandler)
+                        .accessDeniedHandler(securityExceptionHandler))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/auth/**").permitAll()
-                        .requestMatchers("/api/v1/jobs/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/jobs/**").permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
