@@ -8,10 +8,10 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class JobDeactivatedEventListener {
-    private static final Logger log = LoggerFactory.getLogger(JobDeactivatedEventListener.class);
+  private static final Logger log = LoggerFactory.getLogger(JobDeactivatedEventListener.class);
 
-    @EventListener
-    public void on(JobDeactivatedEvent event) {
-        log.info("Job deactivated: '{}'", event.getJobTitle());
-    }
+  @EventListener
+  public void on(JobDeactivatedEvent event) {
+    log.info("Job deactivated: '{}'", event.getJobTitle());
+  }
 }

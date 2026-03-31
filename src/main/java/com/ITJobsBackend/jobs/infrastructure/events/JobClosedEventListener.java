@@ -8,10 +8,10 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class JobClosedEventListener {
-    private static final Logger log = LoggerFactory.getLogger(JobClosedEventListener.class);
+  private static final Logger log = LoggerFactory.getLogger(JobClosedEventListener.class);
 
-    @EventListener
-    public void on(JobClosedEvent event) {
-        log.info("Job closed: '{}' at company '{}'", event.getJobTitle(), event.getCompany());
-    }
+  @EventListener
+  public void on(JobClosedEvent event) {
+    log.info("Job closed: '{}' at company '{}'", event.getJobTitle(), event.getCompany());
+  }
 }
