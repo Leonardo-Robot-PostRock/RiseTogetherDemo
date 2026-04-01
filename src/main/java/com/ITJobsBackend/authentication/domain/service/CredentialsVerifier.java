@@ -3,6 +3,7 @@ package com.ITJobsBackend.authentication.domain.service;
 import com.ITJobsBackend.authentication.application.ports.out.PasswordEncoderPort;
 import com.ITJobsBackend.authentication.domain.aggregate.UserAggregate;
 import com.ITJobsBackend.authentication.domain.exceptions.InvalidCredentialsException;
+
 import com.ITJobsBackend.shared.domain.valueobjects.Password;
 
 public class CredentialsVerifier {

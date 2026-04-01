@@ -1,7 +1,5 @@
 package com.ITJobsBackend.authentication.infrastructure.config;
 
-import com.ITJobsBackend.authentication.infrastructure.adapters.out.security.JwtAuthenticationFilter;
-import com.ITJobsBackend.shared.infrastructure.exceptions.SecurityExceptionHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -12,6 +10,10 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import com.ITJobsBackend.authentication.infrastructure.adapters.out.security.JwtAuthenticationFilter;
+
+import com.ITJobsBackend.shared.infrastructure.exceptions.SecurityExceptionHandler;
 
 @Configuration
 @EnableWebSecurity

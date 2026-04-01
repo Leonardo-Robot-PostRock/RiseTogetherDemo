@@ -1,5 +1,11 @@
 package com.ITJobsBackend.authentication.application.usecases.login;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.ITJobsBackend.authentication.application.ports.in.LoginPort;
 import com.ITJobsBackend.authentication.application.ports.out.LoadUserPort;
 import com.ITJobsBackend.authentication.application.ports.out.PasswordEncoderPort;
@@ -7,12 +13,9 @@ import com.ITJobsBackend.authentication.application.ports.out.TokenGeneratorPort
 import com.ITJobsBackend.authentication.domain.aggregate.UserAggregate;
 import com.ITJobsBackend.authentication.domain.exceptions.InvalidCredentialsException;
 import com.ITJobsBackend.authentication.domain.service.CredentialsVerifier;
+
 import com.ITJobsBackend.shared.domain.valueobjects.Email;
 import com.ITJobsBackend.shared.domain.valueobjects.Password;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional(readOnly = true)

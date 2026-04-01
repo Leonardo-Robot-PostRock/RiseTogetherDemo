@@ -1,11 +1,12 @@
 package com.ITJobsBackend.authentication.domain.aggregate;
 
 import static org.junit.jupiter.api.Assertions.*;
-
 import org.junit.jupiter.api.Test;
+
 import com.ITJobsBackend.authentication.domain.exceptions.UserAlreadyActivatedException;
 import com.ITJobsBackend.authentication.domain.valueobjects.HashedPassword;
 import com.ITJobsBackend.authentication.domain.valueobjects.Username;
+
 import com.ITJobsBackend.shared.domain.valueobjects.Email;
 
 class UserAggregateTest {

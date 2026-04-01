@@ -1,18 +1,21 @@
 package com.ITJobsBackend.authentication.infrastructure.adapters.in.rest;
 
+import jakarta.validation.Valid;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
 import com.ITJobsBackend.authentication.application.ports.in.LoginPort;
 import com.ITJobsBackend.authentication.application.ports.in.RegisterUserPort;
 import com.ITJobsBackend.authentication.application.usecases.login.AuthTokenResponse;
 import com.ITJobsBackend.authentication.application.usecases.login.LoginCommand;
 import com.ITJobsBackend.authentication.application.usecases.register.RegisterUserCommand;
 import com.ITJobsBackend.authentication.application.usecases.register.RegisterUserResponse;
+
 import com.ITJobsBackend.authentication.infrastructure.adapters.in.rest.dto.AuthResponse;
 import com.ITJobsBackend.authentication.infrastructure.adapters.in.rest.dto.LoginRequest;
 import com.ITJobsBackend.authentication.infrastructure.adapters.in.rest.dto.RegisterRequest;
-import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/auth")
