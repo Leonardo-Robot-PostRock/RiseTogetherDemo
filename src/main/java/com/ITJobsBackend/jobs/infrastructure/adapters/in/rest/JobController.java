@@ -5,6 +5,7 @@ import com.ITJobsBackend.jobs.application.usecases.createjob.CreateJobUseCase;
 import com.ITJobsBackend.jobs.application.usecases.searchjobs.SearchJobsQuery;
 import com.ITJobsBackend.jobs.application.usecases.searchjobs.SearchJobsUseCase;
 import com.ITJobsBackend.jobs.domain.aggregate.JobAggregate;
+import com.ITJobsBackend.jobs.infrastructure.adapters.in.rest.dto.CreateJobRequest;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +27,17 @@ public class JobController {
 
   @PostMapping
   public ResponseEntity<Map<String, Object>> createJob(
-      @Valid @RequestBody CreateJobCommand command) {
+      @Valid @RequestBody CreateJobRequest request) {
+    CreateJobCommand command = new CreateJobCommand(
+        request.title(),
+        request.description(),
+        request.company(),
+        request.location(),
+        request.salaryMin(),
+        request.salaryMax(),
+        request.currency(),
+        request.employmentType()
+    );
     JobAggregate job = createJobUseCase.execute(command);
     return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(job));
   }

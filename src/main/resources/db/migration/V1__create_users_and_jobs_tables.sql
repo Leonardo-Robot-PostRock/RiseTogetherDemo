@@ -24,7 +24,7 @@ CREATE TABLE jobs (
     title VARCHAR(200) NOT NULL,
     description TEXT,
     company VARCHAR(100) NOT NULL,
-    location VARCHAR(100),
+    location VARCHAR(100) NOT NULL,
     salary_min DOUBLE,
     salary_max DOUBLE,
     currency VARCHAR(10),
