@@ -127,7 +127,7 @@
 | RNF-02 | Seguridad | Password hasheado con BCrypt |
 | RNF-03 | Arquitectura | Hexagonal (Ports & Adapters) con DDD táctico |
 | RNF-04 | Base de datos | MySQL 8.0 en producción, H2 en memoria para tests |
-| RNF-05 | Migraciones | Esquema versionado con Flyway (V1–V7) |
+| RNF-05 | Migraciones | Esquema versionado con Flyway (V1–V8) |
 | RNF-06 | Despliegue | Docker Compose (MySQL + Spring Boot) |
 | RNF-07 | Manejo de errores | GlobalExceptionHandler centralizado |
 | RNF-08 | Validación | Jakarta Validation en capa REST |

@@ -1,6 +1,6 @@
 ## **Documentación de la Base de Datos para el Sistema de Búsqueda de Empleo**
 
-> **Nota:** Todos los IDs usan UUID (`CHAR(36)`). El esquema está versionado con Flyway (V1–V7).
+> **Nota:** Todos los IDs usan UUID (`CHAR(36)`). El esquema está versionado con Flyway (V1–V8).
 
 ---
 
@@ -15,6 +15,7 @@
 | V5 | `job_categories`, `job_category_mapping` |
 | V6 | `recruiters` |
 | V7 | `salary_min`, `salary_max` de DOUBLE a DECIMAL(15,2) |
+| V8 | `salary_min`, `salary_max` NOT NULL (transparencia) |
 
 ---
 
