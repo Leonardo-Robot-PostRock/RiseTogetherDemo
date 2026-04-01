@@ -1,19 +1,23 @@
 package com.ITJobsBackend.jobs.infrastructure.adapters.out.persistence.jpa.entities;
 
-import com.ITJobsBackend.jobs.domain.aggregate.JobAggregate;
-import com.ITJobsBackend.jobs.domain.valueobjects.EmploymentType;
-import com.ITJobsBackend.jobs.domain.valueobjects.JobStatus;
-import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import jakarta.persistence.*;
+
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+
+import com.ITJobsBackend.jobs.domain.aggregate.JobAggregate;
+import com.ITJobsBackend.jobs.domain.valueobjects.EmploymentType;
+import com.ITJobsBackend.jobs.domain.valueobjects.JobStatus;
 
 @Entity
 @Table(

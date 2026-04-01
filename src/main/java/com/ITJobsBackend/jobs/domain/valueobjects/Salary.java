@@ -1,8 +1,9 @@
 package com.ITJobsBackend.jobs.domain.valueobjects;
 
-import com.ITJobsBackend.shared.domain.exceptions.ValidationException;
 import java.math.BigDecimal;
 import java.util.Objects;
+
+import com.ITJobsBackend.shared.domain.exceptions.ValidationException;
 
 public final class Salary {
   private final BigDecimal min;
