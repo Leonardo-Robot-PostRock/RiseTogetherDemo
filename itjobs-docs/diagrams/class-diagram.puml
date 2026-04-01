@@ -18,8 +18,18 @@ package "shared" {
         - value : UUID
     }
 
+    class JobId <<ValueObject>> {
+        - value : UUID
+    }
+
     class Password <<ValueObject>> {
         - value : String
+    }
+
+    class Salary <<ValueObject>> {
+        - min : BigDecimal
+        - max : BigDecimal
+        - currency : String
     }
 
     class Timestamp <<ValueObject>> {
@@ -41,45 +51,101 @@ package "authentication" {
         - email : Email
         - password : HashedPassword
         - active : boolean
+        - emailVerified : boolean
         - createdAt : Timestamp
         - updatedAt : Timestamp
         - roles : List<String>
+        - domainEvents : List<DomainEvent>
+        + create() : UserAggregate
+        + activate()
+        + deactivate()
+        + verifyEmail()
+        + addRole()
     }
 
-    class Username <<ValueObject>>
-    class HashedPassword <<ValueObject>>
+    class Username <<ValueObject>> {
+        - value : String
+    }
 
-    class UserRegisteredEvent <<Event>>
-    class UserActivatedEvent <<Event>>
+    class HashedPassword <<ValueObject>> {
+        - value : String
+    }
 
-    interface RegisterUserPort
-    interface LoginPort
-    interface SaveUserPort
-    interface LoadUserPort
-    interface PasswordEncoderPort
-    interface TokenGeneratorPort
+    class UserRegisteredEvent <<Event>> {
+        - userId : String (heredado)
+        - aggregatedType : String (heredado)
+        - email : String
+    }
+
+    class UserActivatedEvent <<Event>> {
+        - userId : String (heredado)
+        - aggregatedType : String (heredado)
+        - email : String
+    }
+
+    interface RegisterUserPort <<In Port>>
+    interface LoginPort <<In Port>>
+    interface SaveUserPort <<Out Port>>
+    interface LoadUserPort <<Out Port>>
+    interface PasswordEncoderPort <<Out Port>>
+    interface TokenGeneratorPort <<Out Port>>
 
     class RegisterUserUseCase
     class LoginUseCase
-    class CredentialsVerifier
+    class CredentialsVerifier <<Domain Service>>
 }
 
 package "jobs" {
 
     class JobAggregate <<Aggregate>> {
         - id : JobId
+        - title : String
+        - description : String
+        - company : String
+        - location : String
         - salary : Salary
+        - employmentType : EmploymentType
         - status : JobStatus
+        - skills : List<String>
+        - createdAt : Timestamp
+        - updatedAt : Timestamp
+        - domainEvents : List<DomainEvent>
+        + create() : JobAggregate
+        + close()
+        + deactivate()
+        + addSkill()
     }
 
-    class JobId <<ValueObject>>
     class Salary <<ValueObject>>
 
-    enum EmploymentType
-    enum JobStatus
+    enum EmploymentType {
+        FULL_TIME
+        PART_TIME
+        CONTRACT
+        FREELANCE
+        INTERNSHIP
+    }
 
-    class JobClosedEvent <<Event>>
-    class JobDeactivatedEvent <<Event>>
+    enum JobStatus {
+        OPEN
+        CLOSED
+        DRAFT
+        EXPIRED
+        INACTIVE
+    }
+
+    class JobClosedEvent <<Event>> {
+        - jobId : String (heredado)
+        - aggregatedType : String (heredado)
+        - jobTitle : String
+        - company : String
+    }
+
+    class JobDeactivatedEvent <<Event>> {
+        - jobId : String (heredado)
+        - aggregatedType : String (heredado)
+        - jobTitle : String
+    }
 }
 
 ' Composicion (*)
@@ -87,11 +153,13 @@ UserAggregate *-- UserId
 UserAggregate *-- Username
 UserAggregate *-- Email
 UserAggregate *-- HashedPassword
+UserAggregate *-- Timestamp
 
 JobAggregate *-- JobId
 JobAggregate *-- Salary
 JobAggregate *-- EmploymentType
 JobAggregate *-- JobStatus
+JobAggregate *-- Timestamp
 
 ' Herencia (<|--)
 DomainEvent <|-- UserRegisteredEvent
@@ -112,7 +180,9 @@ LoadUserPort <-- LoginUseCase
 PasswordEncoderPort <-- RegisterUserUseCase
 PasswordEncoderPort <-- LoginUseCase
 TokenGeneratorPort <-- LoginUseCase
+
 CredentialsVerifier --> PasswordEncoderPort
+
 DomainEventPublisher <-- RegisterUserUseCase
 
 @enduml

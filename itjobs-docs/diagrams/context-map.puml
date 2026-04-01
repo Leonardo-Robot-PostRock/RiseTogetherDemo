@@ -12,6 +12,7 @@ package "Authentication" {
     component [UserAggregate]
     component [RegisterUserUseCase]
     component [LoginUseCase]
+    component [CredentialsVerifier]
 }
 
 package "Jobs" {
@@ -41,23 +42,35 @@ package "Moderation" {
     component [ModerationUseCase]
 }
 
-' Flechas con etiquetas claras
-
-' Domain Events
+' Domain Events publishes
 UserAggregate ..> [DomainEvent] : publica eventos
 JobAggregate ..> [DomainEvent] : publica eventos
 ApplicationAggregate ..> [DomainEvent] : publica eventos
 ContentReportAggregate ..> [DomainEvent] : publica eventos
 
-' Relaciones entre contextos
-RegisterUserUseCase --> [JobAggregate] : "para crear ofertas"
-ApplyToJobUseCase --> [CandidateAggregate] : "para postulaciones"
-CandidateAggregate --> [UserAggregate] : "extiende usuario"
-EmployerAggregate --> [JobAggregate] : "crea ofertas"
-RecruiterAggregate --> [JobAggregate] : "gestiona ofertas"
-CategoryAggregate --> [JobAggregate] : "categoriza ofertas"
-ModerationUseCase --> [JobAggregate] : "reporta/moderar"
-ModerationUseCase --> [ApplicationAggregate] : "reportar postulacion"
-UserManagementUseCase --> [UserAggregate] : "gestiona usuarios"
+' Authentication relations
+RegisterUserUseCase --> [JobAggregate] : necesita para preparar respuesta
+CredentialsVerifier --> [PasswordEncoderPort] : verifica password
+
+' Jobs relations (IMPLEMENTADO en codigo)
+CreateJobUseCase --> [JobAggregate] : crea ofertas
+SearchJobsUseCase --> [JobAggregate] : busca ofertas
+
+' Applications relations
+ApplyToJobUseCase --> [CandidateAggregate] : necesita candidato
+ApplyToJobUseCase --> [JobAggregate] : necesita job
+
+' Profiles relations
+CandidateAggregate ..> [DomainEvent] : publicar eventos
+EmployerAggregate --> [JobAggregate] : crea y gestiona ofertas
+RecruiterAggregate --> [JobAggregate] : gestiona ofertas
+
+' Administration
+CategoryAggregate --> [JobAggregate] : categoriza ofertas
+UserManagementUseCase --> [UserAggregate] : gestiona usuarios
+
+' Moderation
+ModerationUseCase --> [JobAggregate] : reporta contenido
+ModerationUseCase --> [ApplicationAggregate] : reporta postulaciones
 
 @enduml
