@@ -1,0 +1,128 @@
+@startuml ITJobsERDiagram
+
+title ITJobs - Diagrama Entidad-Relacion
+
+package "users" as PKG_USERS {
+
+    class tbl_users {
+        + id : CHAR(36) [PK]
+        + username : VARCHAR(50) [UNIQUE]
+        + email : VARCHAR(255) [UNIQUE]
+        + password : VARCHAR(255)
+        + active : BOOLEAN
+        + email_verified : BOOLEAN
+        + created_at : TIMESTAMP
+        + updated_at : TIMESTAMP
+    }
+
+    class tbl_user_roles {
+        + user_id : CHAR(36) [PK, FK]
+        + role : VARCHAR(50) [PK]
+    }
+
+    class tbl_employers {
+        + id : CHAR(36) [PK, FK]
+        + company_name : VARCHAR(100)
+        + industry : VARCHAR(50)
+        + website : VARCHAR(255)
+        + location : VARCHAR(100)
+        + contact_person : VARCHAR(100)
+        + contact_email : VARCHAR(255)
+    }
+
+    class tbl_candidates {
+        + id : CHAR(36) [PK, FK]
+        + first_name : VARCHAR(50)
+        + last_name : VARCHAR(50)
+        + resume : VARCHAR(255)
+        + profile_summary : TEXT
+        + location : VARCHAR(100)
+    }
+
+    class tbl_candidate_skills {
+        + candidate_id : CHAR(36) [PK, FK]
+        + skill : VARCHAR(100) [PK]
+    }
+
+    class tbl_recruiters {
+        + id : CHAR(36) [PK, FK]
+        + first_name : VARCHAR(50)
+        + last_name : VARCHAR(50)
+        + email : VARCHAR(255) [UNIQUE]
+        + phone : VARCHAR(20)
+        + company_id : CHAR(36) [FK]
+    }
+}
+
+package "jobs" as PKG_JOBS {
+
+    class tbl_jobs {
+        + id : CHAR(36) [PK]
+        + title : VARCHAR(200) [NOT NULL]
+        + description : TEXT
+        + company : VARCHAR(100) [NOT NULL]
+        + location : VARCHAR(100) [NOT NULL]
+        + salary_min : DECIMAL(15,2) [NOT NULL]
+        + salary_max : DECIMAL(15,2) [NOT NULL]
+        + currency : VARCHAR(10) [NOT NULL]
+        + employment_type : VARCHAR(20) [NOT NULL]
+        + status : VARCHAR(20) [NOT NULL]
+        + created_at : TIMESTAMP [NOT NULL]
+        + updated_at : TIMESTAMP [NOT NULL]
+    }
+
+    class tbl_job_skills {
+        + job_id : CHAR(36) [PK, FK]
+        + skill : VARCHAR(100) [PK]
+    }
+
+    class tbl_job_categories {
+        + id : CHAR(36) [PK]
+        + name : VARCHAR(50) [UNIQUE]
+    }
+
+    class tbl_job_category_mapping {
+        + job_id : CHAR(36) [PK, FK]
+        + category_id : CHAR(36) [PK, FK]
+    }
+}
+
+package "applications" as PKG_APPS {
+
+    class tbl_applications {
+        + id : CHAR(36) [PK]
+        + job_id : CHAR(36) [FK]
+        + candidate_id : CHAR(36) [FK]
+        + application_date : TIMESTAMP
+        + status : VARCHAR(20)
+        + resume : VARCHAR(255)
+        + cover_letter : TEXT
+    }
+
+    class tbl_saved_jobs {
+        + id : CHAR(36) [PK]
+        + candidate_id : CHAR(36) [FK]
+        + job_id : CHAR(36) [FK]
+        + saved_at : TIMESTAMP
+    }
+}
+
+tbl_users "1" -- "1" tbl_employers
+tbl_users "1" -- "1" tbl_candidates
+tbl_users "1" -- "0..1" tbl_recruiters
+tbl_users "1" -- "*" tbl_user_roles
+
+tbl_employers "1" -- "*" tbl_recruiters
+
+tbl_candidates "1" -- "*" tbl_candidate_skills
+tbl_candidates "1" -- "*" tbl_applications
+tbl_candidates "1" -- "*" tbl_saved_jobs
+
+tbl_jobs "1" -- "*" tbl_job_skills
+tbl_jobs "1" -- "*" tbl_applications
+tbl_jobs "1" -- "*" tbl_saved_jobs
+tbl_jobs "1" -- "*" tbl_job_category_mapping
+
+tbl_job_categories "1" -- "*" tbl_job_category_mapping
+
+@enduml

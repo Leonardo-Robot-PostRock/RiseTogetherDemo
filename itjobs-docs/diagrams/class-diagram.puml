@@ -1,0 +1,118 @@
+@startuml ITJobsClassDiagram
+
+title ITJobs - Diagrama de Clases DDD
+
+left footer Leyenda: Composicion (*) | Herencia (<|--) | Realizacion (<|..) | Dependencia (<--)
+
+package "shared" {
+
+    class DomainEvent <<abstract>> {
+        - occurredOn : Instant
+    }
+
+    class Email <<ValueObject>> {
+        - value : String
+    }
+
+    class UserId <<ValueObject>> {
+        - value : UUID
+    }
+
+    class Password <<ValueObject>> {
+        - value : String
+    }
+
+    class Timestamp <<ValueObject>> {
+        - value : Instant
+    }
+
+    interface DomainEventPublisher
+
+    class DomainException <<abstract>>
+    class ValidationException
+    class NotFoundException
+}
+
+package "authentication" {
+
+    class UserAggregate <<Aggregate>> {
+        - id : UserId
+        - username : Username
+        - email : Email
+        - password : HashedPassword
+        - active : boolean
+        - createdAt : Timestamp
+        - updatedAt : Timestamp
+        - roles : List<String>
+    }
+
+    class Username <<ValueObject>>
+    class HashedPassword <<ValueObject>>
+
+    class UserRegisteredEvent <<Event>>
+    class UserActivatedEvent <<Event>>
+
+    interface RegisterUserPort
+    interface LoginPort
+    interface SaveUserPort
+    interface LoadUserPort
+    interface PasswordEncoderPort
+    interface TokenGeneratorPort
+
+    class RegisterUserUseCase
+    class LoginUseCase
+    class CredentialsVerifier
+}
+
+package "jobs" {
+
+    class JobAggregate <<Aggregate>> {
+        - id : JobId
+        - salary : Salary
+        - status : JobStatus
+    }
+
+    class JobId <<ValueObject>>
+    class Salary <<ValueObject>>
+
+    enum EmploymentType
+    enum JobStatus
+
+    class JobClosedEvent <<Event>>
+    class JobDeactivatedEvent <<Event>>
+}
+
+' Composicion (*)
+UserAggregate *-- UserId
+UserAggregate *-- Username
+UserAggregate *-- Email
+UserAggregate *-- HashedPassword
+
+JobAggregate *-- JobId
+JobAggregate *-- Salary
+JobAggregate *-- EmploymentType
+JobAggregate *-- JobStatus
+
+' Herencia (<|--)
+DomainEvent <|-- UserRegisteredEvent
+DomainEvent <|-- UserActivatedEvent
+DomainEvent <|-- JobClosedEvent
+DomainEvent <|-- JobDeactivatedEvent
+
+DomainException <|-- ValidationException
+DomainException <|-- NotFoundException
+
+' Realizacion (<|..)
+RegisterUserPort <|.. RegisterUserUseCase
+LoginPort <|.. LoginUseCase
+
+' Dependencia (<--)
+SaveUserPort <-- RegisterUserUseCase
+LoadUserPort <-- LoginUseCase
+PasswordEncoderPort <-- RegisterUserUseCase
+PasswordEncoderPort <-- LoginUseCase
+TokenGeneratorPort <-- LoginUseCase
+CredentialsVerifier --> PasswordEncoderPort
+DomainEventPublisher <-- RegisterUserUseCase
+
+@enduml

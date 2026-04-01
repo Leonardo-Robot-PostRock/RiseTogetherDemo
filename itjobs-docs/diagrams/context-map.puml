@@ -1,0 +1,63 @@
+@startuml ContextMap
+
+title ITJobs - Context Map
+
+left footer Leyenda: ..> USA Evento | --> DEPENDE
+
+package "Shared" {
+    component [DomainEvent]
+}
+
+package "Authentication" {
+    component [UserAggregate]
+    component [RegisterUserUseCase]
+    component [LoginUseCase]
+}
+
+package "Jobs" {
+    component [JobAggregate]
+    component [CreateJobUseCase]
+    component [SearchJobsUseCase]
+}
+
+package "Applications" {
+    component [ApplicationAggregate]
+    component [ApplyToJobUseCase]
+}
+
+package "Profiles" {
+    component [CandidateAggregate]
+    component [EmployerAggregate]
+    component [RecruiterAggregate]
+}
+
+package "Administration" {
+    component [CategoryAggregate]
+    component [UserManagementUseCase]
+}
+
+package "Moderation" {
+    component [ContentReportAggregate]
+    component [ModerationUseCase]
+}
+
+' Flechas con etiquetas claras
+
+' Domain Events
+UserAggregate ..> [DomainEvent] : publica eventos
+JobAggregate ..> [DomainEvent] : publica eventos
+ApplicationAggregate ..> [DomainEvent] : publica eventos
+ContentReportAggregate ..> [DomainEvent] : publica eventos
+
+' Relaciones entre contextos
+RegisterUserUseCase --> [JobAggregate] : "para crear ofertas"
+ApplyToJobUseCase --> [CandidateAggregate] : "para postulaciones"
+CandidateAggregate --> [UserAggregate] : "extiende usuario"
+EmployerAggregate --> [JobAggregate] : "crea ofertas"
+RecruiterAggregate --> [JobAggregate] : "gestiona ofertas"
+CategoryAggregate --> [JobAggregate] : "categoriza ofertas"
+ModerationUseCase --> [JobAggregate] : "reporta/moderar"
+ModerationUseCase --> [ApplicationAggregate] : "reportar postulacion"
+UserManagementUseCase --> [UserAggregate] : "gestiona usuarios"
+
+@enduml
