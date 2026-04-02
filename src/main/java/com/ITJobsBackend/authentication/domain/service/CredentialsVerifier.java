@@ -4,13 +4,11 @@ import com.ITJobsBackend.authentication.application.ports.out.PasswordEncoderPor
 import com.ITJobsBackend.authentication.domain.aggregate.UserAggregate;
 import com.ITJobsBackend.authentication.domain.exceptions.InvalidCredentialsException;
 
-import com.ITJobsBackend.shared.domain.valueobjects.Password;
-
 public class CredentialsVerifier {
 
   public void verifyCredentials(
-      UserAggregate user, Password rawPassword, PasswordEncoderPort encoder) {
-    if (!encoder.matches(rawPassword.value(), user.getPassword().value())) {
+      UserAggregate user, String rawPassword, PasswordEncoderPort encoder) {
+    if (!encoder.matches(rawPassword, user.getPassword().value())) {
       throw new InvalidCredentialsException();
     }
   }

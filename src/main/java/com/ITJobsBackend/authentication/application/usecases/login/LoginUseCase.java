@@ -15,7 +15,6 @@ import com.ITJobsBackend.authentication.domain.exceptions.InvalidCredentialsExce
 import com.ITJobsBackend.authentication.domain.service.CredentialsVerifier;
 
 import com.ITJobsBackend.shared.domain.valueobjects.Email;
-import com.ITJobsBackend.shared.domain.valueobjects.Password;
 
 @Service
 @Transactional(readOnly = true)
@@ -47,7 +46,7 @@ public class LoginUseCase implements LoginPort {
     UserAggregate user =
         loadUserPort.findByEmail(email).orElseThrow(InvalidCredentialsException::new);
 
-    credentialsVerifier.verifyCredentials(user, Password.of(command.password()), passwordEncoder);
+    credentialsVerifier.verifyCredentials(user, command.password(), passwordEncoder);
 
     String accessToken =
         tokenGenerator.generateAccessToken(user.getId().value().toString(), user.getRoles());
