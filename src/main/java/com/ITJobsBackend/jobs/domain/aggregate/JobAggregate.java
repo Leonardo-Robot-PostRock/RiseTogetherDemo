@@ -99,12 +99,24 @@ public class JobAggregate {
   }
 
   public void close() {
+    if (this.status == JobStatus.CLOSED) {
+      throw new ValidationException("Job is already closed");
+    }
+    if (this.status == JobStatus.INACTIVE) {
+      throw new ValidationException("Cannot close an inactive job");
+    }
     this.status = JobStatus.CLOSED;
     this.updatedAt = Timestamp.now();
     recordEvent(new JobClosedEvent(this.id.value().toString(), this.title, this.company));
   }
 
   public void deactivate() {
+    if (this.status == JobStatus.INACTIVE) {
+      throw new ValidationException("Job is already inactive");
+    }
+    if (this.status == JobStatus.CLOSED) {
+      throw new ValidationException("Cannot deactivate a closed job");
+    }
     this.status = JobStatus.INACTIVE;
     this.updatedAt = Timestamp.now();
     recordEvent(new JobDeactivatedEvent(this.id.value().toString(), this.title));
