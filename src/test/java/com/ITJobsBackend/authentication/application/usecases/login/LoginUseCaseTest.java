@@ -1,5 +1,18 @@
 package com.ITJobsBackend.authentication.application.usecases.login;
 
+import java.util.Optional;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import static org.junit.jupiter.api.Assertions.*;
+
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import static org.mockito.Mockito.*;
+
+import com.ITJobsBackend.shared.domain.valueobjects.Email;
+
 import com.ITJobsBackend.authentication.application.ports.out.LoadUserPort;
 import com.ITJobsBackend.authentication.application.ports.out.PasswordEncoderPort;
 import com.ITJobsBackend.authentication.application.ports.out.TokenGeneratorPort;
@@ -8,18 +21,6 @@ import com.ITJobsBackend.authentication.domain.exceptions.InvalidCredentialsExce
 import com.ITJobsBackend.authentication.domain.service.CredentialsVerifier;
 import com.ITJobsBackend.authentication.domain.valueobjects.HashedPassword;
 import com.ITJobsBackend.authentication.domain.valueobjects.Username;
-import com.ITJobsBackend.shared.domain.valueobjects.Email;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class LoginUseCaseTest {
@@ -33,11 +34,15 @@ class LoginUseCaseTest {
     @Mock
     private TokenGeneratorPort tokenGenerator;
 
-    @Mock
     private CredentialsVerifier credentialsVerifier;
 
-    @InjectMocks
     private LoginUseCase loginUseCase;
+
+    @BeforeEach
+    void setUp() {
+        credentialsVerifier = spy(new CredentialsVerifier());
+        loginUseCase = new LoginUseCase(loadUserPort, passwordEncoder, tokenGenerator, credentialsVerifier);
+    }
 
     @Test
     void shouldLoginSuccessfully() {
@@ -50,6 +55,7 @@ class LoginUseCaseTest {
         );
 
         when(loadUserPort.findByEmail(any(Email.class))).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("password123", "$2a$10$hashed")).thenReturn(true);
         when(tokenGenerator.generateAccessToken(any(), any())).thenReturn("access-token");
         when(tokenGenerator.generateRefreshToken(any())).thenReturn("refresh-token");
 
@@ -81,6 +87,7 @@ class LoginUseCaseTest {
         );
 
         when(loadUserPort.findByEmail(any(Email.class))).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("short", "$2a$10$hashed")).thenReturn(true);
         when(tokenGenerator.generateAccessToken(any(), any())).thenReturn("access-token");
         when(tokenGenerator.generateRefreshToken(any())).thenReturn("refresh-token");
 
