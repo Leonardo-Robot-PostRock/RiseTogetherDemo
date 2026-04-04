@@ -1,8 +1,7 @@
 package com.ITJobsBackend.shared.infrastructure.exceptions;
 
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
@@ -21,7 +20,7 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ErrorResponse> handleValidationException(ValidationException ex) {
     ErrorResponse error =
         new ErrorResponse(
-            HttpStatus.BAD_REQUEST.value(), "Validation Error", ex.getMessage(), Instant.now());
+            HttpStatus.BAD_REQUEST.value(), "Validation Error", ex.getMessage(), Instant.now(), List.of());
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
   }
 
@@ -29,7 +28,7 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ErrorResponse> handleNotFoundException(NotFoundException ex) {
     ErrorResponse error =
         new ErrorResponse(
-            HttpStatus.NOT_FOUND.value(), "Not Found", ex.getMessage(), Instant.now());
+            HttpStatus.NOT_FOUND.value(), "Not Found", ex.getMessage(), Instant.now(), List.of());
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
   }
 
@@ -40,25 +39,29 @@ public class GlobalExceptionHandler {
             HttpStatus.UNPROCESSABLE_ENTITY.value(),
             "Domain Error",
             ex.getMessage(),
-            Instant.now());
+            Instant.now(),
+            List.of());
     return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(error);
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
-  public ResponseEntity<Map<String, Object>> handleValidationExceptions(
+  public ResponseEntity<ErrorResponse> handleValidationExceptions(
       MethodArgumentNotValidException ex) {
-    Map<String, String> errors = new HashMap<>();
-    ex.getBindingResult()
+    List<FieldError> fields = ex.getBindingResult()
         .getFieldErrors()
-        .forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
+        .stream()
+        .map(error -> new FieldError(error.getField(), error.getDefaultMessage()))
+        .toList();
 
-    Map<String, Object> response = new HashMap<>();
-    response.put("status", HttpStatus.BAD_REQUEST.value());
-    response.put("error", "Validation Failed");
-    response.put("errors", errors);
-    response.put("timestamp", Instant.now());
+    ErrorResponse error = new ErrorResponse(
+        HttpStatus.BAD_REQUEST.value(),
+        "Validation Failed",
+        "One or more fields are invalid",
+        Instant.now(),
+        fields
+    );
 
-    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
   }
 
   @ExceptionHandler(Exception.class)
@@ -68,9 +71,18 @@ public class GlobalExceptionHandler {
             HttpStatus.INTERNAL_SERVER_ERROR.value(),
             "Internal Server Error",
             "An unexpected error occurred",
-            Instant.now());
+            Instant.now(),
+            List.of());
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
   }
 
-  record ErrorResponse(int status, String error, String message, Instant timestamp) {}
+  record ErrorResponse(
+      int status,
+      String error,
+      String message,
+      Instant timestamp,
+      List<FieldError> fields
+  ) {}
+
+  record FieldError(String field, String message) {}
 }
