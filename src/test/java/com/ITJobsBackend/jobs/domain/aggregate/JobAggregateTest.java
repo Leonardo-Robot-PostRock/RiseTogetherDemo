@@ -96,14 +96,14 @@ class JobAggregateTest {
     void shouldAddSkill() {
         JobAggregate job = createOpenJob();
         job.addSkill("Java");
-        assertTrue(job.getSkills().contains("Java"));
+        assertTrue(job.getSkills().contains("java"));
     }
 
     @Test
     void shouldNotAddDuplicateSkill() {
         JobAggregate job = createOpenJob();
         job.addSkill("Java");
-        job.addSkill("Java");
+        job.addSkill("JAVA");
         assertEquals(1, job.getSkills().size());
     }
 

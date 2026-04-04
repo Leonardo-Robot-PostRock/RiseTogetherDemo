@@ -1,8 +1,6 @@
 package com.ITJobsBackend.jobs.infrastructure.adapters.in.rest;
 
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import jakarta.validation.Valid;
 
@@ -11,11 +9,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.ITJobsBackend.jobs.application.usecases.createjob.CreateJobCommand;
+import com.ITJobsBackend.jobs.application.usecases.searchjobs.JobResponse;
 import com.ITJobsBackend.jobs.application.usecases.createjob.CreateJobUseCase;
 import com.ITJobsBackend.jobs.application.usecases.searchjobs.SearchJobsQuery;
 import com.ITJobsBackend.jobs.application.usecases.searchjobs.SearchJobsUseCase;
-
-import com.ITJobsBackend.jobs.domain.aggregate.JobAggregate;
 
 import com.ITJobsBackend.jobs.infrastructure.adapters.in.rest.dto.CreateJobRequest;
 
@@ -31,7 +28,7 @@ public class JobController {
   }
 
   @PostMapping
-  public ResponseEntity<Map<String, Object>> createJob(
+  public ResponseEntity<JobResponse> createJob(
       @Valid @RequestBody CreateJobRequest request) {
     CreateJobCommand command = new CreateJobCommand(
         request.title(),
@@ -41,37 +38,17 @@ public class JobController {
         request.salaryMin(),
         request.salaryMax(),
         request.currency(),
-        request.employmentType()
-    );
-    JobAggregate job = createJobUseCase.execute(command);
-    return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(job));
+        request.employmentType());
+
+    JobResponse response = createJobUseCase.execute(command);
+    return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
   @GetMapping
-  public ResponseEntity<List<Map<String, Object>>> searchJobs(
+  public ResponseEntity<List<JobResponse>> searchJobs(
       @RequestParam(required = false) String title) {
     SearchJobsQuery query = new SearchJobsQuery(title);
-    List<JobAggregate> jobs = searchJobsUseCase.execute(query);
-    List<Map<String, Object>> response =
-        jobs.stream().map(this::toResponse).collect(Collectors.toList());
+    List<JobResponse> response = searchJobsUseCase.execute(query);
     return ResponseEntity.ok(response);
-  }
-
-  private Map<String, Object> toResponse(JobAggregate job) {
-    return Map.of(
-        "id", job.getId().value().toString(),
-        "title", job.getTitle(),
-        "description", job.getDescription() != null ? job.getDescription() : "",
-        "company", job.getCompany(),
-        "location", job.getLocation() != null ? job.getLocation() : "",
-        "salary",
-            Map.of(
-                "min", job.getSalary().min(),
-                "max", job.getSalary().max(),
-                "currency", job.getSalary().currency()),
-        "employmentType", job.getEmploymentType().name(),
-        "status", job.getStatus().name(),
-        "skills", job.getSkills(),
-        "createdAt", job.getCreatedAt().value().toString());
   }
 }

@@ -1,6 +1,7 @@
 package com.ITJobsBackend.jobs.application.usecases.searchjobs;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,10 +19,28 @@ public class SearchJobsUseCase {
     this.jobRepository = jobRepository;
   }
 
-  public List<JobAggregate> execute(SearchJobsQuery query) {
+  public List<JobResponse> execute(SearchJobsQuery query) {
+    List<JobAggregate> jobs;
     if (query.title() != null && !query.title().isBlank()) {
-      return jobRepository.findAll(new TitleContainsSpecification(query.title()));
+      jobs = jobRepository.findAll(new TitleContainsSpecification(query.title()));
+    } else {
+      jobs = jobRepository.findAll();
     }
-    return jobRepository.findAll();
+    return jobs.stream().map(this::toResponse).collect(Collectors.toList());
+  }
+
+  private JobResponse toResponse(JobAggregate job) {
+    return new JobResponse(
+        job.getId().value().toString(),
+        job.getTitle(),
+        job.getDescription() != null ? job.getDescription() : "",
+        job.getCompany(),
+        job.getLocation() != null ? job.getLocation() : "",
+        job.getSalary().min(),
+        job.getSalary().max(),
+        job.getSalary().currency(),
+        job.getEmploymentType().name(),
+        job.getStatus().name(),
+        job.getCreatedAt().value());
   }
 }

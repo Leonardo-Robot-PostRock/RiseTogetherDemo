@@ -11,6 +11,8 @@ import com.ITJobsBackend.jobs.domain.repository.JobWriterRepository;
 import com.ITJobsBackend.jobs.domain.valueobjects.EmploymentType;
 import com.ITJobsBackend.jobs.domain.valueobjects.Salary;
 
+import com.ITJobsBackend.jobs.application.usecases.searchjobs.JobResponse;
+
 import com.ITJobsBackend.shared.application.ports.out.DomainEventPublisher;
 
 @Service
@@ -27,7 +29,7 @@ public class CreateJobUseCase {
     this.domainEventPublisher = domainEventPublisher;
   }
 
-  public JobAggregate execute(CreateJobCommand command) {
+  public JobResponse execute(CreateJobCommand command) {
     log.info("Creating new job: {}", command.title());
 
     Salary salary = Salary.of(command.salaryMin(), command.salaryMax(), command.currency());
@@ -47,6 +49,18 @@ public class CreateJobUseCase {
 
     log.info("Job created successfully with ID: {}", savedJob.getId());
 
-    return savedJob;
+    return new JobResponse(
+        savedJob.getId().value().toString(),
+        savedJob.getTitle(),
+        savedJob.getDescription() != null ? savedJob.getDescription() : "",
+        savedJob.getCompany(),
+        savedJob.getLocation() != null ? savedJob.getLocation() : "",
+        savedJob.getSalary().min(),
+        savedJob.getSalary().max(),
+        savedJob.getSalary().currency(),
+        savedJob.getEmploymentType().name(),
+        savedJob.getStatus().name(),
+        savedJob.getCreatedAt().value()
+    );
   }
 }
