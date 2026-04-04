@@ -131,7 +131,7 @@ public class JobAggregate extends AggregateRoot {
     String normalized = skill.trim().toLowerCase();
 
     if (!this.skills.contains(normalized)) {
-      this.skills.add(skill);
+      this.skills.add(normalized);
       this.updatedAt = Timestamp.now();
     }
   }
