@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.ITJobsBackend.jobs.domain.event.JobClosedEvent;
+import com.ITJobsBackend.jobs.domain.event.JobCreatedEvent;
 import com.ITJobsBackend.jobs.domain.event.JobDeactivatedEvent;
 import com.ITJobsBackend.jobs.domain.valueobjects.EmploymentType;
 import com.ITJobsBackend.jobs.domain.valueobjects.JobId;
@@ -93,6 +94,8 @@ public class JobAggregate extends AggregateRoot {
     job.skills.clear();
     job.skills.addAll(skills);
     job.updatedAt = updatedAt;
+
+    job.recordEvent(new JobCreatedEvent(job.id.value().toString(), title, company));
     return job;
   }
 
