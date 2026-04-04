@@ -6,7 +6,7 @@ public class UserRegisteredEvent extends DomainEvent {
   private final String email;
 
   public UserRegisteredEvent(String userId, String email) {
-    super(userId, "UserAggregate");
+    super(userId, "UserAggregate", "user.registered");
     this.email = email;
   }
 

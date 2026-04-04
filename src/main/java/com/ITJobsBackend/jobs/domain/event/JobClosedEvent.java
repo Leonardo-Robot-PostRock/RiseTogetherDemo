@@ -7,7 +7,7 @@ public class JobClosedEvent extends DomainEvent {
   private final String company;
 
   public JobClosedEvent(String jobId, String jobTitle, String company) {
-    super(jobId, "JobAggregate");
+    super(jobId, "JobAggregate", "job.closed");
     this.jobTitle = jobTitle;
     this.company = company;
   }

@@ -6,7 +6,7 @@ public class JobDeactivatedEvent extends DomainEvent {
   private final String jobTitle;
 
   public JobDeactivatedEvent(String jobId, String jobTitle) {
-    super(jobId, "JobAggregate");
+    super(jobId, "JobAggregate", "job.deactivated");
     this.jobTitle = jobTitle;
   }
 
