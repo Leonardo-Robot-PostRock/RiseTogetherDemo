@@ -16,6 +16,7 @@ import com.ITJobsBackend.authentication.application.usecases.register.RegisterUs
 import com.ITJobsBackend.authentication.infrastructure.adapters.in.rest.dto.AuthResponse;
 import com.ITJobsBackend.authentication.infrastructure.adapters.in.rest.dto.LoginRequest;
 import com.ITJobsBackend.authentication.infrastructure.adapters.in.rest.dto.RegisterRequest;
+import com.ITJobsBackend.authentication.infrastructure.adapters.in.rest.dto.RegisterResponse;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -29,14 +30,14 @@ public class AuthController {
   }
 
   @PostMapping("/register")
-  public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
+  public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest request) {
     RegisterUserCommand command =
         new RegisterUserCommand(request.username(), request.email(), request.password());
 
     RegisterUserResponse response = registerUserPort.execute(command);
 
-    AuthResponse dto =
-        new AuthResponse(response.userId(), response.username(), response.email(), null, null);
+    RegisterResponse dto =
+        new RegisterResponse(response.userId(), response.username(), response.email(), response.createdAt());
 
     return ResponseEntity.status(HttpStatus.CREATED).body(dto);
   }
