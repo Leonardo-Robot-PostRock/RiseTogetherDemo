@@ -4,18 +4,20 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import com.ITJobsBackend.authentication.domain.event.EmailVerifiedEvent;
 import com.ITJobsBackend.authentication.domain.event.UserActivatedEvent;
+import com.ITJobsBackend.authentication.domain.event.UserDeactivatedEvent;
 import com.ITJobsBackend.authentication.domain.exceptions.UserAlreadyActivatedException;
 import com.ITJobsBackend.authentication.domain.exceptions.UserAlreadyDeactivatedException;
 import com.ITJobsBackend.authentication.domain.valueobjects.HashedPassword;
 import com.ITJobsBackend.authentication.domain.valueobjects.Username;
 
-import com.ITJobsBackend.shared.domain.event.DomainEvent;
+import com.ITJobsBackend.shared.domain.AggregateRoot;
 import com.ITJobsBackend.shared.domain.valueobjects.Email;
 import com.ITJobsBackend.shared.domain.valueobjects.Timestamp;
 import com.ITJobsBackend.shared.domain.valueobjects.UserId;
 
-public class UserAggregate {
+public class UserAggregate extends AggregateRoot {
   private final UserId id;
   private Username username;
   private Email email;
@@ -25,7 +27,6 @@ public class UserAggregate {
   private final Timestamp createdAt;
   private Timestamp updatedAt;
   private final List<String> roles;
-  private final List<DomainEvent> domainEvents = new ArrayList<>();
 
   private UserAggregate(
       UserId id, Username username, Email email, HashedPassword password, Timestamp createdAt) {
@@ -78,13 +79,20 @@ public class UserAggregate {
     if (!this.active) {
       throw new UserAlreadyDeactivatedException("User is already deactivated");
     }
+
     this.active = false;
     this.updatedAt = Timestamp.now();
+    recordEvent(new UserDeactivatedEvent(this.id.value().toString(), this.email.value()));
   }
 
   public void verifyEmail() {
+    if (this.emailVerified) {
+      return;
+    }
+
     this.emailVerified = true;
     this.updatedAt = Timestamp.now();
+    recordEvent(new EmailVerifiedEvent(this.id.value().toString(), this.email.value()));
   }
 
   public void changePassword(HashedPassword newPassword) {
@@ -139,15 +147,5 @@ public class UserAggregate {
 
   public List<String> getRoles() {
     return Collections.unmodifiableList(roles);
-  }
-
-  public List<DomainEvent> pullDomainEvents() {
-    List<DomainEvent> events = List.copyOf(domainEvents);
-    domainEvents.clear();
-    return events;
-  }
-
-  private void recordEvent(DomainEvent event) {
-    this.domainEvents.add(event);
   }
 }

@@ -11,11 +11,11 @@ import com.ITJobsBackend.jobs.domain.valueobjects.JobId;
 import com.ITJobsBackend.jobs.domain.valueobjects.JobStatus;
 import com.ITJobsBackend.jobs.domain.valueobjects.Salary;
 
-import com.ITJobsBackend.shared.domain.event.DomainEvent;
+import com.ITJobsBackend.shared.domain.AggregateRoot;
 import com.ITJobsBackend.shared.domain.exceptions.ValidationException;
 import com.ITJobsBackend.shared.domain.valueobjects.Timestamp;
 
-public class JobAggregate {
+public class JobAggregate extends AggregateRoot {
   private final JobId id;
   private String title;
   private String description;
@@ -27,7 +27,6 @@ public class JobAggregate {
   private final List<String> skills;
   private final Timestamp createdAt;
   private Timestamp updatedAt;
-  private final List<DomainEvent> domainEvents = new ArrayList<>();
 
   private JobAggregate(
       JobId id,
@@ -88,9 +87,8 @@ public class JobAggregate {
       List<String> skills,
       Timestamp createdAt,
       Timestamp updatedAt) {
-    JobAggregate job =
-        new JobAggregate(
-            id, title, description, company, location, salary, employmentType, createdAt);
+    JobAggregate job = new JobAggregate(
+        id, title, description, company, location, salary, employmentType, createdAt);
     job.status = status;
     job.skills.clear();
     job.skills.addAll(skills);
@@ -123,7 +121,13 @@ public class JobAggregate {
   }
 
   public void addSkill(String skill) {
-    if (!this.skills.contains(skill)) {
+    if (skill == null || skill.isBlank()) {
+      return;
+    }
+
+    String normalized = skill.trim().toLowerCase();
+
+    if (!this.skills.contains(normalized)) {
       this.skills.add(skill);
       this.updatedAt = Timestamp.now();
     }
@@ -171,15 +175,5 @@ public class JobAggregate {
 
   public Timestamp getUpdatedAt() {
     return updatedAt;
-  }
-
-  public List<DomainEvent> pullDomainEvents() {
-    List<DomainEvent> events = List.copyOf(domainEvents);
-    domainEvents.clear();
-    return events;
-  }
-
-  private void recordEvent(DomainEvent event) {
-    this.domainEvents.add(event);
   }
 }
