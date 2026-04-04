@@ -107,8 +107,10 @@ public class UserAggregate extends AggregateRoot {
   }
 
   public void addRole(String role) {
-    if (!this.roles.contains(role)) {
-      this.roles.add(role);
+    String normalized = role.trim().toUpperCase();
+
+    if (!this.roles.contains(normalized)) {
+      this.roles.add(normalized);
       this.updatedAt = Timestamp.now();
     }
   }
