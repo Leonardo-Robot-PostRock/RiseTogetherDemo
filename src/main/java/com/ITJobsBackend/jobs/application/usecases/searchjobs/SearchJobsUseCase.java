@@ -6,13 +6,14 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.ITJobsBackend.jobs.application.ports.in.SearchJobsPort;
 import com.ITJobsBackend.jobs.domain.aggregate.JobAggregate;
 import com.ITJobsBackend.jobs.domain.repository.JobReaderRepository;
 import com.ITJobsBackend.jobs.domain.specification.TitleContainsSpecification;
 
 @Service
 @Transactional(readOnly = true)
-public class SearchJobsUseCase {
+public class SearchJobsUseCase implements SearchJobsPort {
   private final JobReaderRepository jobRepository;
 
   public SearchJobsUseCase(JobReaderRepository jobRepository) {

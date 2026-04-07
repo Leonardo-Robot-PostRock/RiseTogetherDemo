@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.ITJobsBackend.jobs.application.ports.in.CreateJobPort;
 import com.ITJobsBackend.jobs.domain.aggregate.JobAggregate;
 import com.ITJobsBackend.jobs.domain.repository.JobWriterRepository;
 import com.ITJobsBackend.jobs.domain.valueobjects.EmploymentType;
@@ -17,7 +18,7 @@ import com.ITJobsBackend.shared.application.ports.out.DomainEventPublisher;
 
 @Service
 @Transactional
-public class CreateJobUseCase {
+public class CreateJobUseCase implements CreateJobPort {
   private static final Logger log = LoggerFactory.getLogger(CreateJobUseCase.class);
 
   private final JobWriterRepository jobRepository;
