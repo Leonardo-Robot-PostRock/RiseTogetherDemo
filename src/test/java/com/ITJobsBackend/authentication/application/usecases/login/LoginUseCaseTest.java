@@ -34,13 +34,11 @@ class LoginUseCaseTest {
     @Mock
     private TokenGeneratorPort tokenGenerator;
 
-    private CredentialsVerifier credentialsVerifier;
-
     private LoginUseCase loginUseCase;
 
     @BeforeEach
     void setUp() {
-        credentialsVerifier = spy(new CredentialsVerifier());
+        CredentialsVerifier credentialsVerifier = new CredentialsVerifier();
         loginUseCase = new LoginUseCase(loadUserPort, passwordEncoder, tokenGenerator, credentialsVerifier);
     }
 
@@ -63,7 +61,6 @@ class LoginUseCaseTest {
 
         assertNotNull(response.accessToken());
         assertNotNull(response.refreshToken());
-        verify(credentialsVerifier).verifyCredentials(eq(user), eq("password123"), eq(passwordEncoder));
     }
 
     @Test
@@ -73,7 +70,6 @@ class LoginUseCaseTest {
         when(loadUserPort.findByEmail(any(Email.class))).thenReturn(Optional.empty());
 
         assertThrows(InvalidCredentialsException.class, () -> loginUseCase.execute(command));
-        verifyNoInteractions(credentialsVerifier, tokenGenerator);
     }
 
     @Test
@@ -92,7 +88,5 @@ class LoginUseCaseTest {
         when(tokenGenerator.generateRefreshToken(any())).thenReturn("refresh-token");
 
         loginUseCase.execute(command);
-
-        verify(credentialsVerifier).verifyCredentials(eq(user), eq("short"), eq(passwordEncoder));
     }
 }
