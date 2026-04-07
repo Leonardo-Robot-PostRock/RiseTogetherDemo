@@ -5,13 +5,9 @@
 ### Alta prioridad (bloquea funcionalidad o seguridad)
 
 - [ ] SECURITY: Proteger `POST /api/v1/jobs` con JWT (actualmente cualquiera puede crear jobs)
-- [ ] PUNTO 4: Crear DTO `CreateJobRequest` en JobController (no exponer Command)
-- [ ] PUNTO 5: JobAggregate — validación de estados (close/deactivate ya no son null-safe)
-- [ ] PUNTO 6: LoginUseCase — no validar `Password` value object en login (rompe logins de usuarios viejos)
 
 ### Media prioridad (arquitectura, tests)
 
-- [ ] PUNTO 7: Inbound ports para Jobs (`CreateJobPort`, `SearchJobsPort`)
 - [ ] PUNTO 8: Tests unitarios para `JobAggregate`, `LoginUseCase`, `Salary`
 - [ ] Eliminar warning `UserDetailsServiceAutoConfiguration` (Spring crea usuario in-memory innecesario)
 
@@ -38,6 +34,10 @@
 - [x] PUNTO 1: Docker Compose + env vars (commits b538cd6, 8a0dec9, d6748ea)
 - [x] PUNTO 2: JWT Authentication Filter (commit b72acab)
 - [x] PUNTO 3: Salary double → BigDecimal (commit 13340d9)
+- [x] PUNTO 4: CreateJobRequest DTO en JobController (commit e58d4be)
+- [x] PUNTO 5: JobAggregate state validation (commit 54e0187)
+- [x] PUNTO 6: LoginUseCase password verification (commit 4fdf0dc)
+- [x] PUNTO 7: Inbound ports para Jobs (CreateJobPort, SearchJobsPort)
 - [x] Profiles Spring Boot: dev / prod (commit 7198252)
 - [x] Fix Hibernate UUID → VARCHAR (commit d4a49af)
 - [x] Diagramas UML en `itjobs-docs/diagrams/`
