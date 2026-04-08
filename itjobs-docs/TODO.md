@@ -8,7 +8,6 @@
 
 ### Media prioridad (arquitectura, tests)
 
-- [ ] PUNTO 8: Tests unitarios para `JobAggregate`, `LoginUseCase`, `Salary`
 - [ ] Eliminar warning `UserDetailsServiceAutoConfiguration` (Spring crea usuario in-memory innecesario)
 
 ### Baja prioridad (refactors, futuros)
@@ -38,6 +37,7 @@
 - [x] PUNTO 5: JobAggregate state validation (commit 54e0187)
 - [x] PUNTO 6: LoginUseCase password verification (commit 4fdf0dc)
 - [x] PUNTO 7: Inbound ports para Jobs (CreateJobPort, SearchJobsPort)
+- [x] PUNTO 8: Tests unitarios para JobAggregate, LoginUseCase, Salary
 - [x] Profiles Spring Boot: dev / prod (commit 7198252)
 - [x] Fix Hibernate UUID → VARCHAR (commit d4a49af)
 - [x] Diagramas UML en `itjobs-docs/diagrams/`
