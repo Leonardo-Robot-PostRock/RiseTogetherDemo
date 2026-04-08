@@ -21,8 +21,8 @@ public final class Salary {
       throw new ValidationException("Minimum salary cannot be negative");
     }
 
-    if (max == null || max.compareTo(min) < 0) {
-      throw new ValidationException("Maximum salary cannot be less than minimum");
+    if (max == null || max.compareTo(min) <= 0) {
+      throw new ValidationException("Maximum salary must be greater than minimum");
     }
 
     if (currency == null || currency.isBlank()) {
