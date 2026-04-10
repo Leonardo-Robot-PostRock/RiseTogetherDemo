@@ -1,5 +1,7 @@
 package com.ITJobsBackend.jobs.infrastructure.adapters.out.persistence.jpa.mappers;
 
+import java.util.ArrayList;
+
 import org.springframework.stereotype.Component;
 
 import com.ITJobsBackend.jobs.domain.aggregate.JobAggregate;
@@ -14,7 +16,21 @@ import com.ITJobsBackend.shared.domain.valueobjects.Timestamp;
 public class JobMapper {
 
   public JobEntity toEntity(JobAggregate domain) {
-    return JobEntity.fromDomain(domain);
+    JobEntity entity = new JobEntity();
+    entity.setId(domain.getId().value());
+    entity.setTitle(domain.getTitle());
+    entity.setDescription(domain.getDescription());
+    entity.setCompany(domain.getCompany());
+    entity.setLocation(domain.getLocation());
+    entity.setSalaryMin(domain.getSalary().min());
+    entity.setSalaryMax(domain.getSalary().max());
+    entity.setCurrency(domain.getSalary().currency());
+    entity.setEmploymentType(domain.getEmploymentType());
+    entity.setStatus(domain.getStatus());
+    entity.setSkills(new ArrayList<>(domain.getSkills()));
+    entity.setCreatedAt(domain.getCreatedAt().value());
+    entity.setUpdatedAt(domain.getUpdatedAt().value());
+    return entity;
   }
 
   public JobAggregate toDomain(JobEntity entity) {

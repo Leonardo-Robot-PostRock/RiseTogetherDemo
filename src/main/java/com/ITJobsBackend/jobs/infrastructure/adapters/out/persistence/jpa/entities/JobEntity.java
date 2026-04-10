@@ -15,7 +15,6 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
-import com.ITJobsBackend.jobs.domain.aggregate.JobAggregate;
 import com.ITJobsBackend.jobs.domain.valueobjects.EmploymentType;
 import com.ITJobsBackend.jobs.domain.valueobjects.JobStatus;
 
@@ -32,6 +31,7 @@ public class JobEntity {
   @Id
   @JdbcTypeCode(SqlTypes.CHAR)
   @Column(columnDefinition = "CHAR(36)")
+  @Setter
   private UUID id;
 
   @Setter
@@ -85,22 +85,4 @@ public class JobEntity {
   @Setter
   @Column(name = "updated_at", nullable = false)
   private Instant updatedAt;
-
-  public static JobEntity fromDomain(JobAggregate job) {
-    JobEntity entity = new JobEntity();
-    entity.id = job.getId().value();
-    entity.title = job.getTitle();
-    entity.description = job.getDescription();
-    entity.company = job.getCompany();
-    entity.location = job.getLocation();
-    entity.salaryMin = job.getSalary().min();
-    entity.salaryMax = job.getSalary().max();
-    entity.currency = job.getSalary().currency();
-    entity.employmentType = job.getEmploymentType();
-    entity.status = job.getStatus();
-    entity.skills = new ArrayList<>(job.getSkills());
-    entity.createdAt = job.getCreatedAt().value();
-    entity.updatedAt = job.getUpdatedAt().value();
-    return entity;
-  }
 }
