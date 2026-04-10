@@ -1,12 +1,10 @@
 package com.ITJobsBackend.shared.infrastructure.events;
 
-import java.util.List;
-
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.stereotype.Component;
-
 import com.ITJobsBackend.shared.application.ports.out.DomainEventPublisher;
 import com.ITJobsBackend.shared.domain.event.DomainEvent;
+import java.util.List;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Component;
 
 @Component
 public class SpringDomainEventPublisher implements DomainEventPublisher {

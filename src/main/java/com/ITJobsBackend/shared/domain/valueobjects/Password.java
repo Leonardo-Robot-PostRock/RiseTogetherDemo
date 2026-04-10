@@ -1,8 +1,7 @@
 package com.ITJobsBackend.shared.domain.valueobjects;
 
-import java.util.Objects;
-
 import com.ITJobsBackend.shared.domain.exceptions.ValidationException;
+import java.util.Objects;
 
 public final class Password {
   private static final int MIN_LENGTH = 8;

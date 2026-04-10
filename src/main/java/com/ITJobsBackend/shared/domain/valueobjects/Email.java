@@ -1,9 +1,8 @@
 package com.ITJobsBackend.shared.domain.valueobjects;
 
+import com.ITJobsBackend.shared.domain.exceptions.ValidationException;
 import java.util.Objects;
 import java.util.regex.Pattern;
-
-import com.ITJobsBackend.shared.domain.exceptions.ValidationException;
 
 public final class Email {
 
