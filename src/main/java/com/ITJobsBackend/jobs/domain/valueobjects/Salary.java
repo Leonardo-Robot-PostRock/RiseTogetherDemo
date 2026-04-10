@@ -47,9 +47,7 @@ public final class Salary {
   public boolean equals(Object o) {
     if (this == o) return true;
 
-    if (!(o instanceof Salary)) return false;
-
-    Salary salary = (Salary) o;
+    if (!(o instanceof Salary salary)) return false;
 
     return Objects.equals(min, salary.min)
         && Objects.equals(max, salary.max)
