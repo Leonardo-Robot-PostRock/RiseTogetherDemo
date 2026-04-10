@@ -1,18 +1,14 @@
 package com.ITJobsBackend.authentication.infrastructure.adapters.out.security;
 
-import java.util.Date;
-import java.util.List;
-import java.nio.charset.StandardCharsets;
-
-import javax.crypto.SecretKey;
-
+import com.ITJobsBackend.authentication.application.ports.out.TokenGeneratorPort;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-
+import java.nio.charset.StandardCharsets;
+import java.util.Date;
+import java.util.List;
+import javax.crypto.SecretKey;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
-import com.ITJobsBackend.authentication.application.ports.out.TokenGeneratorPort;
 
 @Component
 public class JwtTokenGeneratorAdapter implements TokenGeneratorPort {

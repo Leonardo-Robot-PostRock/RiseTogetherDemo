@@ -1,9 +1,5 @@
 package com.ITJobsBackend.authentication.domain.aggregate;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import com.ITJobsBackend.authentication.domain.event.EmailVerifiedEvent;
 import com.ITJobsBackend.authentication.domain.event.UserActivatedEvent;
 import com.ITJobsBackend.authentication.domain.event.UserDeactivatedEvent;
@@ -11,11 +7,13 @@ import com.ITJobsBackend.authentication.domain.exceptions.UserAlreadyActivatedEx
 import com.ITJobsBackend.authentication.domain.exceptions.UserAlreadyDeactivatedException;
 import com.ITJobsBackend.authentication.domain.valueobjects.HashedPassword;
 import com.ITJobsBackend.authentication.domain.valueobjects.Username;
-
 import com.ITJobsBackend.shared.domain.AggregateRoot;
 import com.ITJobsBackend.shared.domain.valueobjects.Email;
 import com.ITJobsBackend.shared.domain.valueobjects.Timestamp;
 import com.ITJobsBackend.shared.domain.valueobjects.UserId;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class UserAggregate extends AggregateRoot {
   private final UserId id;
