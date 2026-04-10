@@ -1,17 +1,14 @@
 package com.ITJobsBackend.jobs.infrastructure.adapters.out.persistence.jpa;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import org.springframework.stereotype.Repository;
-
 import com.ITJobsBackend.jobs.domain.aggregate.JobAggregate;
 import com.ITJobsBackend.jobs.domain.repository.JobRepository;
 import com.ITJobsBackend.jobs.domain.specification.JobSpecification;
 import com.ITJobsBackend.jobs.domain.valueobjects.JobId;
-
 import com.ITJobsBackend.jobs.infrastructure.adapters.out.persistence.jpa.mappers.JobMapper;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import org.springframework.stereotype.Repository;
 
 @Repository
 public class JpaJobRepositoryAdapter implements JobRepository {

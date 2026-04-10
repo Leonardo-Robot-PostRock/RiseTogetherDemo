@@ -1,15 +1,13 @@
 package com.ITJobsBackend.jobs.application.usecases.searchjobs;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.ITJobsBackend.jobs.application.ports.in.SearchJobsPort;
 import com.ITJobsBackend.jobs.domain.aggregate.JobAggregate;
 import com.ITJobsBackend.jobs.domain.repository.JobReaderRepository;
 import com.ITJobsBackend.jobs.domain.specification.TitleContainsSpecification;
+import java.util.List;
+import java.util.stream.Collectors;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional(readOnly = true)
