@@ -1,8 +1,9 @@
 package com.ITJobsBackend.shared.domain;
 
-import com.ITJobsBackend.shared.domain.event.DomainEvent;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.ITJobsBackend.shared.domain.event.DomainEvent;
 
 public abstract class AggregateRoot {
 

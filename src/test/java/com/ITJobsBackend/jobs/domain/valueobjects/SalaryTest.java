@@ -2,9 +2,11 @@ package com.ITJobsBackend.jobs.domain.valueobjects;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.ITJobsBackend.shared.domain.exceptions.ValidationException;
 import java.math.BigDecimal;
+
 import org.junit.jupiter.api.Test;
+
+import com.ITJobsBackend.shared.domain.exceptions.ValidationException;
 
 class SalaryTest {
 

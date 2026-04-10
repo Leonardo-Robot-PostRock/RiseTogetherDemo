@@ -1,12 +1,14 @@
 package com.ITJobsBackend.jobs.infrastructure.adapters.out.persistence.jpa.mappers;
 
+import java.util.ArrayList;
+
+import org.springframework.stereotype.Component;
+
 import com.ITJobsBackend.jobs.domain.aggregate.JobAggregate;
 import com.ITJobsBackend.jobs.domain.valueobjects.JobId;
 import com.ITJobsBackend.jobs.domain.valueobjects.Salary;
 import com.ITJobsBackend.jobs.infrastructure.adapters.out.persistence.jpa.entities.JobEntity;
 import com.ITJobsBackend.shared.domain.valueobjects.Timestamp;
-import java.util.ArrayList;
-import org.springframework.stereotype.Component;
 
 @Component
 public class JobMapper {

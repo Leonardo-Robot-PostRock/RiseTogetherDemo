@@ -2,10 +2,10 @@
 
 ## Profiles de Spring Boot
 
-| Profile | Propósito | DB | Credenciales | Logging |
-|---------|-----------|-----|-------------|---------|
-| `dev` | Desarrollo local | localhost:3306 (Docker) | Hardcodeadas en `application-dev.properties` | DEBUG |
-| `prod` | Producción | Env vars (Docker Compose) | Env vars | WARN |
+| Profile | Propósito        | DB                        | Credenciales                                 | Logging |
+|---------|------------------|---------------------------|----------------------------------------------|---------|
+| `dev`   | Desarrollo local | localhost:3306 (Docker)   | Hardcodeadas en `application-dev.properties` | DEBUG   |
+| `prod`  | Producción       | Env vars (Docker Compose) | Env vars                                     | WARN    |
 
 ### Comportamiento por defecto
 
@@ -50,14 +50,14 @@ docker compose up --build
 
 ### Variables de entorno requeridas
 
-| Variable | Descripción | Ejemplo |
-|----------|-------------|---------|
-| `MYSQL_ROOT_PASSWORD` | Password root de MySQL | `rootpass` |
-| `MYSQL_DATABASE` | Nombre de la base de datos | `itjobs` |
-| `DB_URL` | URL JDBC completa | `jdbc:mysql://db:3306/itjobs?...` |
-| `DB_USERNAME` | Usuario de la DB | `root` |
-| `DB_PASSWORD` | Password de la DB | (igual a `MYSQL_ROOT_PASSWORD`) |
-| `JWT_SECRET` | Secreto para firmar JWT (min 256 bits) | Ver `.env.example` |
+| Variable              | Descripción                            | Ejemplo                           |
+|-----------------------|----------------------------------------|-----------------------------------|
+| `MYSQL_ROOT_PASSWORD` | Password root de MySQL                 | `rootpass`                        |
+| `MYSQL_DATABASE`      | Nombre de la base de datos             | `itjobs`                          |
+| `DB_URL`              | URL JDBC completa                      | `jdbc:mysql://db:3306/itjobs?...` |
+| `DB_USERNAME`         | Usuario de la DB                       | `root`                            |
+| `DB_PASSWORD`         | Password de la DB                      | (igual a `MYSQL_ROOT_PASSWORD`)   |
+| `JWT_SECRET`          | Secreto para firmar JWT (min 256 bits) | Ver `.env.example`                |
 
 ### Archivos de configuración
 
@@ -74,10 +74,10 @@ src/main/resources/
 
 ### Servicios
 
-| Servicio | Imagen | Puerto | Healthcheck |
-|----------|--------|--------|-------------|
-| `db` | mysql:8.0 | 3306 | `mysqladmin ping` |
-| `app` | Build local (Dockerfile) | 9090 | depende de `db` healthy |
+| Servicio | Imagen                   | Puerto | Healthcheck             |
+|----------|--------------------------|--------|-------------------------|
+| `db`     | mysql:8.0                | 3306   | `mysqladmin ping`       |
+| `app`    | Build local (Dockerfile) | 9090   | depende de `db` healthy |
 
 ### Características
 

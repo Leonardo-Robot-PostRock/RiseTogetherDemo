@@ -1,5 +1,9 @@
 package com.ITJobsBackend.jobs.domain.aggregate;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import com.ITJobsBackend.jobs.domain.event.JobClosedEvent;
 import com.ITJobsBackend.jobs.domain.event.JobCreatedEvent;
 import com.ITJobsBackend.jobs.domain.event.JobDeactivatedEvent;
@@ -10,9 +14,6 @@ import com.ITJobsBackend.jobs.domain.valueobjects.Salary;
 import com.ITJobsBackend.shared.domain.AggregateRoot;
 import com.ITJobsBackend.shared.domain.exceptions.ValidationException;
 import com.ITJobsBackend.shared.domain.valueobjects.Timestamp;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 public class JobAggregate extends AggregateRoot {
   private final JobId id;

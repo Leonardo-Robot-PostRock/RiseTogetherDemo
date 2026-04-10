@@ -6,16 +6,16 @@
 
 ## Migraciones Flyway
 
-| Migración | Contenido |
-|-----------|-----------|
-| V1 | `users`, `user_roles`, `jobs`, `job_skills` |
-| V2 | Fix `job_skills` (recrear para `@ElementCollection`) |
-| V3 | `employers`, `candidates`, `candidate_skills` |
-| V4 | `applications`, `saved_jobs` |
-| V5 | `job_categories`, `job_category_mapping` |
-| V6 | `recruiters` |
-| V7 | `salary_min`, `salary_max` de DOUBLE a DECIMAL(15,2) |
-| V8 | `salary_min`, `salary_max` NOT NULL (transparencia) |
+| Migración | Contenido                                            |
+|-----------|------------------------------------------------------|
+| V1        | `users`, `user_roles`, `jobs`, `job_skills`          |
+| V2        | Fix `job_skills` (recrear para `@ElementCollection`) |
+| V3        | `employers`, `candidates`, `candidate_skills`        |
+| V4        | `applications`, `saved_jobs`                         |
+| V5        | `job_categories`, `job_category_mapping`             |
+| V6        | `recruiters`                                         |
+| V7        | `salary_min`, `salary_max` de DOUBLE a DECIMAL(15,2) |
+| V8        | `salary_min`, `salary_max` NOT NULL (transparencia)  |
 
 ---
 

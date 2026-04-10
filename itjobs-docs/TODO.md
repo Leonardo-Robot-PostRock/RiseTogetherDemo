@@ -12,8 +12,6 @@
 
 ### Baja prioridad (refactors, futuros)
 
-- [ ] PUNTO 9: Eliminar `fromDomain()` de entidades JPA (usar solo `UserMapper`, `JobMapper`)
-- [ ] PUNTO 10: Fix pom.xml — usar `maven.compiler.release` en vez de propiedades inventadas
 - [ ] Crear entorno staging/QA con profile `staging`
 - [ ] Implementar bounded context `Applications` (postulaciones, favoritos)
 - [ ] Implementar bounded context `Profiles` (candidatos, empleadores, reclutadores)
@@ -38,6 +36,8 @@
 - [x] PUNTO 6: LoginUseCase password verification (commit 4fdf0dc)
 - [x] PUNTO 7: Inbound ports para Jobs (CreateJobPort, SearchJobsPort)
 - [x] PUNTO 8: Tests unitarios para JobAggregate, LoginUseCase, Salary
+- [x] PUNTO 9: Eliminar fromDomain() de entidades JPA
+- [x] PUNTO 10: Fix pom.xml con maven.compiler.release
 - [x] Profiles Spring Boot: dev / prod (commit 7198252)
 - [x] Fix Hibernate UUID → VARCHAR (commit d4a49af)
 - [x] Diagramas UML en `itjobs-docs/diagrams/`

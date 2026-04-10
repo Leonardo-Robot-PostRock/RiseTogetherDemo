@@ -2,8 +2,9 @@ package com.ITJobsBackend.shared.domain.valueobjects;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.ITJobsBackend.shared.domain.exceptions.ValidationException;
 import org.junit.jupiter.api.Test;
+
+import com.ITJobsBackend.shared.domain.exceptions.ValidationException;
 
 class PasswordTest {
 

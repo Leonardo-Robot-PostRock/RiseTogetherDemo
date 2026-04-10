@@ -3,6 +3,14 @@ package com.ITJobsBackend.authentication.application.usecases.login;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.util.Optional;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import com.ITJobsBackend.authentication.application.ports.out.LoadUserPort;
 import com.ITJobsBackend.authentication.application.ports.out.PasswordEncoderPort;
 import com.ITJobsBackend.authentication.application.ports.out.TokenGeneratorPort;
@@ -12,12 +20,6 @@ import com.ITJobsBackend.authentication.domain.service.CredentialsVerifier;
 import com.ITJobsBackend.authentication.domain.valueobjects.HashedPassword;
 import com.ITJobsBackend.authentication.domain.valueobjects.Username;
 import com.ITJobsBackend.shared.domain.valueobjects.Email;
-import java.util.Optional;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class LoginUseCaseTest {

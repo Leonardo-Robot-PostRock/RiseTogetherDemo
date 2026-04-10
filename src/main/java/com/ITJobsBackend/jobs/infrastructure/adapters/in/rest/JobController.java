@@ -1,16 +1,19 @@
 package com.ITJobsBackend.jobs.infrastructure.adapters.in.rest;
 
+import java.util.List;
+
+import jakarta.validation.Valid;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
 import com.ITJobsBackend.jobs.application.usecases.createjob.CreateJobCommand;
 import com.ITJobsBackend.jobs.application.usecases.createjob.CreateJobUseCase;
 import com.ITJobsBackend.jobs.application.usecases.searchjobs.JobResponse;
 import com.ITJobsBackend.jobs.application.usecases.searchjobs.SearchJobsQuery;
 import com.ITJobsBackend.jobs.application.usecases.searchjobs.SearchJobsUseCase;
 import com.ITJobsBackend.jobs.infrastructure.adapters.in.rest.dto.CreateJobRequest;
-import jakarta.validation.Valid;
-import java.util.List;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/jobs")
