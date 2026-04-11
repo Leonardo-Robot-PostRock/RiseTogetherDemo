@@ -1,9 +1,8 @@
 package com.ITJobsBackend.jobs.infrastructure.adapters.in.rest.dto;
 
-import java.math.BigDecimal;
-
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import java.math.BigDecimal;
 
 public record CreateJobRequest(
     @NotBlank String title,

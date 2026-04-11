@@ -17,6 +17,8 @@ import com.ITJobsBackend.shared.domain.valueobjects.Timestamp;
 
 public class JobAggregate extends AggregateRoot {
   private final JobId id;
+  private final List<String> skills;
+  private final Timestamp createdAt;
   private String title;
   private String description;
   private String company;
@@ -24,8 +26,6 @@ public class JobAggregate extends AggregateRoot {
   private Salary salary;
   private EmploymentType employmentType;
   private JobStatus status;
-  private final List<String> skills;
-  private final Timestamp createdAt;
   private Timestamp updatedAt;
 
   private JobAggregate(
