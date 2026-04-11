@@ -7,9 +7,9 @@ import java.util.List;
 import com.ITJobsBackend.authentication.domain.event.EmailVerifiedEvent;
 import com.ITJobsBackend.authentication.domain.event.UserActivatedEvent;
 import com.ITJobsBackend.authentication.domain.event.UserDeactivatedEvent;
+import com.ITJobsBackend.authentication.domain.exceptions.EmailAlreadyVerifiedException;
 import com.ITJobsBackend.authentication.domain.exceptions.UserAlreadyActivatedException;
 import com.ITJobsBackend.authentication.domain.exceptions.UserAlreadyDeactivatedException;
-import com.ITJobsBackend.authentication.domain.exceptions.EmailAlreadyVerifiedException;
 import com.ITJobsBackend.authentication.domain.valueobjects.GoogleSub;
 import com.ITJobsBackend.authentication.domain.valueobjects.HashedPassword;
 import com.ITJobsBackend.authentication.domain.valueobjects.Username;
@@ -20,15 +20,15 @@ import com.ITJobsBackend.shared.domain.valueobjects.UserId;
 
 public class UserAggregate extends AggregateRoot {
   private final UserId id;
+  private final Timestamp createdAt;
+  private final List<String> roles;
   private Username username;
   private Email email;
   private HashedPassword password;
   private boolean active;
   private boolean emailVerified;
   private GoogleSub googleSub;
-  private final Timestamp createdAt;
   private Timestamp updatedAt;
-  private final List<String> roles;
 
   private UserAggregate(
       UserId id, Username username, Email email, HashedPassword password, Timestamp createdAt) {

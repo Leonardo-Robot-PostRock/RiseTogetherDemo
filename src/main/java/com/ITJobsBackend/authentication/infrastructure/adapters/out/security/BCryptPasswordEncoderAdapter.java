@@ -1,9 +1,8 @@
 package com.ITJobsBackend.authentication.infrastructure.adapters.out.security;
 
+import com.ITJobsBackend.authentication.application.ports.out.PasswordEncoderPort;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
-
-import com.ITJobsBackend.authentication.application.ports.out.PasswordEncoderPort;
 
 @Component
 public class BCryptPasswordEncoderAdapter implements PasswordEncoderPort {
