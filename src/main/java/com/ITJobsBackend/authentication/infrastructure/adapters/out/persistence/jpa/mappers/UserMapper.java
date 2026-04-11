@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import org.springframework.stereotype.Component;
 
 import com.ITJobsBackend.authentication.domain.aggregate.UserAggregate;
+import com.ITJobsBackend.authentication.domain.valueobjects.GoogleSub;
 import com.ITJobsBackend.authentication.domain.valueobjects.HashedPassword;
 import com.ITJobsBackend.authentication.domain.valueobjects.Username;
 import com.ITJobsBackend.authentication.infrastructure.adapters.out.persistence.jpa.entities.UserEntity;
@@ -26,10 +27,14 @@ public class UserMapper {
     entity.setCreatedAt(domain.getCreatedAt().value());
     entity.setUpdatedAt(domain.getUpdatedAt().value());
     entity.setRoles(new ArrayList<>(domain.getRoles()));
+    entity.setGoogleSub(domain.getGoogleSub() != null ? domain.getGoogleSub().value() : null);
     return entity;
   }
 
   public UserAggregate toDomain(UserEntity entity) {
+    GoogleSub googleSub =
+        entity.getGoogleSub() != null ? GoogleSub.of(entity.getGoogleSub()) : null;
+
     return UserAggregate.reconstitute(
         UserId.of(entity.getId()),
         Username.of(entity.getUsername()),
@@ -37,6 +42,7 @@ public class UserMapper {
         HashedPassword.fromHash(entity.getPassword()),
         entity.isActive(),
         entity.isEmailVerified(),
+        googleSub,
         Timestamp.of(entity.getCreatedAt()),
         Timestamp.of(entity.getUpdatedAt()),
         entity.getRoles());

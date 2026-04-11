@@ -63,4 +63,8 @@ public class UserEntity {
   @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
   @Column(name = "role")
   private List<String> roles = new ArrayList<>();
+
+  @Setter
+  @Column(name = "google_sub", unique = true, length = 255)
+  private String googleSub;
 }

@@ -9,6 +9,8 @@ import com.ITJobsBackend.authentication.domain.event.UserActivatedEvent;
 import com.ITJobsBackend.authentication.domain.event.UserDeactivatedEvent;
 import com.ITJobsBackend.authentication.domain.exceptions.UserAlreadyActivatedException;
 import com.ITJobsBackend.authentication.domain.exceptions.UserAlreadyDeactivatedException;
+import com.ITJobsBackend.authentication.domain.exceptions.EmailAlreadyVerifiedException;
+import com.ITJobsBackend.authentication.domain.valueobjects.GoogleSub;
 import com.ITJobsBackend.authentication.domain.valueobjects.HashedPassword;
 import com.ITJobsBackend.authentication.domain.valueobjects.Username;
 import com.ITJobsBackend.shared.domain.AggregateRoot;
@@ -23,6 +25,7 @@ public class UserAggregate extends AggregateRoot {
   private HashedPassword password;
   private boolean active;
   private boolean emailVerified;
+  private GoogleSub googleSub;
   private final Timestamp createdAt;
   private Timestamp updatedAt;
   private final List<String> roles;
@@ -46,6 +49,17 @@ public class UserAggregate extends AggregateRoot {
     return new UserAggregate(UserId.generate(), username, email, hashedPassword, Timestamp.now());
   }
 
+  public static UserAggregate createGoogleUser(
+      Username username, Email email, HashedPassword hashedPassword, GoogleSub googleSub) {
+    UserAggregate user =
+        new UserAggregate(UserId.generate(), username, email, hashedPassword, Timestamp.now());
+
+    user.googleSub = googleSub;
+    user.active = true;
+    user.emailVerified = true;
+    return user;
+  }
+
   public static UserAggregate reconstitute(
       UserId id,
       Username username,
@@ -53,12 +67,16 @@ public class UserAggregate extends AggregateRoot {
       HashedPassword password,
       boolean active,
       boolean emailVerified,
+      GoogleSub googleSub,
       Timestamp createdAt,
       Timestamp updatedAt,
       List<String> roles) {
+
     UserAggregate user = new UserAggregate(id, username, email, password, createdAt);
+
     user.active = active;
     user.emailVerified = emailVerified;
+    user.googleSub = googleSub;
     user.updatedAt = updatedAt;
     user.roles.clear();
     user.roles.addAll(roles);
@@ -86,7 +104,7 @@ public class UserAggregate extends AggregateRoot {
 
   public void verifyEmail() {
     if (this.emailVerified) {
-      return;
+      throw new EmailAlreadyVerifiedException("Email is already verified");
     }
 
     this.emailVerified = true;
@@ -96,6 +114,11 @@ public class UserAggregate extends AggregateRoot {
 
   public void changePassword(HashedPassword newPassword) {
     this.password = newPassword;
+    this.updatedAt = Timestamp.now();
+  }
+
+  public void linkGoogleAccount(GoogleSub googleSub) {
+    this.googleSub = googleSub;
     this.updatedAt = Timestamp.now();
   }
 
@@ -136,6 +159,10 @@ public class UserAggregate extends AggregateRoot {
 
   public boolean isEmailVerified() {
     return emailVerified;
+  }
+
+  public GoogleSub getGoogleSub() {
+    return googleSub;
   }
 
   public Timestamp getCreatedAt() {

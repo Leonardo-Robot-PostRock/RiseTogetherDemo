@@ -35,8 +35,7 @@ public final class GoogleSub {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof GoogleSub)) return false;
-        GoogleSub other = (GoogleSub) o;
+        if (!(o instanceof GoogleSub other)) return false;
         return Objects.equals(value, other.value);
     }
 

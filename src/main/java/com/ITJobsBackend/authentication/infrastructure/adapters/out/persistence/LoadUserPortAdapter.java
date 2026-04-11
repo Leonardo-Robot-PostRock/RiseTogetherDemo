@@ -8,6 +8,7 @@ import com.ITJobsBackend.authentication.application.ports.out.LoadUserPort;
 import com.ITJobsBackend.authentication.domain.aggregate.UserAggregate;
 import com.ITJobsBackend.authentication.domain.repository.UserReaderRepository;
 import com.ITJobsBackend.shared.domain.valueobjects.Email;
+import com.ITJobsBackend.shared.domain.valueobjects.UserId;
 
 @Component
 public class LoadUserPortAdapter implements LoadUserPort {
@@ -20,5 +21,10 @@ public class LoadUserPortAdapter implements LoadUserPort {
   @Override
   public Optional<UserAggregate> findByEmail(Email email) {
     return userRepository.findByEmail(email);
+  }
+
+  @Override
+  public Optional<UserAggregate> findById(UserId id) {
+    return userRepository.findById(id);
   }
 }
