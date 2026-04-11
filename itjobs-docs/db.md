@@ -1,6 +1,6 @@
 ## **Documentación de la Base de Datos para el Sistema de Búsqueda de Empleo**
 
-> **Nota:** Todos los IDs usan UUID (`CHAR(36)`). El esquema está versionado con Flyway (V1–V8).
+> **Nota:** Todos los IDs usan UUID (`CHAR(36)`). El esquema está versionado con Flyway (V1–V9).
 
 ---
 
@@ -16,6 +16,7 @@
 | V6        | `recruiters`                                         |
 | V7        | `salary_min`, `salary_max` de DOUBLE a DECIMAL(15,2) |
 | V8        | `salary_min`, `salary_max` NOT NULL (transparencia)  |
+| V9        | Agregar `google_sub` a `users`                       |
 
 ---
 
@@ -31,6 +32,7 @@ Almacena la información de autenticación de los usuarios.
 - **password**: Contraseña (hasheada con BCrypt).
 - **active**: Si el usuario está activo.
 - **email_verified**: Si el email fue verificado.
+- **google_sub**: ID de cuenta de Google (único) añadido en V9.
 - **created_at**: Fecha de creación.
 - **updated_at**: Fecha de última actualización.
 
@@ -42,6 +44,7 @@ CREATE TABLE users (
     password VARCHAR(255) NOT NULL,
     active BOOLEAN NOT NULL DEFAULT FALSE,
     email_verified BOOLEAN NOT NULL DEFAULT FALSE,
+    google_sub VARCHAR(255) UNIQUE, -- V9: add google_sub
     created_at TIMESTAMP NOT NULL,
     updated_at TIMESTAMP NOT NULL
 );

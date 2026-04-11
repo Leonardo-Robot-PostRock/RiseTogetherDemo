@@ -97,6 +97,7 @@ Hibernate 6 envía UUID como bytes binarios por defecto. MySQL rechaza estos byt
 ### Solución aplicada
 
 ```java
+
 @Id
 @JdbcTypeCode(SqlTypes.VARCHAR)     // Fuerza envío como string (36 chars)
 @Column(columnDefinition = "CHAR(36)")
