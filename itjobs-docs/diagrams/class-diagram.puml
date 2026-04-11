@@ -26,6 +26,10 @@ package "shared" {
         - value : String
     }
 
+    class GoogleSub <<ValueObject>> {
+        - value : String
+    }
+
     class Salary <<ValueObject>> {
         - min : BigDecimal
         - max : BigDecimal
@@ -52,14 +56,19 @@ package "authentication" {
         - password : HashedPassword
         - active : boolean
         - emailVerified : boolean
+        - googleSub : GoogleSub
         - createdAt : Timestamp
         - updatedAt : Timestamp
         - roles : List<String>
         - domainEvents : List<DomainEvent>
         + create() : UserAggregate
+        + createGoogleUser() : UserAggregate
         + activate()
         + deactivate()
         + verifyEmail()
+        + changePassword()
+        + linkGoogleAccount()
+        + updateEmail()
         + addRole()
     }
 
@@ -83,8 +92,23 @@ package "authentication" {
         - email : String
     }
 
+    class UserDeactivatedEvent <<Event>> {
+        - userId : String (heredado)
+        - aggregatedType : String (heredado)
+        - email : String
+    }
+
+    class EmailVerifiedEvent <<Event>> {
+        - userId : String (heredado)
+        - aggregatedType : String (heredado)
+        - email : String
+    }
+
     interface RegisterUserPort <<In Port>>
     interface LoginPort <<In Port>>
+    interface ForgotPasswordPort <<In Port>>
+    interface GoogleAuthPort <<In Port>>
+    interface VerifyEmailPort <<In Port>>
     interface SaveUserPort <<Out Port>>
     interface LoadUserPort <<Out Port>>
     interface PasswordEncoderPort <<Out Port>>
@@ -92,6 +116,9 @@ package "authentication" {
 
     class RegisterUserUseCase
     class LoginUseCase
+    class ForgotPasswordUseCase
+    class GoogleAuthUseCase
+    class VerifyEmailUseCase
     class CredentialsVerifier <<Domain Service>>
 }
 
@@ -153,6 +180,7 @@ UserAggregate *-- UserId
 UserAggregate *-- Username
 UserAggregate *-- Email
 UserAggregate *-- HashedPassword
+UserAggregate *-- GoogleSub
 UserAggregate *-- Timestamp
 
 JobAggregate *-- JobId
@@ -162,27 +190,42 @@ JobAggregate *-- JobStatus
 JobAggregate *-- Timestamp
 
 ' Herencia (<|--)
-DomainEvent <|-- UserRegisteredEvent
-DomainEvent <|-- UserActivatedEvent
-DomainEvent <|-- JobClosedEvent
-DomainEvent <|-- JobDeactivatedEvent
+DomainEvent <-- UserRegisteredEvent
+DomainEvent <-- UserActivatedEvent
+DomainEvent <-- UserDeactivatedEvent
+DomainEvent <-- EmailVerifiedEvent
+DomainEvent <-- JobClosedEvent
+DomainEvent <-- JobDeactivatedEvent
 
-DomainException <|-- ValidationException
+DomainException <-- ValidationException
 DomainException <|-- NotFoundException
 
 ' Realizacion (<|..)
-RegisterUserPort <|.. RegisterUserUseCase
-LoginPort <|.. LoginUseCase
+RegisterUserPort <.. RegisterUserUseCase
+LoginPort <.. LoginUseCase
+ForgotPasswordPort <.. ForgotPasswordUseCase
+GoogleAuthPort <.. GoogleAuthUseCase
+VerifyEmailPort <.. VerifyEmailUseCase
 
 ' Dependencia (<--)
 SaveUserPort <-- RegisterUserUseCase
+SaveUserPort <-- ForgotPasswordUseCase
+SaveUserPort <-- VerifyEmailUseCase
+SaveUserPort <-- GoogleAuthUseCase
 LoadUserPort <-- LoginUseCase
+LoadUserPort <-- ForgotPasswordUseCase
+LoadUserPort <-- VerifyEmailUseCase
+LoadUserPort <-- GoogleAuthUseCase
 PasswordEncoderPort <-- RegisterUserUseCase
 PasswordEncoderPort <-- LoginUseCase
+PasswordEncoderPort <-- ForgotPasswordUseCase
 TokenGeneratorPort <-- LoginUseCase
+TokenGeneratorPort <-- GoogleAuthUseCase
 
 CredentialsVerifier --> PasswordEncoderPort
 
 DomainEventPublisher <-- RegisterUserUseCase
+DomainEventPublisher <-- ForgotPasswordUseCase
+DomainEventPublisher <-- VerifyEmailUseCase
 
 @enduml
