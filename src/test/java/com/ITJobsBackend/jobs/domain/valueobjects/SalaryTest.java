@@ -1,9 +1,8 @@
 package com.ITJobsBackend.jobs.domain.valueobjects;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import java.math.BigDecimal;
 
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 
 import com.ITJobsBackend.shared.domain.exceptions.ValidationException;
