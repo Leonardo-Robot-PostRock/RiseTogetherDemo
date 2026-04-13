@@ -5,12 +5,16 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import static org.mockito.ArgumentMatchers.any;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.ITJobsBackend.authentication.application.ports.out.LoadUserPort;
@@ -28,26 +32,36 @@ import com.ITJobsBackend.shared.domain.valueobjects.UserId;
 class VerifyEmailUseCaseTest {
 
   private static final String TEST_USER_ID = "550e8400-e29b-41d4-a716-446655440000";
+
   @Mock private LoadUserPort loadUserPort;
   @Mock private SaveUserPort saveUserPort;
   @Mock private DomainEventPublisher domainEventPublisher;
   @InjectMocks private VerifyEmailUseCase useCase;
 
+  private VerifyEmailCommand command;
+
+  @BeforeEach
+  void setUp() {
+    command = new VerifyEmailCommand(TEST_USER_ID, "verification-token");
+  }
+
+  private UserAggregate buildUser(boolean active, boolean emailVerified) {
+    return UserAggregate.reconstitute(
+        UserId.of(TEST_USER_ID),
+        Username.of("john"),
+        Email.of("john@example.com"),
+        HashedPassword.fromHash("$2a$10$hashed"),
+        active,
+        emailVerified,
+        null,
+        Timestamp.now(),
+        Timestamp.now(),
+        List.of("ROLE_USER"));
+  }
+
   @Test
   void shouldVerifyEmailSuccessfully() {
-    VerifyEmailCommand command = new VerifyEmailCommand(TEST_USER_ID, "verification-token");
-    UserAggregate user =
-        UserAggregate.reconstitute(
-            UserId.of(TEST_USER_ID),
-            Username.of("john"),
-            Email.of("john@example.com"),
-            HashedPassword.fromHash("$2a$10$hashed"),
-            false,
-            false,
-            null,
-            Timestamp.now(),
-            Timestamp.now(),
-            List.of("ROLE_USER"));
+    UserAggregate user = buildUser(false, false);
 
     when(loadUserPort.findById(UserId.of(TEST_USER_ID))).thenReturn(Optional.of(user));
     when(saveUserPort.save(any(UserAggregate.class))).thenAnswer(i -> i.getArgument(0));
@@ -62,19 +76,7 @@ class VerifyEmailUseCaseTest {
 
   @Test
   void shouldThrowExceptionWhenEmailAlreadyVerified() {
-    VerifyEmailCommand command = new VerifyEmailCommand(TEST_USER_ID, "verification-token");
-    UserAggregate user =
-        UserAggregate.reconstitute(
-            UserId.of(TEST_USER_ID),
-            Username.of("john"),
-            Email.of("john@example.com"),
-            HashedPassword.fromHash("$2a$10$hashed"),
-            true,
-            true,
-            null,
-            Timestamp.now(),
-            Timestamp.now(),
-            List.of("ROLE_USER"));
+    UserAggregate user = buildUser(true, true);
 
     when(loadUserPort.findById(UserId.of(TEST_USER_ID))).thenReturn(Optional.of(user));
 

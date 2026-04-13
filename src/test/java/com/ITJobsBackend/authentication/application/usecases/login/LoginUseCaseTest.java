@@ -25,37 +25,38 @@ import com.ITJobsBackend.shared.domain.valueobjects.Email;
 @ExtendWith(MockitoExtension.class)
 class LoginUseCaseTest {
 
+  private static final String EMAIL = "john@example.com";
+  private static final String HASHED_PASSWORD = "$2a$10$hashed";
+
   @Mock private LoadUserPort loadUserPort;
-
   @Mock private PasswordEncoderPort passwordEncoder;
-
   @Mock private TokenGeneratorPort tokenGenerator;
 
   private LoginUseCase loginUseCase;
 
   @BeforeEach
   void setUp() {
-    CredentialsVerifier credentialsVerifier = new CredentialsVerifier();
     loginUseCase =
-        new LoginUseCase(loadUserPort, passwordEncoder, tokenGenerator, credentialsVerifier);
+        new LoginUseCase(loadUserPort, passwordEncoder, tokenGenerator, new CredentialsVerifier());
+  }
+
+  private UserAggregate buildUser() {
+    return UserAggregate.create(
+        Username.of("johndoe"), Email.of(EMAIL), HashedPassword.fromHash(HASHED_PASSWORD));
+  }
+
+  private void givenTokensAreStubbed() {
+    when(tokenGenerator.generateAccessToken(any(), any())).thenReturn("access-token");
+    when(tokenGenerator.generateRefreshToken(any())).thenReturn("refresh-token");
   }
 
   @Test
   void shouldLoginSuccessfully() {
-    LoginCommand command = new LoginCommand("john@example.com", "password123");
+    when(loadUserPort.findByEmail(any(Email.class))).thenReturn(Optional.of(buildUser()));
+    when(passwordEncoder.matches("password123", HASHED_PASSWORD)).thenReturn(true);
+    givenTokensAreStubbed();
 
-    UserAggregate user =
-        UserAggregate.create(
-            Username.of("johndoe"),
-            Email.of("john@example.com"),
-            HashedPassword.fromHash("$2a$10$hashed"));
-
-    when(loadUserPort.findByEmail(any(Email.class))).thenReturn(Optional.of(user));
-    when(passwordEncoder.matches("password123", "$2a$10$hashed")).thenReturn(true);
-    when(tokenGenerator.generateAccessToken(any(), any())).thenReturn("access-token");
-    when(tokenGenerator.generateRefreshToken(any())).thenReturn("refresh-token");
-
-    AuthTokenResponse response = loginUseCase.execute(command);
+    AuthTokenResponse response = loginUseCase.execute(new LoginCommand(EMAIL, "password123"));
 
     assertNotNull(response.accessToken());
     assertNotNull(response.refreshToken());
@@ -63,28 +64,19 @@ class LoginUseCaseTest {
 
   @Test
   void shouldThrowWhenUserNotFound() {
-    LoginCommand command = new LoginCommand("nobody@example.com", "password123");
-
     when(loadUserPort.findByEmail(any(Email.class))).thenReturn(Optional.empty());
 
-    assertThrows(InvalidCredentialsException.class, () -> loginUseCase.execute(command));
+    assertThrows(
+        InvalidCredentialsException.class,
+        () -> loginUseCase.execute(new LoginCommand("nobody@example.com", "password123")));
   }
 
   @Test
   void shouldPassRawPasswordWithoutValidation() {
-    LoginCommand command = new LoginCommand("john@example.com", "short");
+    when(loadUserPort.findByEmail(any(Email.class))).thenReturn(Optional.of(buildUser()));
+    when(passwordEncoder.matches("short", HASHED_PASSWORD)).thenReturn(true);
+    givenTokensAreStubbed();
 
-    UserAggregate user =
-        UserAggregate.create(
-            Username.of("johndoe"),
-            Email.of("john@example.com"),
-            HashedPassword.fromHash("$2a$10$hashed"));
-
-    when(loadUserPort.findByEmail(any(Email.class))).thenReturn(Optional.of(user));
-    when(passwordEncoder.matches("short", "$2a$10$hashed")).thenReturn(true);
-    when(tokenGenerator.generateAccessToken(any(), any())).thenReturn("access-token");
-    when(tokenGenerator.generateRefreshToken(any())).thenReturn("refresh-token");
-
-    loginUseCase.execute(command);
+    loginUseCase.execute(new LoginCommand(EMAIL, "short"));
   }
 }
