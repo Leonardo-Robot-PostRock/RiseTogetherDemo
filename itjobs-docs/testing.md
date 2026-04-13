@@ -162,14 +162,18 @@ class UserAggregateTest {
 ### Imports estándar
 
 ```java
-import static org.mockito.BDDMockito.given;       // stub de métodos que retornan valor
-import static org.mockito.BDDMockito.willReturn;   // alias de dado.willReturn (poco usado)
-import static org.mockito.BDDMockito.willAnswer;   // stub con lógica dinámica
-import static org.mockito.BDDMockito.willDoNothing; // stub de métodos void
-import static org.mockito.BDDMockito.then;         // verificación BDD
+import static org.mockito.BDDMockito.given;        // stub de métodos con retorno: given(mock.m()).willReturn(v)
+import static org.mockito.BDDMockito.willAnswer;   // stub con lógica dinámica (void o retorno): willAnswer(fn).given(mock).m()
+import static org.mockito.BDDMockito.willDoNothing; // stub de métodos void: willDoNothing().given(mock).m()
+import static org.mockito.BDDMockito.willThrow;    // stub que lanza excepción: willThrow(ex).given(mock).m()
+import static org.mockito.BDDMockito.then;         // verificación BDD: then(mock).should().m()
 import static org.mockito.Mockito.any;             // matcher genérico
 import static org.mockito.Mockito.never;           // verificar que NO se llamó
 ```
+
+> `BDDMockito` es parte de Mockito (`mockito-core`), no requiere dependencia adicional.
+> `willReturn(v)` en `given(mock.m()).willReturn(v)` es un método de **instancia** encadenado
+> al resultado de `given()` — no se importa de forma estática.
 
 ### Estructura de un test de use case
 
@@ -363,29 +367,47 @@ Usar **solo** la API BDDMockito en todo el archivo. No mezclar estilos.
 
 ## 9. Referencia rápida de BDDMockito
 
+> Todos los métodos pertenecen a `org.mockito.BDDMockito`, incluido en `mockito-core`.
+
+### Patrón A — `given().will…()` (métodos con retorno)
+
 ```java
-// Stub de método que retorna valor
+// Retornar un valor fijo
 given(mock.method(arg)).willReturn(value);
 
-// Stub con lógica dinámica (útil para "devolver el argumento recibido")
+// Retornar con lógica dinámica (p.ej., devolver el argumento recibido)
 given(mock.save(any())).willAnswer(invocation -> invocation.getArgument(0));
 
-// Stub de método void (no-op)
+// Lanzar excepción
+given(mock.method(arg)).willThrow(new SomeException());
+```
+
+### Patrón B — `will…().given()` (métodos void)
+
+```java
+// No-op (comportamiento por defecto en mocks, pero se puede hacer explícito)
 willDoNothing().given(mock).publishAll(any());
 
-// Stub de método void que lanza excepción
+// Lanzar excepción en método void
 willThrow(new RuntimeException()).given(mock).method();
 
-// Verificar que se llamó exactamente una vez
+// Lógica dinámica en método void
+willAnswer(invocation -> { /* side effect */ return null; }).given(mock).method();
+```
+
+### Verificación con `then().should()`
+
+```java
+// Se llamó exactamente una vez
 then(mock).should().method(arg);
 
-// Verificar que NUNCA se llamó
+// Nunca se llamó
 then(mock).should(never()).method(arg);
 
-// Verificar que se llamó N veces
+// Se llamó N veces
 then(mock).should(times(2)).method(arg);
 
-// Verificar que no hubo más interacciones
+// No hubo más interacciones después de las verificadas
 then(mock).shouldHaveNoMoreInteractions();
 ```
 
