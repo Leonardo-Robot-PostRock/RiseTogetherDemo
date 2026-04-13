@@ -97,7 +97,7 @@ class GoogleAuthUseCaseTest {
   }
 
   @Test
-  void shouldFailIfGoogleSubMisMatch() {
+  void shouldFailIfGoogleSubMismatch() {
     GoogleAuthCommand commandWithDifferentSub =
         new GoogleAuthCommand("google-sub-DIFFERENT", EMAIL, NAME);
 
