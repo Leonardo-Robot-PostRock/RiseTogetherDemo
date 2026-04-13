@@ -1,21 +1,24 @@
 package com.ITJobsBackend.authentication.application.usecases.google;
 
+import java.util.Optional;
+import java.util.UUID;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.ITJobsBackend.authentication.application.ports.in.GoogleAuthPort;
 import com.ITJobsBackend.authentication.application.ports.out.LoadUserPort;
 import com.ITJobsBackend.authentication.application.ports.out.SaveUserPort;
 import com.ITJobsBackend.authentication.application.ports.out.TokenGeneratorPort;
 import com.ITJobsBackend.authentication.application.usecases.login.AuthTokenResponse;
 import com.ITJobsBackend.authentication.domain.aggregate.UserAggregate;
+import com.ITJobsBackend.authentication.domain.exceptions.InvalidCredentialsException;
 import com.ITJobsBackend.authentication.domain.valueobjects.GoogleSub;
 import com.ITJobsBackend.authentication.domain.valueobjects.HashedPassword;
 import com.ITJobsBackend.authentication.domain.valueobjects.Username;
 import com.ITJobsBackend.shared.domain.valueobjects.Email;
-import java.util.Optional;
-import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
@@ -41,6 +44,15 @@ public class GoogleAuthUseCase implements GoogleAuthPort {
     GoogleSub googleSub = GoogleSub.of(command.googleSub());
 
     Optional<UserAggregate> existingUser = loadUserPort.findByEmail(email);
+
+    // If a user with the same email exists, ensure the Google sub matches
+    existingUser.ifPresent(
+        u -> {
+          GoogleSub storedSub = u.getGoogleSub();
+          if (storedSub != null && !storedSub.value().equals(googleSub.value())) {
+            throw new InvalidCredentialsException();
+          }
+        });
 
     UserAggregate user =
         existingUser.orElseGet(() -> createNewGoogleUser(googleSub, email, command.name()));
