@@ -10,11 +10,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
+import static org.mockito.BDDMockito.willAnswer;
+import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.ITJobsBackend.authentication.application.ports.out.LoadUserPort;
@@ -61,27 +62,30 @@ class VerifyEmailUseCaseTest {
 
   @Test
   void shouldVerifyEmailSuccessfully() {
+    // Given
     UserAggregate user = buildUser(false, false);
+    given(loadUserPort.findById(UserId.of(TEST_USER_ID))).willReturn(Optional.of(user));
+    willAnswer(i -> i.getArgument(0)).given(saveUserPort).save(any(UserAggregate.class));
+    willDoNothing().given(domainEventPublisher).publishAll(any());
 
-    when(loadUserPort.findById(UserId.of(TEST_USER_ID))).thenReturn(Optional.of(user));
-    when(saveUserPort.save(any(UserAggregate.class))).thenAnswer(i -> i.getArgument(0));
-    doNothing().when(domainEventPublisher).publishAll(any());
-
+    // When
     useCase.execute(command);
 
+    // Then
     assertTrue(user.isEmailVerified());
-    verify(saveUserPort).save(any(UserAggregate.class));
-    verify(domainEventPublisher).publishAll(any());
+    then(saveUserPort).should().save(any(UserAggregate.class));
+    then(domainEventPublisher).should().publishAll(any());
   }
 
   @Test
   void shouldThrowExceptionWhenEmailAlreadyVerified() {
+    // Given
     UserAggregate user = buildUser(true, true);
+    given(loadUserPort.findById(UserId.of(TEST_USER_ID))).willReturn(Optional.of(user));
 
-    when(loadUserPort.findById(UserId.of(TEST_USER_ID))).thenReturn(Optional.of(user));
-
+    // When & Then
     assertThrows(EmailAlreadyVerifiedException.class, () -> useCase.execute(command));
-    verify(saveUserPort, never()).save(any());
-    verify(domainEventPublisher, never()).publishAll(any());
+    then(saveUserPort).should(never()).save(any());
+    then(domainEventPublisher).should(never()).publishAll(any());
   }
 }

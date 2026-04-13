@@ -7,10 +7,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.ITJobsBackend.authentication.application.ports.out.PasswordEncoderPort;
@@ -33,27 +33,33 @@ class RegisterUserUseCaseTest {
 
   @Test
   void shouldRegisterNewUser() {
-    when(saveUserPort.existsByEmail(any(Email.class))).thenReturn(false);
-    when(passwordEncoder.encode(any())).thenReturn("$2a$10$hashed");
-    when(saveUserPort.save(any())).thenAnswer(i -> i.getArgument(0));
+    // Given
+    given(saveUserPort.existsByEmail(any(Email.class))).willReturn(false);
+    given(passwordEncoder.encode(any())).willReturn("$2a$10$hashed");
+    given(saveUserPort.save(any())).willAnswer(i -> i.getArgument(0));
 
-    RegisterUserResponse response = useCase.execute(new RegisterUserCommand(USERNAME, EMAIL, PASSWORD));
+    // When
+    RegisterUserResponse response =
+        useCase.execute(new RegisterUserCommand(USERNAME, EMAIL, PASSWORD));
 
+    // Then
     assertNotNull(response.userId());
     assertEquals(USERNAME, response.username());
     assertEquals(EMAIL, response.email());
-    verify(saveUserPort).save(any());
-    verify(domainEventPublisher).publishAll(any());
+    then(saveUserPort).should().save(any());
+    then(domainEventPublisher).should().publishAll(any());
   }
 
   @Test
   void shouldThrowExceptionWhenEmailAlreadyExists() {
+    // Given
     String existingEmail = "existing@example.com";
-    when(saveUserPort.existsByEmail(any(Email.class))).thenReturn(true);
+    given(saveUserPort.existsByEmail(any(Email.class))).willReturn(true);
 
+    // When & Then
     assertThrows(
         UserAlreadyExistsException.class,
         () -> useCase.execute(new RegisterUserCommand(USERNAME, existingEmail, PASSWORD)));
-    verify(saveUserPort, never()).save(any());
+    then(saveUserPort).should(never()).save(any());
   }
 }

@@ -8,11 +8,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
+import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.ITJobsBackend.authentication.application.ports.out.LoadUserPort;
@@ -50,21 +50,26 @@ class ForgotPasswordUseCaseTest {
 
   @Test
   void shouldGenerateResetTokenForExistingUser() {
-    when(loadUserPort.findByEmail(Email.of(EMAIL))).thenReturn(Optional.of(buildUser()));
-    doNothing().when(domainEventPublisher).publishAll(any());
+    // Given
+    given(loadUserPort.findByEmail(Email.of(EMAIL))).willReturn(Optional.of(buildUser()));
+    willDoNothing().given(domainEventPublisher).publishAll(any());
 
+    // When
     useCase.execute(new ForgotPasswordCommand(EMAIL));
 
-    verify(loadUserPort).findByEmail(Email.of(EMAIL));
-    verify(domainEventPublisher).publishAll(any());
+    // Then
+    then(loadUserPort).should().findByEmail(Email.of(EMAIL));
+    then(domainEventPublisher).should().publishAll(any());
   }
 
   @Test
   void shouldDoNothingWhenUserNotFound() {
+    // Given
     String unknownEmail = "nonexistent@example.com";
-    when(loadUserPort.findByEmail(Email.of(unknownEmail))).thenReturn(Optional.empty());
+    given(loadUserPort.findByEmail(Email.of(unknownEmail))).willReturn(Optional.empty());
 
+    // When & Then
     assertDoesNotThrow(() -> useCase.execute(new ForgotPasswordCommand(unknownEmail)));
-    verify(domainEventPublisher, never()).publishAll(any());
+    then(domainEventPublisher).should(never()).publishAll(any());
   }
 }

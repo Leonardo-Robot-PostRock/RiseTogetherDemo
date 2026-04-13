@@ -2,7 +2,11 @@ package com.ITJobsBackend.jobs.domain.aggregate;
 
 import java.math.BigDecimal;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
 import com.ITJobsBackend.jobs.domain.valueobjects.EmploymentType;
@@ -24,8 +28,10 @@ class JobAggregateTest {
 
   @Test
   void shouldCreateJobWithDefaultStatus() {
+    // When
     JobAggregate job = createOpenJob();
 
+    // Then
     assertNotNull(job.getId());
     assertEquals("Senior Java Developer", job.getTitle());
     assertEquals("TechCorp", job.getCompany());
@@ -35,6 +41,7 @@ class JobAggregateTest {
 
   @Test
   void shouldThrowWhenTitleIsNull() {
+    // When & Then
     assertThrows(
         ValidationException.class,
         () ->
@@ -49,6 +56,7 @@ class JobAggregateTest {
 
   @Test
   void shouldThrowWhenCompanyIsBlank() {
+    // When & Then
     assertThrows(
         ValidationException.class,
         () ->
@@ -63,72 +71,114 @@ class JobAggregateTest {
 
   @Test
   void shouldCloseOpenJob() {
+    // Given
     JobAggregate job = createOpenJob();
+
+    // When
     job.close();
+
+    // Then
     assertEquals(JobStatus.CLOSED, job.getStatus());
   }
 
   @Test
   void shouldThrowWhenClosingAlreadyClosedJob() {
+    // Given
     JobAggregate job = createOpenJob();
     job.close();
+
+    // When & Then
     assertThrows(ValidationException.class, job::close);
   }
 
   @Test
   void shouldThrowWhenClosingInactiveJob() {
+    // Given
     JobAggregate job = createOpenJob();
     job.deactivate();
+
+    // When & Then
     assertThrows(ValidationException.class, job::close);
   }
 
   @Test
   void shouldDeactivateOpenJob() {
+    // Given
     JobAggregate job = createOpenJob();
+
+    // When
     job.deactivate();
+
+    // Then
     assertEquals(JobStatus.INACTIVE, job.getStatus());
   }
 
   @Test
   void shouldThrowWhenDeactivatingAlreadyInactiveJob() {
+    // Given
     JobAggregate job = createOpenJob();
     job.deactivate();
+
+    // When & Then
     assertThrows(ValidationException.class, job::deactivate);
   }
 
   @Test
   void shouldThrowWhenDeactivatingClosedJob() {
+    // Given
     JobAggregate job = createOpenJob();
     job.close();
+
+    // When & Then
     assertThrows(ValidationException.class, job::deactivate);
   }
 
   @Test
   void shouldAddSkill() {
+    // Given
     JobAggregate job = createOpenJob();
+
+    // When
     job.addSkill("Java");
+
+    // Then
     assertTrue(job.getSkills().contains("java"));
   }
 
   @Test
   void shouldNotAddDuplicateSkill() {
+    // Given
     JobAggregate job = createOpenJob();
+
+    // When
     job.addSkill("Java");
     job.addSkill("JAVA");
+
+    // Then
     assertEquals(1, job.getSkills().size());
   }
 
   @Test
   void shouldRecordDomainEventOnClose() {
+    // Given
     JobAggregate job = createOpenJob();
+
+    // When
     job.close();
+
+    // Then
     assertFalse(job.pullDomainEvents().isEmpty());
   }
 
   @Test
   void shouldRecordDomainEventOnDeactivate() {
+    // Given
     JobAggregate job = createOpenJob();
+
+    // When
     job.deactivate();
+
+    // Then
     assertFalse(job.pullDomainEvents().isEmpty());
   }
 }

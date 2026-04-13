@@ -8,8 +8,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.ITJobsBackend.authentication.application.ports.out.LoadUserPort;
@@ -46,26 +47,32 @@ class LoginUseCaseTest {
   }
 
   private void givenTokensAreStubbed() {
-    when(tokenGenerator.generateAccessToken(any(), any())).thenReturn("access-token");
-    when(tokenGenerator.generateRefreshToken(any())).thenReturn("refresh-token");
+    given(tokenGenerator.generateAccessToken(any(), any())).willReturn("access-token");
+    given(tokenGenerator.generateRefreshToken(any())).willReturn("refresh-token");
   }
 
   @Test
   void shouldLoginSuccessfully() {
-    when(loadUserPort.findByEmail(any(Email.class))).thenReturn(Optional.of(buildUser()));
-    when(passwordEncoder.matches("password123", HASHED_PASSWORD)).thenReturn(true);
+    // Given
+    given(loadUserPort.findByEmail(any(Email.class))).willReturn(Optional.of(buildUser()));
+    given(passwordEncoder.matches("password123", HASHED_PASSWORD)).willReturn(true);
     givenTokensAreStubbed();
 
+    // When
     AuthTokenResponse response = loginUseCase.execute(new LoginCommand(EMAIL, "password123"));
 
+    // Then
     assertNotNull(response.accessToken());
     assertNotNull(response.refreshToken());
+    then(loadUserPort).should().findByEmail(any(Email.class));
   }
 
   @Test
   void shouldThrowWhenUserNotFound() {
-    when(loadUserPort.findByEmail(any(Email.class))).thenReturn(Optional.empty());
+    // Given
+    given(loadUserPort.findByEmail(any(Email.class))).willReturn(Optional.empty());
 
+    // When & Then
     assertThrows(
         InvalidCredentialsException.class,
         () -> loginUseCase.execute(new LoginCommand("nobody@example.com", "password123")));
@@ -73,10 +80,12 @@ class LoginUseCaseTest {
 
   @Test
   void shouldPassRawPasswordWithoutValidation() {
-    when(loadUserPort.findByEmail(any(Email.class))).thenReturn(Optional.of(buildUser()));
-    when(passwordEncoder.matches("short", HASHED_PASSWORD)).thenReturn(true);
+    // Given
+    given(loadUserPort.findByEmail(any(Email.class))).willReturn(Optional.of(buildUser()));
+    given(passwordEncoder.matches("short", HASHED_PASSWORD)).willReturn(true);
     givenTokensAreStubbed();
 
+    // When (no exception thrown for short password — validation is on raw Password VO, not here)
     loginUseCase.execute(new LoginCommand(EMAIL, "short"));
   }
 }
