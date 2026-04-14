@@ -56,15 +56,36 @@ Abre cualquier `.java` y presiona **⌘⌥L**. Debe formatear con 4 espacios de 
 
 ## Orden de imports
 
-Configura en `Settings > Editor > Code Style > Java > Imports`:
+> ⚠️ Este orden está definido en `.editorconfig` (`ij_java_imports_layout`) y se aplica
+> automáticamente al formatear con **⌘⌥L**. No es necesario configurarlo manualmente en IntelliJ.
 
-| Orden | Grupo     | Ejemplos                                        |
-|-------|-----------|-------------------------------------------------|
-| 1     | `java`    | `java.util.*`, `java.math.BigDecimal`           |
-| 2     | `javax`   | `javax.sql.*`                                   |
-| 3     | `jakarta` | `jakarta.persistence.*`, `jakarta.validation.*` |
-| 4     | `org`     | `org.springframework.*`, `org.junit.*`          |
-| 5     | `com`     | `com.ITJobsBackend.*`                           |
+```
+ij_java_imports_layout = *,|,java.**,|,javax.**,|,$*,|,org.junit.**,|,jakarta.**,|,lombok.**,|,org.slf4j.**,|,org.hibernate.**,|,org.**,|,com.**
+```
+
+| Orden | Grupo          | Ejemplos                                              |
+|-------|----------------|-------------------------------------------------------|
+| 1     | `*`            | Cualquier import no clasificado abajo                 |
+| —     | *(línea vacía)*|                                                       |
+| 2     | `java.**`      | `java.util.*`, `java.math.BigDecimal`                 |
+| —     | *(línea vacía)*|                                                       |
+| 3     | `javax.**`     | `javax.sql.*`                                         |
+| —     | *(línea vacía)*|                                                       |
+| 4     | `$*`           | Imports estáticos                                     |
+| —     | *(línea vacía)*|                                                       |
+| 5     | `org.junit.**` | `org.junit.jupiter.api.*`                             |
+| —     | *(línea vacía)*|                                                       |
+| 6     | `jakarta.**`   | `jakarta.persistence.*`, `jakarta.validation.*`       |
+| —     | *(línea vacía)*|                                                       |
+| 7     | `lombok.**`    | `lombok.RequiredArgsConstructor`, etc.                |
+| —     | *(línea vacía)*|                                                       |
+| 8     | `org.slf4j.**` | `org.slf4j.Logger`, `org.slf4j.LoggerFactory`         |
+| —     | *(línea vacía)*|                                                       |
+| 9     | `org.hibernate.**` | `org.hibernate.*`                                 |
+| —     | *(línea vacía)*|                                                       |
+| 10    | `org.**`       | `org.springframework.*` y otros `org`                 |
+| —     | *(línea vacía)*|                                                       |
+| 11    | `com.**`       | `com.ITJobsBackend.*`                                 |
 
 ---
 
