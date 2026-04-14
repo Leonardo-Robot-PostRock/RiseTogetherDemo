@@ -17,6 +17,7 @@
     <description>ITJobs project with Spring Boot</description>
     <properties>
         <maven.compiler.release>17</maven.compiler.release>
+        <tomcat.version>10.1.54</tomcat.version>
     </properties>
     <dependencies>
         <dependency>
