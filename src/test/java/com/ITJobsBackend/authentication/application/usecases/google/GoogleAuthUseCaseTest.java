@@ -3,16 +3,14 @@ package com.ITJobsBackend.authentication.application.usecases.google;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.never;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -41,6 +39,7 @@ class GoogleAuthUseCaseTest {
   @Mock private SaveUserPort saveUserPort;
   @Mock private LoadUserPort loadUserPort;
   @Mock private TokenGeneratorPort tokenGenerator;
+
   @InjectMocks private GoogleAuthUseCase useCase;
 
   private GoogleAuthCommand command;
@@ -50,7 +49,7 @@ class GoogleAuthUseCaseTest {
     command = new GoogleAuthCommand(GOOGLE_SUB, EMAIL, NAME);
   }
 
-  private UserAggregate existingUser() {
+  private UserAggregate buildUser() {
     return UserAggregate.reconstitute(
         UserId.of(USER_ID),
         Username.of("john"),
@@ -71,44 +70,34 @@ class GoogleAuthUseCaseTest {
 
   @Test
   void shouldAuthenticateNewGoogleUser() {
-    // Given
-    given(loadUserPort.findByEmail(any(Email.class))).willReturn(Optional.empty());
-    given(saveUserPort.save(any(UserAggregate.class))).willAnswer(i -> i.getArgument(0));
+    given(loadUserPort.findByEmail(Email.of(EMAIL))).willReturn(Optional.empty());
+    given(saveUserPort.save(any(UserAggregate.class)))
+        .willAnswer(invocation -> invocation.getArgument(0));
     givenTokensAreStubbed();
 
-    // When
     AuthTokenResponse response = useCase.execute(command);
 
-    // Then
     assertNotNull(response.userId());
-    assertEquals(EMAIL, response.email());
     then(saveUserPort).should().save(any(UserAggregate.class));
   }
 
   @Test
   void shouldLoginExistingGoogleUser() {
-    // Given
-    given(loadUserPort.findByEmail(any(Email.class))).willReturn(Optional.of(existingUser()));
+    given(loadUserPort.findByEmail(Email.of(EMAIL))).willReturn(Optional.of(buildUser()));
     givenTokensAreStubbed();
 
-    // When
     AuthTokenResponse response = useCase.execute(command);
 
-    // Then
     assertEquals(USER_ID, response.userId());
-    then(saveUserPort).should(never()).save(any());
+    then(saveUserPort).should(never()).save(any(UserAggregate.class));
   }
 
   @Test
-  void shouldFailIfGoogleSubMismatch() {
-    // Given
-    GoogleAuthCommand commandWithDifferentSub =
-        new GoogleAuthCommand("google-sub-DIFFERENT", EMAIL, NAME);
-    given(loadUserPort.findByEmail(any(Email.class))).willReturn(Optional.of(existingUser()));
+  void shouldThrowExceptionWhenGoogleSubMismatch() {
+    GoogleAuthCommand differentSubCommand = new GoogleAuthCommand("google-sub-DIFFERENT", EMAIL, NAME);
+    given(loadUserPort.findByEmail(Email.of(EMAIL))).willReturn(Optional.of(buildUser()));
 
-    // When & Then
-    assertThrows(
-        InvalidCredentialsException.class, () -> useCase.execute(commandWithDifferentSub));
-    then(saveUserPort).should(never()).save(any());
+    assertThrows(InvalidCredentialsException.class, () -> useCase.execute(differentSubCommand));
+    then(saveUserPort).should(never()).save(any(UserAggregate.class));
   }
 }

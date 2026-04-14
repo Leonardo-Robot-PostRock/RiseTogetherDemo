@@ -6,11 +6,9 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import static org.mockito.BDDMockito.*;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
-import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.never;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -29,9 +27,11 @@ class ForgotPasswordUseCaseTest {
 
   private static final String USER_ID = "550e8400-e29b-41d4-a716-446655440000";
   private static final String EMAIL = "john@example.com";
+  private static final String UNKNOWN_EMAIL = "nonexistent@example.com";
 
   @Mock private LoadUserPort loadUserPort;
   @Mock private DomainEventPublisher domainEventPublisher;
+
   @InjectMocks private ForgotPasswordUseCase useCase;
 
   private UserAggregate buildUser() {
@@ -50,26 +50,20 @@ class ForgotPasswordUseCaseTest {
 
   @Test
   void shouldGenerateResetTokenForExistingUser() {
-    // Given
     given(loadUserPort.findByEmail(Email.of(EMAIL))).willReturn(Optional.of(buildUser()));
     willDoNothing().given(domainEventPublisher).publishAll(any());
 
-    // When
     useCase.execute(new ForgotPasswordCommand(EMAIL));
 
-    // Then
     then(loadUserPort).should().findByEmail(Email.of(EMAIL));
     then(domainEventPublisher).should().publishAll(any());
   }
 
   @Test
   void shouldDoNothingWhenUserNotFound() {
-    // Given
-    String unknownEmail = "nonexistent@example.com";
-    given(loadUserPort.findByEmail(Email.of(unknownEmail))).willReturn(Optional.empty());
+    given(loadUserPort.findByEmail(Email.of(UNKNOWN_EMAIL))).willReturn(Optional.empty());
 
-    // When & Then
-    assertDoesNotThrow(() -> useCase.execute(new ForgotPasswordCommand(unknownEmail)));
+    assertDoesNotThrow(() -> useCase.execute(new ForgotPasswordCommand(UNKNOWN_EMAIL)));
     then(domainEventPublisher).should(never()).publishAll(any());
   }
 }
