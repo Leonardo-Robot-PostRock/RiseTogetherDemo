@@ -1,7 +1,10 @@
 package com.ITJobsBackend.authentication.application.usecases.changepassword;
 
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,8 +16,6 @@ import com.ITJobsBackend.authentication.domain.aggregate.UserAggregate;
 import com.ITJobsBackend.authentication.domain.service.CredentialsVerifier;
 import com.ITJobsBackend.authentication.domain.valueobjects.HashedPassword;
 import com.ITJobsBackend.shared.domain.valueobjects.UserId;
-
-import java.util.Optional;
 
 @Service
 @Transactional
@@ -45,7 +46,8 @@ public class ChangePasswordUseCase implements ChangePasswordPort {
     Optional<UserAggregate> userOpt = loadUserPort.findById(userId);
 
     UserAggregate user =
-        userOpt.orElseThrow(() -> new IllegalArgumentException("User not found: " + command.userId()));
+        userOpt.orElseThrow(
+            () -> new IllegalArgumentException("User not found: " + command.userId()));
 
     credentialsVerifier.verifyCredentials(user, command.oldPassword(), passwordEncoder);
 

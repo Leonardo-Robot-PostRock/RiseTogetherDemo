@@ -23,8 +23,8 @@ public class AccountController {
 
   @PostMapping("/change-password")
   public ResponseEntity<Void> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
-    ChangePasswordCommand command = new ChangePasswordCommand(
-        request.userId(), request.oldPassword(), request.newPassword());
+    ChangePasswordCommand command =
+        new ChangePasswordCommand(request.userId(), request.oldPassword(), request.newPassword());
 
     changePasswordPort.execute(command);
 

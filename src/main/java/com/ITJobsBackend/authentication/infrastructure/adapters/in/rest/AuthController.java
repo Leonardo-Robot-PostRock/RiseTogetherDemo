@@ -78,7 +78,8 @@ public class AuthController {
 
   @PostMapping("/login/google")
   public ResponseEntity<AuthResponse> googleLogin(@Valid @RequestBody GoogleLoginRequest request) {
-    GoogleAuthCommand command = new GoogleAuthCommand(request.googleSub(), request.email(), request.name());
+    GoogleAuthCommand command =
+        new GoogleAuthCommand(request.googleSub(), request.email(), request.name());
 
     AuthTokenResponse response = googleAuthPort.execute(command);
 

@@ -1,31 +1,24 @@
 package com.ITJobsBackend.authentication.application.usecases.changepassword;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.*;
+import static org.mockito.Mockito.never;
+
+import com.ITJobsBackend.authentication.application.ports.out.*;
+import com.ITJobsBackend.authentication.domain.aggregate.*;
+import com.ITJobsBackend.authentication.domain.service.*;
+import com.ITJobsBackend.authentication.domain.valueobjects.*;
+import com.ITJobsBackend.shared.domain.valueobjects.*;
 import java.util.List;
 import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import static org.mockito.Mockito.never;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import com.ITJobsBackend.authentication.application.ports.out.LoadUserPort;
-import com.ITJobsBackend.authentication.application.ports.out.PasswordEncoderPort;
-import com.ITJobsBackend.authentication.application.ports.out.SaveUserPort;
-import com.ITJobsBackend.authentication.domain.aggregate.UserAggregate;
-import com.ITJobsBackend.authentication.domain.service.CredentialsVerifier;
-import com.ITJobsBackend.authentication.domain.valueobjects.HashedPassword;
-import com.ITJobsBackend.authentication.domain.valueobjects.Username;
-import com.ITJobsBackend.shared.domain.valueobjects.Email;
-import com.ITJobsBackend.shared.domain.valueobjects.Timestamp;
-import com.ITJobsBackend.shared.domain.valueobjects.UserId;
 
 @ExtendWith(MockitoExtension.class)
 class ChangePasswordUseCaseTest {
