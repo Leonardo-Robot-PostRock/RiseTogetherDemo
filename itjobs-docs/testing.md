@@ -177,27 +177,25 @@ import static org.mockito.Mockito.never;           // verificar que NO se llamó
 
 ### Estructura de un test de use case
 
+El subject under test se declara con `@InjectMocks` — Mockito lo instancia
+automáticamente inyectando todos los campos `@Mock` y `@Spy` que coincidan
+con el constructor del use case.
+
 ```java
 @ExtendWith(MockitoExtension.class)
 class LoginUseCaseTest {
 
-    // ── Constantes ────────────────────────────────────────────────────────────
-    private static final String EMAIL = "john@example.com";
+    // ── Constants ─────────────────────────────────────────────────────────────
+    private static final String EMAIL           = "john@example.com";
     private static final String HASHED_PASSWORD = "$2a$10$hashed";
 
-    // ── Mocks ─────────────────────────────────────────────────────────────────
-    @Mock private LoadUserPort loadUserPort;
+    // ── Mocks (solo puertos de salida) ────────────────────────────────────────
+    @Mock private LoadUserPort       loadUserPort;
     @Mock private PasswordEncoderPort passwordEncoder;
-    @Mock private TokenGeneratorPort tokenGenerator;
+    @Mock private TokenGeneratorPort  tokenGenerator;
 
     // ── Subject under test ────────────────────────────────────────────────────
-    private LoginUseCase loginUseCase;
-
-    @BeforeEach
-    void setUp() {
-        loginUseCase = new LoginUseCase(
-            loadUserPort, passwordEncoder, tokenGenerator, new CredentialsVerifier());
-    }
+    @InjectMocks private LoginUseCase loginUseCase;
 
     // ── Helpers ───────────────────────────────────────────────────────────────
     private UserAggregate buildUser() {
@@ -239,6 +237,26 @@ class LoginUseCaseTest {
     }
 }
 ```
+
+### `@InjectMocks` con domain services
+
+Cuando el use case depende de un **domain service** (p.ej. `CredentialsVerifier`) que no
+es un puerto y **no debe mockearse**, decláralo con `@Spy` para que Mockito lo instancie
+como objeto real y lo inyecte junto con los `@Mock`:
+
+```java
+// ── Domain services (instancia real, no mock) ─────────────────────────────
+@Spy private CredentialsVerifier credentialsVerifier;
+
+// ── Subject under test ────────────────────────────────────────────────────
+@InjectMocks private LoginUseCase loginUseCase;
+// Mockito inyecta: loadUserPort (@Mock) + passwordEncoder (@Mock)
+//                + tokenGenerator (@Mock) + credentialsVerifier (@Spy)
+```
+
+> **Regla:** `@Spy` es para clases de dominio sin estado o con lógica pura que
+> necesitas que se ejecute de verdad. Nunca uses `@Mock` para un domain service,
+> aggregate o value object.
 
 ### Mapeo BDDMockito ↔ Mockito clásico
 
@@ -285,8 +303,27 @@ private void givenTokensAreStubbed() {
 }
 ```
 
+### `@InjectMocks` para el subject under test
+
+El use case **nunca** se instancia manualmente en `@BeforeEach`.
+Siempre se declara con `@InjectMocks`:
+
+```java
+// ✅
+@InjectMocks private RegisterUserUseCase registerUserUseCase;
+
+// ❌ — manual, error-prone, oculta dependencias
+private RegisterUserUseCase registerUserUseCase;
+@BeforeEach void setUp() { registerUserUseCase = new RegisterUserUseCase(...); }
+```
+
+Mockito infiere el constructor más largo que pueda satisfacer con los `@Mock` y `@Spy`
+declarados en la misma clase de test.
+
 ### `@BeforeEach` para el comando compartido
-Si el mismo comando se usa en todos los tests, inicializarlo en `setUp()`:
+
+`@BeforeEach` se usa únicamente para inicializar **comandos, queries u otros DTOs**
+que se repiten en todos los tests del archivo:
 
 ```java
 private VerifyEmailCommand command;
@@ -309,6 +346,9 @@ void setUp() {
 | Helper de construcción | `buildXxx()` / `createXxx()` | `buildUser()`, `createOpenJob()` |
 | Helper de stubs | `givenXxxAreStubbed()` | `givenTokensAreStubbed()` |
 | Constantes | `UPPER_SNAKE_CASE` | `USER_ID`, `HASHED_PASSWORD` |
+| Subject under test | `@InjectMocks` | `@InjectMocks private LoginUseCase loginUseCase;` |
+| Puertos mockeados | `@Mock` | `@Mock private LoadUserPort loadUserPort;` |
+| Domain services | `@Spy` | `@Spy private CredentialsVerifier credentialsVerifier;` |
 
 ---
 
@@ -342,6 +382,49 @@ UserAggregate user = UserAggregate.create(Username.of("johndoe"), Email.of("john
 ```java
 // ✅ — helper reutilizable
 private UserAggregate buildUser() { return UserAggregate.create(...); }
+```
+
+### ❌ Mockear clases de dominio
+
+Nunca usar `@Mock` sobre un aggregate, value object o domain service.
+Estas clases contienen la lógica de negocio y deben ejecutarse como código real.
+
+```java
+@Mock private UserAggregate user;         // ❌ — aggregate
+@Mock private Email email;                // ❌ — value object
+@Mock private CredentialsVerifier cv;     // ❌ — domain service
+```
+```java
+// ✅ — instancia real en el helper
+private UserAggregate buildUser() { return UserAggregate.create(...); }
+
+// ✅ — domain service como @Spy (se ejecuta de verdad, Mockito lo inyecta)
+@Spy private CredentialsVerifier credentialsVerifier;
+```
+
+Solo deben mockearse los **puertos de salida** (interfaces que el use case recibe
+por inyección de dependencias):
+
+```java
+@Mock private LoadUserPort   loadUserPort;   // ✅ — puerto de salida
+@Mock private SaveUserPort   saveUserPort;   // ✅ — puerto de salida
+@Mock private TokenGeneratorPort tokenGen;   // ✅ — puerto de salida
+```
+
+### ❌ Instanciar el subject manualmente
+
+```java
+// ❌ — construcción manual en @BeforeEach
+private LoginUseCase loginUseCase;
+@BeforeEach
+void setUp() {
+    loginUseCase = new LoginUseCase(loadUserPort, passwordEncoder, tokenGenerator, new CredentialsVerifier());
+}
+```
+```java
+// ✅ — Mockito gestiona la instanciación
+@Spy   private CredentialsVerifier  credentialsVerifier;
+@InjectMocks private LoginUseCase loginUseCase;
 ```
 
 ### ❌ Mock innecesario
