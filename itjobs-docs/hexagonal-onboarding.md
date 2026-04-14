@@ -22,7 +22,7 @@ La **Arquitectura Hexagonal** (también llamada *Ports and Adapters*) fue propue
                     │  puertos de la aplicación                   │
                     └────────────────────┬────────────────────────┘
                                          │
-                    ┌─────���──────────────▼────────────────────────┐
+                    ┌────────────────────▼────────────────────────┐
                     │             PUERTOS (Ports)                 │
                     │  Interfaces que definen cómo el núcleo      │
                     │  interactúa con el exterior                 │
@@ -381,19 +381,19 @@ public class UserAggregate extends AggregateRoot {
 │                           │                                     │
 │                           │ depende de                          │
 │                           ▼                                     │
-│  ┌────────────────────���────────────────────────────────────┐   │
+│  ┌──────────────────────────────────────────────────────────┐   │
 │  │                    APPLICATION                           │   │
 │  │  (RegisterUserUseCase, RegisterUserPort, SaveUserPort)   │   │
 │  │                           │                              │   │
 │  │                           │ depende de                   │   │
 │  │                           ▼                              │   │
-│  │  ┌─────────────────────────────────────────────────┐    │   │
-│  │  │                    DOMAIN                        │    │   │
-│  │  │  (UserAggregate, Email, UserId, DomainEvents)    │    │   │
-│  │  │                                                  │    │   │
-│  │  │  ★ NO DEPENDE DE NADA EXTERNO ★                  │    │   │
-│  │  └─────────────────────────────────────────────────┘    │   │
-│  └─────────────────────────────────────────────────────────┘   │
+│  │  ┌─────────────────────────────────────────────────┐     │   │
+│  │  │                    DOMAIN                       │     │   │
+│  │  │  (UserAggregate, Email, UserId, DomainEvents)   │     │   │
+│  │  │                                                 │     │   │
+│  │  │  ★ NO DEPENDE DE NADA EXTERNO ★                 │     │   │
+│  │  └─────────────────────────────────────────────────┘     │   │
+│  └──────────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -459,23 +459,23 @@ Cuando agregues una nueva funcionalidad:
 ┌──────────────────────────────────────────────────────────────────────────┐
 │                         ITJobsBackend                                    │
 │                                                                          │
-│   ┌──────────────────────────────────────────────────────────────────┐  │
-│   │  INFRASTRUCTURE (adapters/in, adapters/out, config)              │  │
-│   │                                                                  │  │
-│   │   AuthController ──▶ RegisterUserPort ◀── RegisterUserUseCase    │  │
-│   │                                                 │                │  │
-│   │                                                 ▼                │  │
-│   │   JpaUserRepo ◀── UserWriterRepository ◀── SaveUserPort          │  │
-│   │        │                                                         │  │
-│   │        ▼                                                         │  │
-│   │   UserEntity ←mapper→ UserAggregate (Domain)                     │  │
-│   │                            │                                     │  │
-│   │                    ┌───────┴───────┐                             │  │
-│   │                    │    Email      │  Value Objects              │  │
-│   │                    │   Username    │                             │  │
-│   │                    │  HashedPassword│                            │  │
-│   │                    └───────────────┘                             │  │
-│   └──────────────────────────────────────────────────────────────────┘  │
+│   ┌──────────────────────────────────────────────────────────────────┐   │ 
+│   │  INFRASTRUCTURE (adapters/in, adapters/out, config)              │   │
+│   │                                                                  │   │
+│   │   AuthController ──▶ RegisterUserPort ◀── RegisterUserUseCase    │   │
+│   │                                                 │                │   │
+│   │                                                 ▼                │   │
+│   │   JpaUserRepo ◀── UserWriterRepository ◀── SaveUserPort          │   │
+│   │        │                                                         │   │
+│   │        ▼                                                         │   │
+│   │   UserEntity ←mapper→ UserAggregate (Domain)                     │   │
+│   │                            │                                     │   │
+│   │                    ┌───────┴───────┐                             │   │
+│   │                    │    Email      │  Value Objects              │   │
+│   │                    │   Username    │                             │   │
+│   │                    │ HashedPassword│                             │   │
+│   │                    └───────────────┘                             │   │
+│   └──────────────────────────────────────────────────────────────────┘   │
 └──────────────────────────────────────────────────────────────────────────┘
 ```
 
