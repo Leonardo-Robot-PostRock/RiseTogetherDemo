@@ -1,9 +1,20 @@
 package com.ITJobsBackend.authentication.application.usecases.verify;
 
+import java.util.List;
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.never;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.ITJobsBackend.authentication.application.ports.out.LoadUserPort;
 import com.ITJobsBackend.authentication.application.ports.out.SaveUserPort;
@@ -15,14 +26,6 @@ import com.ITJobsBackend.shared.application.ports.out.DomainEventPublisher;
 import com.ITJobsBackend.shared.domain.valueobjects.Email;
 import com.ITJobsBackend.shared.domain.valueobjects.Timestamp;
 import com.ITJobsBackend.shared.domain.valueobjects.UserId;
-import java.util.List;
-import java.util.Optional;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class VerifyEmailUseCaseTest {

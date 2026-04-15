@@ -1,13 +1,15 @@
 package com.ITJobsBackend.jobs.domain.aggregate;
 
+import java.math.BigDecimal;
+
 import static org.junit.jupiter.api.Assertions.*;
+
+import org.junit.jupiter.api.Test;
 
 import com.ITJobsBackend.jobs.domain.valueobjects.EmploymentType;
 import com.ITJobsBackend.jobs.domain.valueobjects.JobStatus;
 import com.ITJobsBackend.jobs.domain.valueobjects.Salary;
 import com.ITJobsBackend.shared.domain.exceptions.ValidationException;
-import java.math.BigDecimal;
-import org.junit.jupiter.api.Test;
 
 class JobAggregateTest {
 

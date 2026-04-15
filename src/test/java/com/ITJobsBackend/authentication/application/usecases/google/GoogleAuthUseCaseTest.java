@@ -1,24 +1,33 @@
 package com.ITJobsBackend.authentication.application.usecases.google;
 
+import java.util.List;
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.*;
 import static org.mockito.Mockito.never;
 
-import com.ITJobsBackend.authentication.application.ports.out.*;
-import com.ITJobsBackend.authentication.application.usecases.login.*;
-import com.ITJobsBackend.authentication.domain.aggregate.*;
-import com.ITJobsBackend.authentication.domain.exceptions.*;
-import com.ITJobsBackend.authentication.domain.valueobjects.*;
-import com.ITJobsBackend.shared.domain.valueobjects.*;
-import java.util.List;
-import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import com.ITJobsBackend.authentication.application.ports.out.LoadUserPort;
+import com.ITJobsBackend.authentication.application.ports.out.SaveUserPort;
+import com.ITJobsBackend.authentication.application.ports.out.TokenGeneratorPort;
+import com.ITJobsBackend.authentication.application.usecases.login.AuthTokenResponse;
+import com.ITJobsBackend.authentication.domain.aggregate.UserAggregate;
+import com.ITJobsBackend.authentication.domain.exceptions.InvalidCredentialsException;
+import com.ITJobsBackend.authentication.domain.valueobjects.GoogleSub;
+import com.ITJobsBackend.authentication.domain.valueobjects.HashedPassword;
+import com.ITJobsBackend.authentication.domain.valueobjects.Username;
+import com.ITJobsBackend.shared.domain.valueobjects.Email;
+import com.ITJobsBackend.shared.domain.valueobjects.Timestamp;
+import com.ITJobsBackend.shared.domain.valueobjects.UserId;
 
 @ExtendWith(MockitoExtension.class)
 class GoogleAuthUseCaseTest {
