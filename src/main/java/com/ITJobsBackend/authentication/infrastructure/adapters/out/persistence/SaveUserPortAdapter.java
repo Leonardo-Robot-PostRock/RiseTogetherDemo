@@ -1,10 +1,11 @@
 package com.ITJobsBackend.authentication.infrastructure.adapters.out.persistence;
 
+import org.springframework.stereotype.Component;
+
 import com.ITJobsBackend.authentication.application.ports.out.SaveUserPort;
 import com.ITJobsBackend.authentication.domain.aggregate.UserAggregate;
 import com.ITJobsBackend.authentication.domain.repository.UserWriterRepository;
 import com.ITJobsBackend.shared.domain.valueobjects.Email;
-import org.springframework.stereotype.Component;
 
 @Component
 public class SaveUserPortAdapter implements SaveUserPort {

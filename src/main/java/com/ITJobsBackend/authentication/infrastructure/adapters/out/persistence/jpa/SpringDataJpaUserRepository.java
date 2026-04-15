@@ -1,11 +1,13 @@
 package com.ITJobsBackend.authentication.infrastructure.adapters.out.persistence.jpa;
 
-import com.ITJobsBackend.authentication.infrastructure.adapters.out.persistence.jpa.entities.UserEntity;
 import java.util.Optional;
 import java.util.UUID;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
-interface SpringDataJpaUserRepository extends JpaRepository<UserEntity, UUID> {
+import com.ITJobsBackend.authentication.infrastructure.adapters.out.persistence.jpa.entities.UserEntity;
+
+public interface SpringDataJpaUserRepository extends JpaRepository<UserEntity, UUID> {
   Optional<UserEntity> findByEmail(String email);
 
   Optional<UserEntity> findByUsername(String username);

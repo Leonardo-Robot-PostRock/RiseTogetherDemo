@@ -1,13 +1,15 @@
 package com.ITJobsBackend.authentication.infrastructure.adapters.out.persistence.jpa;
 
+import java.util.Optional;
+
+import org.springframework.stereotype.Repository;
+
 import com.ITJobsBackend.authentication.domain.aggregate.UserAggregate;
 import com.ITJobsBackend.authentication.domain.repository.UserRepository;
 import com.ITJobsBackend.authentication.domain.valueobjects.Username;
 import com.ITJobsBackend.authentication.infrastructure.adapters.out.persistence.jpa.mappers.UserMapper;
 import com.ITJobsBackend.shared.domain.valueobjects.Email;
 import com.ITJobsBackend.shared.domain.valueobjects.UserId;
-import java.util.Optional;
-import org.springframework.stereotype.Repository;
 
 @Repository
 public class JpaUserRepositoryAdapter implements UserRepository {
@@ -30,7 +32,7 @@ public class JpaUserRepositoryAdapter implements UserRepository {
 
   @Override
   public Optional<UserAggregate> findById(UserId id) {
-    return Optional.ofNullable(id.value()).flatMap(jpaRepository::findById).map(mapper::toDomain);
+    return jpaRepository.findById(id.value()).map(mapper::toDomain);
   }
 
   @Override

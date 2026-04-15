@@ -1,5 +1,9 @@
 package com.ITJobsBackend.authentication.infrastructure.adapters.out.persistence.jpa.mappers;
 
+import java.util.ArrayList;
+
+import org.springframework.stereotype.Component;
+
 import com.ITJobsBackend.authentication.domain.aggregate.UserAggregate;
 import com.ITJobsBackend.authentication.domain.valueobjects.GoogleSub;
 import com.ITJobsBackend.authentication.domain.valueobjects.HashedPassword;
@@ -8,8 +12,6 @@ import com.ITJobsBackend.authentication.infrastructure.adapters.out.persistence.
 import com.ITJobsBackend.shared.domain.valueobjects.Email;
 import com.ITJobsBackend.shared.domain.valueobjects.Timestamp;
 import com.ITJobsBackend.shared.domain.valueobjects.UserId;
-import java.util.ArrayList;
-import org.springframework.stereotype.Component;
 
 @Component
 public class UserMapper {

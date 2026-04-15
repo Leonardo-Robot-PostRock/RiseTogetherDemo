@@ -1,12 +1,14 @@
 package com.ITJobsBackend.authentication.infrastructure.adapters.out.persistence;
 
+import java.util.Optional;
+
+import org.springframework.stereotype.Component;
+
 import com.ITJobsBackend.authentication.application.ports.out.LoadUserPort;
 import com.ITJobsBackend.authentication.domain.aggregate.UserAggregate;
 import com.ITJobsBackend.authentication.domain.repository.UserReaderRepository;
 import com.ITJobsBackend.shared.domain.valueobjects.Email;
 import com.ITJobsBackend.shared.domain.valueobjects.UserId;
-import java.util.Optional;
-import org.springframework.stereotype.Component;
 
 @Component
 public class LoadUserPortAdapter implements LoadUserPort {
