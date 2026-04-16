@@ -1,0 +1,136 @@
+@startuml AuthOverview
+
+title Authentication — Visión General de Puertos y Casos de Uso
+
+left to right direction
+
+skinparam packageStyle rectangle
+skinparam componentStyle rectangle
+skinparam arrow {
+    Color #555555
+    FontSize 10
+}
+
+' ══════════════════════════════════════════════
+'  DRIVING ADAPTERS (entrada)
+' ══════════════════════════════════════════════
+package "REST Adapters (in)" #E8EAF6 {
+    component [AuthController\n/api/v1/auth/**] as AUTH_CTRL
+    component [AccountController\n/api/v1/account/**] as ACC_CTRL
+}
+
+' ══════════════════════════════════════════════
+'  APPLICATION LAYER — Ports (in) + Use Cases
+' ══════════════════════════════════════════════
+package "Application Layer" #E8F5E9 {
+
+    package "Ports IN" #C8E6C9 {
+        interface "RegisterUserPort" as P_REG
+        interface "LoginPort" as P_LOG
+        interface "GoogleAuthPort" as P_GOO
+        interface "VerifyEmailPort" as P_VER
+        interface "ChangePasswordPort" as P_CHG
+        interface "ForgotPasswordPort" as P_FRG
+    }
+
+    package "Use Cases" #DCEDC8 {
+        component [RegisterUserUseCase] as UC_REG
+        component [LoginUseCase] as UC_LOG
+        component [GoogleAuthUseCase] as UC_GOO
+        component [VerifyEmailUseCase] as UC_VER
+        component [ChangePasswordUseCase] as UC_CHG
+        component [ForgotPasswordUseCase] as UC_FRG
+    }
+
+    package "Ports OUT" #A5D6A7 {
+        interface "LoadUserPort" as P_LOAD
+        interface "SaveUserPort" as P_SAVE
+        interface "PasswordEncoderPort" as P_ENC
+        interface "TokenGeneratorPort" as P_TOK
+    }
+}
+
+' ══════════════════════════════════════════════
+'  DOMAIN
+' ══════════════════════════════════════════════
+package "Domain" #FFF3E0 {
+    component [UserAggregate] as UA
+    component [CredentialsVerifier\n<<Domain Service>>] as CV
+}
+
+' ══════════════════════════════════════════════
+'  DRIVEN ADAPTERS (salida)
+' ══════════════════════════════════════════════
+package "Infrastructure Adapters (out)" #F3E5F5 {
+    component [LoadUserPortAdapter\n(JPA)] as A_LOAD
+    component [SaveUserPortAdapter\n(JPA)] as A_SAVE
+    component [BCryptPasswordEncoderAdapter] as A_ENC
+    component [JwtTokenGeneratorAdapter] as A_TOK
+    component [SpringDomainEventPublisher] as A_PUB
+}
+
+' ══════════════════════════════════════════════
+'  DRIVING ADAPTER → PORTS IN
+' ══════════════════════════════════════════════
+AUTH_CTRL --> P_REG
+AUTH_CTRL --> P_LOG
+AUTH_CTRL --> P_GOO
+AUTH_CTRL --> P_VER
+ACC_CTRL  --> P_CHG
+
+' ══════════════════════════════════════════════
+'  PORTS IN → USE CASES (implementan el puerto)
+' ══════════════════════════════════════════════
+P_REG ..|> UC_REG
+P_LOG ..|> UC_LOG
+P_GOO ..|> UC_GOO
+P_VER ..|> UC_VER
+P_CHG ..|> UC_CHG
+P_FRG ..|> UC_FRG
+
+' ══════════════════════════════════════════════
+'  USE CASES → DOMAIN
+' ══════════════════════════════════════════════
+UC_REG --> UA
+UC_LOG --> UA
+UC_GOO --> UA
+UC_VER --> UA
+UC_CHG --> UA
+UC_FRG --> UA
+UC_LOG --> CV
+UC_CHG --> CV
+
+' ══════════════════════════════════════════════
+'  USE CASES → PORTS OUT
+' ══════════════════════════════════════════════
+UC_REG --> P_SAVE
+UC_REG --> P_ENC
+UC_LOG --> P_LOAD
+UC_LOG --> P_TOK
+UC_GOO --> P_LOAD
+UC_GOO --> P_SAVE
+UC_GOO --> P_TOK
+UC_VER --> P_LOAD
+UC_VER --> P_SAVE
+UC_CHG --> P_LOAD
+UC_CHG --> P_SAVE
+UC_CHG --> P_ENC
+UC_FRG --> P_LOAD
+
+' ══════════════════════════════════════════════
+'  PORTS OUT → ADAPTERS (implementan el puerto)
+' ══════════════════════════════════════════════
+P_LOAD ..|> A_LOAD
+P_SAVE ..|> A_SAVE
+P_ENC  ..|> A_ENC
+P_TOK  ..|> A_TOK
+
+note bottom of A_PUB
+  SpringDomainEventPublisher
+  publica: UserRegisteredEvent,
+  EmailVerifiedEvent,
+  PasswordResetRequestedEvent
+end note
+
+@enduml
+

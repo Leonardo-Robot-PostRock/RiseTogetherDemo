@@ -1,0 +1,70 @@
+@startuml AuthUseCasesWrite
+
+title Authentication — Casos de Uso de Escritura\n(Register · VerifyEmail · ChangePassword · ForgotPassword)
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam componentStyle rectangle
+skinparam linetype ortho
+
+' ── Ports OUT compartidos ────────────────────
+interface "LoadUserPort" as LOAD #A5D6A7
+interface "SaveUserPort" as SAVE #A5D6A7
+interface "PasswordEncoderPort" as ENC  #A5D6A7
+interface "DomainEventPublisher" as PUB  #A5D6A7
+
+component [UserAggregate] as UA #FFF9C4
+component [CredentialsVerifier] as CV #FFF9C4
+
+' ══ RegisterUserUseCase ══════════════════════
+package "RegisterUserUseCase" #E8F5E9 {
+    interface "RegisterUserPort" as P_REG
+    component [RegisterUserUseCase] as UC_REG
+    P_REG ..|> UC_REG
+}
+UC_REG --> UA
+UC_REG --> SAVE
+UC_REG --> ENC
+UC_REG --> PUB : UserRegisteredEvent
+
+' ══ VerifyEmailUseCase ═══════════════════════
+package "VerifyEmailUseCase" #E3F2FD {
+    interface "VerifyEmailPort" as P_VER
+    component [VerifyEmailUseCase] as UC_VER
+    P_VER ..|> UC_VER
+}
+UC_VER --> UA
+UC_VER --> LOAD
+UC_VER --> SAVE
+UC_VER --> PUB : EmailVerifiedEvent
+
+' ══ ChangePasswordUseCase ════════════════════
+package "ChangePasswordUseCase" #FFF3E0 {
+    interface "ChangePasswordPort" as P_CHG
+    component [ChangePasswordUseCase] as UC_CHG
+    P_CHG ..|> UC_CHG
+}
+UC_CHG --> UA
+UC_CHG --> LOAD
+UC_CHG --> SAVE
+UC_CHG --> ENC
+UC_CHG --> CV : verifica password anterior
+
+' ══ ForgotPasswordUseCase ════════════════════
+package "ForgotPasswordUseCase" #FCE4EC {
+    interface "ForgotPasswordPort" as P_FRG
+    component [ForgotPasswordUseCase] as UC_FRG
+    P_FRG ..|> UC_FRG
+}
+UC_FRG --> LOAD
+UC_FRG --> PUB : PasswordResetRequestedEvent
+
+note right of PUB
+  Listeners activos:
+  · UserRegisteredEventListener
+  · UserActivatedEventListener
+  · UserDeactivatedEventListener
+end note
+
+@enduml
+

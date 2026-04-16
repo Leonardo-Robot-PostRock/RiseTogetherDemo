@@ -1,0 +1,124 @@
+@startuml ClassDiagramAuth
+
+title Authentication — Aggregate, Value Objects, Events y Ports
+
+skinparam classBackgroundColor #FAFAFA
+skinparam classBorderColor #888888
+
+' ─── Aggregate ───────────────────────────────
+package "domain.aggregate" #E8F5E9 {
+    class UserAggregate <<Aggregate>> {
+        - id : UserId
+        - username : Username
+        - email : Email
+        - password : HashedPassword
+        - googleSub : GoogleSub
+        - active : boolean
+        - emailVerified : boolean
+        - verificationToken : String
+        - verificationTokenExpiresAt : Instant
+        - roles : List<String>
+        - createdAt : Timestamp
+        - updatedAt : Timestamp
+        --
+        + {static} create() : UserAggregate
+        + {static} createGoogleUser() : UserAggregate
+        + {static} reconstitute() : UserAggregate
+        --
+        + activate()
+        + deactivate()
+        + verifyEmail(token)
+        + changePassword(hashed)
+        + linkGoogleAccount(sub)
+        + updateEmail(email)
+        + addRole(role)
+        + pullDomainEvents() : List<DomainEvent>
+    }
+}
+
+' ─── Value Objects ───────────────────────────
+package "domain.valueobjects" #DCEDC8 {
+    class Username <<ValueObject>> {
+        - value : String
+        + of(raw) : Username
+    }
+    class HashedPassword <<ValueObject>> {
+        - value : String
+        + fromHash(hash) : HashedPassword
+    }
+    class GoogleSub <<ValueObject>> {
+        - value : String
+        + of(raw) : GoogleSub
+    }
+}
+
+' ─── Domain Events ───────────────────────────
+package "domain.event" #FFF3E0 {
+    class UserRegisteredEvent <<Event>> {
+        - email : String
+    }
+    class UserActivatedEvent <<Event>> {
+        - email : String
+    }
+    class UserDeactivatedEvent <<Event>> {
+        - email : String
+    }
+    class EmailVerifiedEvent <<Event>> {
+        - email : String
+    }
+    class PasswordResetRequestedEvent <<Event>> {
+        - email : String
+        - resetToken : String
+    }
+}
+
+' ─── Domain Service ──────────────────────────
+package "domain.service" #FFF9C4 {
+    class CredentialsVerifier <<Domain Service>> {
+        + verifyCredentials(user, rawPwd, encoder)
+    }
+}
+
+' ─── Ports (Application Layer) ───────────────
+package "application.ports.in" #C8E6C9 {
+    interface RegisterUserPort
+    interface LoginPort
+    interface GoogleAuthPort
+    interface VerifyEmailPort
+    interface ChangePasswordPort
+    interface ForgotPasswordPort
+}
+
+package "application.ports.out" #A5D6A7 {
+    interface LoadUserPort {
+        + findByEmail(email) : Optional<UserAggregate>
+        + findById(id) : Optional<UserAggregate>
+        + existsByEmail(email) : boolean
+    }
+    interface SaveUserPort {
+        + save(user) : UserAggregate
+    }
+    interface PasswordEncoderPort {
+        + encode(raw) : String
+        + matches(raw, hash) : boolean
+    }
+    interface TokenGeneratorPort {
+        + generateAccessToken(userId, roles) : String
+        + generateRefreshToken(userId) : String
+    }
+}
+
+' ─── Relations ───────────────────────────────
+UserAggregate *-- Username
+UserAggregate *-- HashedPassword
+UserAggregate *-- GoogleSub
+
+UserAggregate ..> UserRegisteredEvent : records
+UserAggregate ..> UserActivatedEvent  : records
+UserAggregate ..> UserDeactivatedEvent : records
+UserAggregate ..> EmailVerifiedEvent  : records
+
+CredentialsVerifier --> PasswordEncoderPort
+
+@enduml
+

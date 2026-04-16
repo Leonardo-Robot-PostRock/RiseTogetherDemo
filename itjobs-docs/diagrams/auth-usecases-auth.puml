@@ -1,0 +1,58 @@
+@startuml AuthUseCasesAuth
+
+title Authentication — Casos de Uso de Autenticación\n(Login · GoogleAuth)
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam componentStyle rectangle
+skinparam linetype ortho
+
+' ── Ports OUT compartidos ────────────────────
+interface "LoadUserPort"      as LOAD #A5D6A7
+interface "SaveUserPort"      as SAVE #A5D6A7
+interface "TokenGeneratorPort" as TOK  #A5D6A7
+
+component [UserAggregate]     as UA   #FFF9C4
+component [CredentialsVerifier] as CV #FFF9C4
+
+' ══ LoginUseCase ══════════════════════════════
+package "LoginUseCase" #E8F5E9 {
+    interface "LoginPort"      as P_LOG
+    interface "PasswordEncoderPort" as ENC
+    component [LoginUseCase]   as UC_LOG
+
+    P_LOG ..|> UC_LOG
+}
+UC_LOG --> UA
+UC_LOG --> LOAD
+UC_LOG --> ENC  : verifica password
+UC_LOG --> TOK  : genera accessToken + refreshToken
+UC_LOG --> CV   : verifica credenciales
+
+' ══ GoogleAuthUseCase ════════════════════════
+package "GoogleAuthUseCase" #E3F2FD {
+    interface "GoogleAuthPort" as P_GOO
+    component [GoogleAuthUseCase] as UC_GOO
+
+    P_GOO ..|> UC_GOO
+}
+UC_GOO --> UA
+UC_GOO --> LOAD : busca por email
+UC_GOO --> SAVE : crea nuevo usuario Google
+UC_GOO --> TOK  : genera accessToken + refreshToken
+
+note right of UC_GOO
+  Si el email ya existe:
+  valida que googleSub coincida.
+  Si no existe: crea con
+  active=true, emailVerified=true.
+end note
+
+note bottom of TOK
+  JwtTokenGeneratorAdapter
+  · accessToken (15 min)
+  · refreshToken (7 días)
+end note
+
+@enduml
+
