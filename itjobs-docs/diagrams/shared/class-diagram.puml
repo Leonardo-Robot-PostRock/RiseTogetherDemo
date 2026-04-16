@@ -16,6 +16,14 @@ package "shared" {
     class DomainEvent <<abstract>> {
         - occurredOn : Instant
     }
+    note bottom of DomainEvent
+      Extendido por todos los eventos de dominio:
+      auth → UserRegisteredEvent, UserActivatedEvent,
+             UserDeactivatedEvent, EmailVerifiedEvent,
+             PasswordResetRequestedEvent
+      jobs → JobCreatedEvent, JobClosedEvent,
+             JobDeactivatedEvent
+    end note
 
     class Email <<ValueObject>> {
         - value : String
@@ -80,36 +88,6 @@ package "authentication" {
         - value : String
     }
 
-    class UserRegisteredEvent <<Event>> {
-        - userId : String (heredado)
-        - aggregatedType : String (heredado)
-        - email : String
-    }
-
-    class UserActivatedEvent <<Event>> {
-        - userId : String (heredado)
-        - aggregatedType : String (heredado)
-        - email : String
-    }
-
-    class UserDeactivatedEvent <<Event>> {
-        - userId : String (heredado)
-        - aggregatedType : String (heredado)
-        - email : String
-    }
-
-    class EmailVerifiedEvent <<Event>> {
-        - userId : String (heredado)
-        - aggregatedType : String (heredado)
-        - email : String
-    }
-
-    class PasswordResetRequestedEvent <<Event>> {
-        - userId : String (heredado)
-        - aggregatedType : String (heredado)
-        - email : String
-        - resetToken : String
-    }
 
     interface RegisterUserPort <<In Port>>
     interface LoginPort <<In Port>>
@@ -121,6 +99,7 @@ package "authentication" {
     interface LoadUserPort <<Out Port>>
     interface PasswordEncoderPort <<Out Port>>
     interface TokenGeneratorPort <<Out Port>>
+    interface VerificationTokenValidatorPort <<Out Port>>
 
     class RegisterUserUseCase
     class LoginUseCase
@@ -170,21 +149,9 @@ package "jobs" {
         INACTIVE
     }
 
-    class JobClosedEvent <<Event>> {
-        - jobId : String (heredado)
-        - aggregatedType : String (heredado)
-        - jobTitle : String
-        - company : String
-    }
-
-    class JobDeactivatedEvent <<Event>> {
-        - jobId : String (heredado)
-        - aggregatedType : String (heredado)
-        - jobTitle : String
-    }
 }
 
-' Composicion (*)
+' Composición (*)
 UserAggregate *-- UserId
 UserAggregate *-- Username
 UserAggregate *-- Email
@@ -199,46 +166,44 @@ JobAggregate *-- JobStatus
 JobAggregate *-- Timestamp
 
 ' Herencia (<|--)
-DomainEvent <-- UserRegisteredEvent
-DomainEvent <-- UserActivatedEvent
-DomainEvent <-- UserDeactivatedEvent
-DomainEvent <-- EmailVerifiedEvent
-DomainEvent <-- PasswordResetRequestedEvent
-DomainEvent <-- JobClosedEvent
-DomainEvent <-- JobDeactivatedEvent
-
-DomainException <-- ValidationException
+' Los eventos de dominio extienden DomainEvent — ver nota en la clase
+DomainException <|-- ValidationException
 DomainException <|-- NotFoundException
 
-' Realizacion (<|..)
-RegisterUserPort <.. RegisterUserUseCase
-LoginPort <.. LoginUseCase
-ChangePasswordPort <.. ChangePasswordUseCase
-ForgotPasswordPort <.. ForgotPasswordUseCase
-GoogleAuthPort <.. GoogleAuthUseCase
-VerifyEmailPort <.. VerifyEmailUseCase
+' Realización (<|..)
+RegisterUserPort  <|.. RegisterUserUseCase
+LoginPort         <|.. LoginUseCase
+ChangePasswordPort <|.. ChangePasswordUseCase
+ForgotPasswordPort <|.. ForgotPasswordUseCase
+GoogleAuthPort    <|.. GoogleAuthUseCase
+VerifyEmailPort   <|.. VerifyEmailUseCase
 
 ' Dependencia (<--)
-SaveUserPort <-- RegisterUserUseCase
-SaveUserPort <-- VerifyEmailUseCase
-SaveUserPort <-- GoogleAuthUseCase
-SaveUserPort <-- ChangePasswordUseCase
-LoadUserPort <-- LoginUseCase
-LoadUserPort <-- ForgotPasswordUseCase
-LoadUserPort <-- VerifyEmailUseCase
-LoadUserPort <-- GoogleAuthUseCase
-LoadUserPort <-- ChangePasswordUseCase
-PasswordEncoderPort <-- RegisterUserUseCase
-PasswordEncoderPort <-- ChangePasswordUseCase
-TokenGeneratorPort <-- LoginUseCase
-TokenGeneratorPort <-- GoogleAuthUseCase
+RegisterUserUseCase   --> SaveUserPort
+RegisterUserUseCase   --> PasswordEncoderPort
+RegisterUserUseCase   --> DomainEventPublisher
 
-CredentialsVerifier --> PasswordEncoderPort
+LoginUseCase          --> LoadUserPort
+LoginUseCase          --> TokenGeneratorPort
+LoginUseCase          --> CredentialsVerifier
+
+GoogleAuthUseCase     --> LoadUserPort
+GoogleAuthUseCase     --> SaveUserPort
+GoogleAuthUseCase     --> TokenGeneratorPort
+
+VerifyEmailUseCase    --> LoadUserPort
+VerifyEmailUseCase    --> SaveUserPort
+VerifyEmailUseCase    --> VerificationTokenValidatorPort
+VerifyEmailUseCase    --> DomainEventPublisher
+
+ChangePasswordUseCase --> LoadUserPort
+ChangePasswordUseCase --> SaveUserPort
+ChangePasswordUseCase --> PasswordEncoderPort
 ChangePasswordUseCase --> CredentialsVerifier
-LoginUseCase --> CredentialsVerifier
 
-DomainEventPublisher <-- RegisterUserUseCase
-DomainEventPublisher <-- ForgotPasswordUseCase
-DomainEventPublisher <-- VerifyEmailUseCase
+ForgotPasswordUseCase --> LoadUserPort
+ForgotPasswordUseCase --> DomainEventPublisher
+
+CredentialsVerifier   --> PasswordEncoderPort
 
 @enduml
