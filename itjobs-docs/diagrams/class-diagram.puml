@@ -1,6 +1,13 @@
 @startuml ITJobsClassDiagram
 
-title ITJobs - Diagrama de Clases DDD
+' ══════════════════════════════════════════════════════════
+'  DEPRECADO: use los diagramas separados por bounded context
+'    - class-diagram-shared.puml
+'    - class-diagram-auth.puml
+'    - class-diagram-jobs.puml
+' ══════════════════════════════════════════════════════════
+
+title ITJobs - Diagrama de Clases DDD (consolidado)
 
 left footer Leyenda: Composicion (*) | Herencia (<|--) | Realizacion (<|..) | Dependencia (<--)
 
@@ -104,8 +111,16 @@ package "authentication" {
         - email : String
     }
 
+    class PasswordResetRequestedEvent <<Event>> {
+        - userId : String (heredado)
+        - aggregatedType : String (heredado)
+        - email : String
+        - resetToken : String
+    }
+
     interface RegisterUserPort <<In Port>>
     interface LoginPort <<In Port>>
+    interface ChangePasswordPort <<In Port>>
     interface ForgotPasswordPort <<In Port>>
     interface GoogleAuthPort <<In Port>>
     interface VerifyEmailPort <<In Port>>
@@ -116,6 +131,7 @@ package "authentication" {
 
     class RegisterUserUseCase
     class LoginUseCase
+    class ChangePasswordUseCase
     class ForgotPasswordUseCase
     class GoogleAuthUseCase
     class VerifyEmailUseCase
@@ -194,6 +210,7 @@ DomainEvent <-- UserRegisteredEvent
 DomainEvent <-- UserActivatedEvent
 DomainEvent <-- UserDeactivatedEvent
 DomainEvent <-- EmailVerifiedEvent
+DomainEvent <-- PasswordResetRequestedEvent
 DomainEvent <-- JobClosedEvent
 DomainEvent <-- JobDeactivatedEvent
 
@@ -203,26 +220,29 @@ DomainException <|-- NotFoundException
 ' Realizacion (<|..)
 RegisterUserPort <.. RegisterUserUseCase
 LoginPort <.. LoginUseCase
+ChangePasswordPort <.. ChangePasswordUseCase
 ForgotPasswordPort <.. ForgotPasswordUseCase
 GoogleAuthPort <.. GoogleAuthUseCase
 VerifyEmailPort <.. VerifyEmailUseCase
 
 ' Dependencia (<--)
 SaveUserPort <-- RegisterUserUseCase
-SaveUserPort <-- ForgotPasswordUseCase
 SaveUserPort <-- VerifyEmailUseCase
 SaveUserPort <-- GoogleAuthUseCase
+SaveUserPort <-- ChangePasswordUseCase
 LoadUserPort <-- LoginUseCase
 LoadUserPort <-- ForgotPasswordUseCase
 LoadUserPort <-- VerifyEmailUseCase
 LoadUserPort <-- GoogleAuthUseCase
+LoadUserPort <-- ChangePasswordUseCase
 PasswordEncoderPort <-- RegisterUserUseCase
-PasswordEncoderPort <-- LoginUseCase
-PasswordEncoderPort <-- ForgotPasswordUseCase
+PasswordEncoderPort <-- ChangePasswordUseCase
 TokenGeneratorPort <-- LoginUseCase
 TokenGeneratorPort <-- GoogleAuthUseCase
 
 CredentialsVerifier --> PasswordEncoderPort
+ChangePasswordUseCase --> CredentialsVerifier
+LoginUseCase --> CredentialsVerifier
 
 DomainEventPublisher <-- RegisterUserUseCase
 DomainEventPublisher <-- ForgotPasswordUseCase

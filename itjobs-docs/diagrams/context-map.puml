@@ -1,76 +1,82 @@
 @startuml ContextMap
 
-title ITJobs - Context Map
+title ITJobs — Context Map (Mapa de Contextos Acotados)
 
-left footer Leyenda: ..> USA Evento | --> DEPENDE
+left to right direction
 
-package "Shared" {
-    component [DomainEvent]
+skinparam rectangle {
+    BackgroundColor #FAFAFA
+    BorderColor #888888
+    FontSize 13
+}
+skinparam arrow {
+    Color #555555
+    FontSize 11
+}
+skinparam note {
+    BackgroundColor #FFFDE7
+    BorderColor #F9A825
+    FontSize 10
 }
 
-package "Authentication" {
-    component [UserAggregate]
-    component [RegisterUserUseCase]
-    component [LoginUseCase]
-    component [CredentialsVerifier]
-}
+' ══════════════════════════════════════════════
+'  SHARED KERNEL (centro)
+' ══════════════════════════════════════════════
+rectangle "Shared Kernel\n──────────────────\nDomainEvent\nDomainEventPublisher\nEmail · UserId · Timestamp" as SHARED #E8EAF6
 
-package "Jobs" {
-    component [JobAggregate]
-    component [CreateJobUseCase]
-    component [SearchJobsUseCase]
-}
+' ══════════════════════════════════════════════
+'  BOUNDED CONTEXTS  ✅ implementado | 🔲 pendiente
+' ══════════════════════════════════════════════
+rectangle "Authentication ✅\n──────────────────\nUserAggregate\nRegister · Login · Google\nVerifyEmail · ChangePassword\nForgotPassword" as AUTH #E8F5E9
 
-package "Applications" {
-    component [ApplicationAggregate]
-    component [ApplyToJobUseCase]
-}
+rectangle "Jobs ✅\n──────────────────\nJobAggregate\nCreateJob · SearchJobs" as JOBS #E3F2FD
 
-package "Profiles" {
-    component [CandidateAggregate]
-    component [EmployerAggregate]
-    component [RecruiterAggregate]
-}
+rectangle "Profiles 🔲\n──────────────────\nCandidateAggregate\nEmployerAggregate\nRecruiterAggregate" as PROF #FBE9E7
 
-package "Administration" {
-    component [CategoryAggregate]
-    component [UserManagementUseCase]
-}
+rectangle "Applications 🔲\n──────────────────\nApplicationAggregate\nApplyToJob · SavedJobs" as APPS #FFF8E1
 
-package "Moderation" {
-    component [ContentReportAggregate]
-    component [ModerationUseCase]
-}
+rectangle "Administration 🔲\n──────────────────\nCategoryAggregate\nUserManagementUseCase" as ADMIN #F3E5F5
 
-' Domain Events publishes
-UserAggregate ..> [DomainEvent] : publica eventos
-JobAggregate ..> [DomainEvent] : publica eventos
-ApplicationAggregate ..> [DomainEvent] : publica eventos
-ContentReportAggregate ..> [DomainEvent] : publica eventos
+rectangle "Moderation 🔲\n──────────────────\nContentReportAggregate\nModerationUseCase" as MOD #EFEBE9
 
-' Authentication relations
-RegisterUserUseCase --> [JobAggregate] : necesita para preparar respuesta
-CredentialsVerifier --> [PasswordEncoderPort] : verifica password
+' ══════════════════════════════════════════════
+'  RELACIONES ENTRE CONTEXTOS
+' ══════════════════════════════════════════════
 
-' Jobs relations (IMPLEMENTADO en codigo)
-CreateJobUseCase --> [JobAggregate] : crea ofertas
-SearchJobsUseCase --> [JobAggregate] : busca ofertas
+' Shared Kernel — todos dependen de él
+AUTH  --> SHARED : usa value objects\ny eventos
+JOBS  --> SHARED : usa value objects\ny eventos
+APPS  --> SHARED : usa eventos
+PROF  --> SHARED : usa value objects
+ADMIN --> SHARED : usa value objects
+MOD   --> SHARED : usa eventos
 
-' Applications relations
-ApplyToJobUseCase --> [CandidateAggregate] : necesita candidato
-ApplyToJobUseCase --> [JobAggregate] : necesita job
+' Authentication → publica eventos consumidos por otros contextos
+AUTH ..> PROF  : UserRegisteredEvent\n(crea perfil vacío)
+AUTH ..> ADMIN : UserRegisteredEvent\n(gestión de roles)
 
-' Profiles relations
-CandidateAggregate ..> [DomainEvent] : publicar eventos
-EmployerAggregate --> [JobAggregate] : crea y gestiona ofertas
-RecruiterAggregate --> [JobAggregate] : gestiona ofertas
+' Jobs → publica eventos
+JOBS ..> APPS  : JobCreatedEvent\nJobClosedEvent
 
-' Administration
-CategoryAggregate --> [JobAggregate] : categoriza ofertas
-UserManagementUseCase --> [UserAggregate] : gestiona usuarios
+' Profiles provee identidad a Applications
+PROF --> APPS  : CandidateAggregate\n(referencia)
+PROF --> JOBS  : EmployerAggregate\ncrea ofertas
 
-' Moderation
-ModerationUseCase --> [JobAggregate] : reporta contenido
-ModerationUseCase --> [ApplicationAggregate] : reporta postulaciones
+' Applications consume Jobs + Profiles
+APPS --> JOBS  : lee JobAggregate\n(valida OPEN)
+
+' Administration gestiona Jobs (categorías) y Authentication (usuarios)
+ADMIN --> JOBS  : categoriza ofertas
+ADMIN --> AUTH  : activa/desactiva\nusuarios
+
+' Moderation observa Jobs y Applications
+MOD --> JOBS : reporta ofertas
+MOD --> APPS : reporta postulaciones
+
+note bottom of AUTH
+  Ver auth-overview.puml
+  para detalle interno
+  de use cases y puertos
+end note
 
 @enduml

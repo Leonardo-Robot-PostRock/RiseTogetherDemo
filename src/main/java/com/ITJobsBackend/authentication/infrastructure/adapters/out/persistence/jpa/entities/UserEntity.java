@@ -75,4 +75,12 @@ public class UserEntity {
   @Setter
   @Column(name = "google_sub", unique = true, length = 255)
   private String googleSub;
+
+  @Setter
+  @Column(name = "verification_token", length = 255)
+  private String verificationToken;
+
+  @Setter
+  @Column(name = "verification_token_expires_at")
+  private Instant verificationTokenExpiresAt;
 }

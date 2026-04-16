@@ -28,6 +28,8 @@ public class UserMapper {
     entity.setUpdatedAt(domain.getUpdatedAt().value());
     entity.setRoles(new ArrayList<>(domain.getRoles()));
     entity.setGoogleSub(domain.getGoogleSub() != null ? domain.getGoogleSub().value() : null);
+    entity.setVerificationToken(domain.getVerificationToken());
+    entity.setVerificationTokenExpiresAt(domain.getVerificationTokenExpiresAt());
     return entity;
   }
 
@@ -45,6 +47,8 @@ public class UserMapper {
         googleSub,
         Timestamp.of(entity.getCreatedAt()),
         Timestamp.of(entity.getUpdatedAt()),
-        entity.getRoles());
+        entity.getRoles(),
+        entity.getVerificationToken(),
+        entity.getVerificationTokenExpiresAt());
   }
 }

@@ -24,7 +24,8 @@ rectangle "Autenticacion" {
     (Iniciar sesion) as UC02
     (Verificar email) as UC03
     (Activar/Desactivar usuario) as UC04
-    (Recuperar contraseña) as UC23
+    (Recuperar contrasea) as UC23
+    (Cambiar contrasea) as UC25
     (Autenticacion con Google) as UC24
 }
 
@@ -62,6 +63,7 @@ CAND -[#FF6B6B]-> UC01
 CAND -[#FF6B6B]-> UC02
 CAND -[#FF6B6B]-> UC23
 CAND -[#FF6B6B]-> UC24
+CAND -[#FF6B6B]-> UC25
 CAND -[#FF6B6B]-> UC05
 CAND -[#FF6B6B]-> UC09
 CAND -[#FF6B6B]-> UC14
@@ -72,6 +74,7 @@ CAND -[#FF6B6B]-> UC18
 EMP -[#1E8449]-> UC02
 EMP -[#1E8449]-> UC23
 EMP -[#1E8449]-> UC24
+EMP -[#1E8449]-> UC25
 EMP -[#1E8449]-> UC06
 EMP -[#1E8449]-> UC07
 EMP -[#1E8449]-> UC08

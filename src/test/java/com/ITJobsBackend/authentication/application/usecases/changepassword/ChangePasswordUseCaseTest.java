@@ -21,6 +21,7 @@ import com.ITJobsBackend.authentication.application.ports.out.LoadUserPort;
 import com.ITJobsBackend.authentication.application.ports.out.PasswordEncoderPort;
 import com.ITJobsBackend.authentication.application.ports.out.SaveUserPort;
 import com.ITJobsBackend.authentication.domain.aggregate.UserAggregate;
+import com.ITJobsBackend.authentication.domain.exceptions.InvalidCredentialsException;
 import com.ITJobsBackend.authentication.domain.service.CredentialsVerifier;
 import com.ITJobsBackend.authentication.domain.valueobjects.HashedPassword;
 import com.ITJobsBackend.authentication.domain.valueobjects.Username;
@@ -62,7 +63,9 @@ class ChangePasswordUseCaseTest {
         null,
         Timestamp.now(),
         Timestamp.now(),
-        List.of("ROLE_USER"));
+        List.of("ROLE_USER"),
+        null,
+        null);
   }
 
   @Test
@@ -83,6 +86,16 @@ class ChangePasswordUseCaseTest {
     given(loadUserPort.findById(UserId.of(USER_ID))).willReturn(Optional.empty());
 
     assertThrows(IllegalArgumentException.class, () -> useCase.execute(command));
+    then(saveUserPort).should(never()).save(any(UserAggregate.class));
+  }
+
+  @Test
+  void shouldThrowExceptionWhenOldPasswordIsIncorrect() {
+    UserAggregate user = buildUser();
+    given(loadUserPort.findById(UserId.of(USER_ID))).willReturn(Optional.of(user));
+    given(passwordEncoder.matches(OLD_PASSWORD, "$2a$10$hashed")).willReturn(false);
+
+    assertThrows(InvalidCredentialsException.class, () -> useCase.execute(command));
     then(saveUserPort).should(never()).save(any(UserAggregate.class));
   }
 }

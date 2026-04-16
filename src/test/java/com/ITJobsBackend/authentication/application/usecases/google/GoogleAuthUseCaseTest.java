@@ -12,6 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -61,7 +62,9 @@ class GoogleAuthUseCaseTest {
         GoogleSub.of(GOOGLE_SUB),
         Timestamp.now(),
         Timestamp.now(),
-        List.of("ROLE_USER"));
+        List.of("ROLE_USER"),
+        null,
+        null);
   }
 
   private void givenTokensAreStubbed() {
@@ -101,5 +104,48 @@ class GoogleAuthUseCaseTest {
 
     assertThrows(InvalidCredentialsException.class, () -> useCase.execute(differentSubCommand));
     then(saveUserPort).should(never()).save(any(UserAggregate.class));
+  }
+
+  @Test
+  void shouldAuthenticateExistingUserWithNullGoogleSub() {
+    // Usuario registrado con email/password — aún no tiene GoogleSub vinculado
+    UserAggregate userWithoutSub =
+        UserAggregate.reconstitute(
+            UserId.of(USER_ID),
+            Username.of("john"),
+            Email.of(EMAIL),
+            HashedPassword.fromHash("$2a$10$hashed"),
+            true,
+            true,
+            null, // googleSub aún no vinculado
+            Timestamp.now(),
+            Timestamp.now(),
+            List.of("ROLE_USER"),
+            null,
+            null);
+    given(loadUserPort.findByEmail(Email.of(EMAIL))).willReturn(Optional.of(userWithoutSub));
+    givenTokensAreStubbed();
+
+    AuthTokenResponse response = useCase.execute(command);
+
+    assertEquals(USER_ID, response.userId());
+    // El sub no se vincula ni se guarda en este flujo (comportamiento actual)
+    then(saveUserPort).should(never()).save(any(UserAggregate.class));
+  }
+
+  @Test
+  void shouldDeriveUsernameFromEmailWhenNameIsNull() {
+    // EMAIL = "john@gmail.com" → username esperado = "john"
+    GoogleAuthCommand nullNameCommand = new GoogleAuthCommand(GOOGLE_SUB, EMAIL, null);
+    given(loadUserPort.findByEmail(Email.of(EMAIL))).willReturn(Optional.empty());
+    given(saveUserPort.save(any(UserAggregate.class)))
+        .willAnswer(invocation -> invocation.getArgument(0));
+    givenTokensAreStubbed();
+
+    useCase.execute(nullNameCommand);
+
+    ArgumentCaptor<UserAggregate> captor = ArgumentCaptor.forClass(UserAggregate.class);
+    then(saveUserPort).should().save(captor.capture());
+    assertEquals("john", captor.getValue().getUsername().value());
   }
 }

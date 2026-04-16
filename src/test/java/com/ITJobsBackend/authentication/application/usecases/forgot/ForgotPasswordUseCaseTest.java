@@ -11,15 +11,18 @@ import static org.mockito.Mockito.never;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.ITJobsBackend.authentication.application.ports.out.LoadUserPort;
 import com.ITJobsBackend.authentication.domain.aggregate.UserAggregate;
+import com.ITJobsBackend.authentication.domain.event.PasswordResetRequestedEvent;
 import com.ITJobsBackend.authentication.domain.valueobjects.HashedPassword;
 import com.ITJobsBackend.authentication.domain.valueobjects.Username;
 import com.ITJobsBackend.shared.application.ports.out.DomainEventPublisher;
+import com.ITJobsBackend.shared.domain.event.DomainEvent;
 import com.ITJobsBackend.shared.domain.valueobjects.Email;
 import com.ITJobsBackend.shared.domain.valueobjects.Timestamp;
 import com.ITJobsBackend.shared.domain.valueobjects.UserId;
@@ -47,7 +50,9 @@ class ForgotPasswordUseCaseTest {
         null,
         Timestamp.now(),
         Timestamp.now(),
-        List.of("ROLE_USER"));
+        List.of("ROLE_USER"),
+        null,
+        null);
   }
 
   @Test
@@ -67,5 +72,23 @@ class ForgotPasswordUseCaseTest {
 
     assertDoesNotThrow(() -> useCase.execute(new ForgotPasswordCommand(UNKNOWN_EMAIL)));
     then(domainEventPublisher).should(never()).publishAll(any());
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  void shouldPublishEventWithCorrectData() {
+    given(loadUserPort.findByEmail(Email.of(EMAIL))).willReturn(Optional.of(buildUser()));
+
+    useCase.execute(new ForgotPasswordCommand(EMAIL));
+
+    ArgumentCaptor<List<DomainEvent>> captor = ArgumentCaptor.forClass(List.class);
+    then(domainEventPublisher).should().publishAll(captor.capture());
+
+    List<DomainEvent> published = captor.getValue();
+    assertEquals(1, published.size());
+    PasswordResetRequestedEvent event = (PasswordResetRequestedEvent) published.get(0);
+    assertEquals(USER_ID, event.getAggregateId());
+    assertEquals(EMAIL, event.getEmail());
+    assertNotNull(event.getResetToken());
   }
 }

@@ -1,5 +1,7 @@
 package com.ITJobsBackend.authentication.application.usecases.verify;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,6 +22,7 @@ import com.ITJobsBackend.authentication.application.ports.out.LoadUserPort;
 import com.ITJobsBackend.authentication.application.ports.out.SaveUserPort;
 import com.ITJobsBackend.authentication.domain.aggregate.UserAggregate;
 import com.ITJobsBackend.authentication.domain.exceptions.EmailAlreadyVerifiedException;
+import com.ITJobsBackend.authentication.domain.exceptions.VerificationTokenExpiredException;
 import com.ITJobsBackend.authentication.domain.valueobjects.HashedPassword;
 import com.ITJobsBackend.authentication.domain.valueobjects.Username;
 import com.ITJobsBackend.shared.application.ports.out.DomainEventPublisher;
@@ -48,6 +51,11 @@ class VerifyEmailUseCaseTest {
   }
 
   private UserAggregate buildUser(boolean active, boolean emailVerified) {
+    return buildUser(active, emailVerified, TOKEN, Instant.now().plus(24, ChronoUnit.HOURS));
+  }
+
+  private UserAggregate buildUser(
+      boolean active, boolean emailVerified, String verificationToken, Instant expiresAt) {
     return UserAggregate.reconstitute(
         UserId.of(USER_ID),
         Username.of("john"),
@@ -58,7 +66,9 @@ class VerifyEmailUseCaseTest {
         null,
         Timestamp.now(),
         Timestamp.now(),
-        List.of("ROLE_USER"));
+        List.of("ROLE_USER"),
+        verificationToken,
+        expiresAt);
   }
 
   @Test
@@ -76,10 +86,40 @@ class VerifyEmailUseCaseTest {
 
   @Test
   void shouldThrowExceptionWhenEmailAlreadyVerified() {
-    UserAggregate user = buildUser(true, true);
+    UserAggregate user = buildUser(true, true, TOKEN, Instant.now().plus(24, ChronoUnit.HOURS));
     given(loadUserPort.findById(UserId.of(USER_ID))).willReturn(Optional.of(user));
 
     assertThrows(EmailAlreadyVerifiedException.class, () -> useCase.execute(command));
+    then(saveUserPort).should(never()).save(any(UserAggregate.class));
+    then(domainEventPublisher).should(never()).publishAll(any());
+  }
+
+  @Test
+  void shouldThrowExceptionWhenVerificationTokenExpired() {
+    UserAggregate user = buildUser(false, false, TOKEN, Instant.now().minus(1, ChronoUnit.HOURS));
+    given(loadUserPort.findById(UserId.of(USER_ID))).willReturn(Optional.of(user));
+
+    assertThrows(VerificationTokenExpiredException.class, () -> useCase.execute(command));
+    then(saveUserPort).should(never()).save(any(UserAggregate.class));
+    then(domainEventPublisher).should(never()).publishAll(any());
+  }
+
+  @Test
+  void shouldThrowExceptionWhenVerificationTokenInvalid() {
+    UserAggregate user =
+        buildUser(false, false, "different-token", Instant.now().plus(24, ChronoUnit.HOURS));
+    given(loadUserPort.findById(UserId.of(USER_ID))).willReturn(Optional.of(user));
+
+    assertThrows(IllegalArgumentException.class, () -> useCase.execute(command));
+    then(saveUserPort).should(never()).save(any(UserAggregate.class));
+    then(domainEventPublisher).should(never()).publishAll(any());
+  }
+
+  @Test
+  void shouldThrowExceptionWhenUserNotFound() {
+    given(loadUserPort.findById(UserId.of(USER_ID))).willReturn(Optional.empty());
+
+    assertThrows(IllegalArgumentException.class, () -> useCase.execute(command));
     then(saveUserPort).should(never()).save(any(UserAggregate.class));
     then(domainEventPublisher).should(never()).publishAll(any());
   }

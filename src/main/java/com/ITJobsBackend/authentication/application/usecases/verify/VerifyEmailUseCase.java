@@ -44,7 +44,7 @@ public class VerifyEmailUseCase implements VerifyEmailPort {
         userOpt.orElseThrow(
             () -> new IllegalArgumentException("User not found: " + command.userId()));
 
-    user.verifyEmail();
+    user.verifyEmail(command.token());
     saveUserPort.save(user);
     domainEventPublisher.publishAll(user.pullDomainEvents());
 

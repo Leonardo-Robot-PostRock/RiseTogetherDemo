@@ -18,8 +18,8 @@
 - [x] Registro de usuario
 - [x] Login con JWT
 - [x] Filtro JWT de autenticación
-- [ ] Verificar email
-- [ ] Cambiar password
+- [x] Verificar email
+- [x] Cambiar password
 - [ ] Actualizar email
 
 **Jobs** — Implementado parcialmente
@@ -67,14 +67,14 @@
 
 ### Bounded Context: Authentication
 
-| ID    | Requisito                                                                       |
-|-------|---------------------------------------------------------------------------------|
-| RF-01 | Registrar usuario con username, email y password válido                         |
-| RF-02 | Login con email/password → genera access token (15min) + refresh token (7 días) |
-| RF-03 | Verificar email del usuario                                                     |
-| RF-04 | Activar/desactivar usuario                                                      |
-| RF-05 | Cambiar password de usuario                                                     |
-| RF-06 | Actualizar email (requiere re-verificación)                                     |
+| ID    | Requisito                                                                      | Estado |
+|-------|--------------------------------------------------------------------------------|--------|
+| RF-01 | Registrar usuario con username, email y password válido                        | ✅      |
+| RF-02 | Login con email/password → genera access token (15min) + refresh token (7 días)| ✅      |
+| RF-03 | Verificar email del usuario                                                    | ✅      |
+| RF-04 | Activar/desactivar usuario                                                     | ❌      |
+| RF-05 | Cambiar password de usuario                                                    | ✅      |
+| RF-06 | Actualizar email (requiere re-verificación)                                    | ❌      |
 
 ### Bounded Context: Profiles
 
@@ -126,18 +126,18 @@
 
 ## Requisitos No Funcionales
 
-| ID     | Categoría         | Requisito                                                               |
-|--------|-------------------|-------------------------------------------------------------------------|
-| RNF-01 | Autenticación     | Autenticación stateless con JWT (sin sesiones de servidor)              |
-| RNF-02 | Seguridad         | Password hasheado con BCrypt                                            |
-| RNF-03 | Arquitectura      | Hexagonal (Ports & Adapters) con DDD táctico                            |
-| RNF-04 | Base de datos     | MySQL 8.0 en producción, H2 en memoria para tests                       |
-| RNF-05 | Migraciones       | Esquema versionado con Flyway (V1–V8)                                   |
-| RNF-06 | Despliegue        | Docker Compose (MySQL + Spring Boot)                                    |
-| RNF-07 | Manejo de errores | GlobalExceptionHandler centralizado                                     |
-| RNF-08 | Validación        | Jakarta Validation en capa REST                                         |
-| RNF-09 | Eventos           | Domain events para desacoplar bounded contexts                          |
-| RNF-10 | Moneda            | Salarios en BigDecimal (nunca double)                                   |
-| RNF-11 | Perfiles          | Spring profiles: `dev` (local), `prod` (Docker), `staging` (pendiente)  |
-| RNF-12 | Charset           | Base de datos con charset `utf8mb4_unicode_ci`                          |
-| RNF-13 | UUID              | UUIDs mapeados como `VARCHAR(36)` vía `@JdbcTypeCode(SqlTypes.VARCHAR)` |
+| ID     | Categoría         | Requisito                                                                    |
+|--------|-------------------|------------------------------------------------------------------------------|
+| RNF-01 | Autenticación     | Autenticación stateless con JWT (sin sesiones de servidor)                   |
+| RNF-02 | Seguridad         | Password hasheado con BCrypt                                                 |
+| RNF-03 | Arquitectura      | Hexagonal (Ports & Adapters) con DDD táctico                                 |
+| RNF-04 | Base de datos     | MySQL 8.0 en producción, H2 en memoria para tests                            |
+| RNF-05 | Migraciones       | Esquema versionado con Flyway (V1–V10)                                       |
+| RNF-06 | Despliegue        | Docker Compose (MySQL + Spring Boot)                                         |
+| RNF-07 | Manejo de errores | GlobalExceptionHandler centralizado                                          |
+| RNF-08 | Validación        | Jakarta Validation en capa REST                                              |
+| RNF-09 | Eventos           | Domain events para desacoplar bounded contexts                               |
+| RNF-10 | Moneda            | Salarios en BigDecimal (nunca double)                                        |
+| RNF-11 | Perfiles          | Spring profiles: `dev` (local), `prod` (Docker), `staging` (pendiente)       |
+| RNF-12 | Charset           | Base de datos con charset `utf8mb4_unicode_ci`                               |
+| RNF-13 | UUID              | UUIDs mapeados como `VARCHAR(36)` vía `@JdbcTypeCode(SqlTypes.VARCHAR)`      |

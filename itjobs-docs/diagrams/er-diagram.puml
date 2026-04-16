@@ -11,7 +11,9 @@ package "users" as PKG_USERS {
         + password : VARCHAR(255)
         + active : BOOLEAN
         + email_verified : BOOLEAN
-        + google_sub : VARCHAR(255) [UNIQUE]
+        + google_sub : VARCHAR(255) [UNIQUE]  ' V9
+        + verification_token : VARCHAR(255)    ' V10
+        + verification_token_expires_at : DATETIME(3)  ' V10
         + created_at : TIMESTAMP
         + updated_at : TIMESTAMP
     }

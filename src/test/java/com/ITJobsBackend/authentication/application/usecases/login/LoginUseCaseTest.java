@@ -79,6 +79,19 @@ class LoginUseCaseTest {
   }
 
   @Test
+  void shouldThrowWhenPasswordIsIncorrect() {
+    // Given
+    given(loadUserPort.findByEmail(any(Email.class))).willReturn(Optional.of(buildUser()));
+    given(passwordEncoder.matches("wrongPass", HASHED_PASSWORD)).willReturn(false);
+
+    // When & Then
+    assertThrows(
+        InvalidCredentialsException.class,
+        () -> loginUseCase.execute(new LoginCommand(EMAIL, "wrongPass")));
+    then(tokenGenerator).shouldHaveNoInteractions();
+  }
+
+  @Test
   void shouldPassRawPasswordWithoutValidation() {
     // Given
     given(loadUserPort.findByEmail(any(Email.class))).willReturn(Optional.of(buildUser()));

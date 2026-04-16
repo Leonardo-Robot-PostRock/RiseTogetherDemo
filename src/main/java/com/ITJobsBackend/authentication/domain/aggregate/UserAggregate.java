@@ -1,5 +1,6 @@
 package com.ITJobsBackend.authentication.domain.aggregate;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -10,6 +11,7 @@ import com.ITJobsBackend.authentication.domain.event.UserDeactivatedEvent;
 import com.ITJobsBackend.authentication.domain.exceptions.EmailAlreadyVerifiedException;
 import com.ITJobsBackend.authentication.domain.exceptions.UserAlreadyActivatedException;
 import com.ITJobsBackend.authentication.domain.exceptions.UserAlreadyDeactivatedException;
+import com.ITJobsBackend.authentication.domain.exceptions.VerificationTokenExpiredException;
 import com.ITJobsBackend.authentication.domain.valueobjects.GoogleSub;
 import com.ITJobsBackend.authentication.domain.valueobjects.HashedPassword;
 import com.ITJobsBackend.authentication.domain.valueobjects.Username;
@@ -29,6 +31,8 @@ public class UserAggregate extends AggregateRoot {
   private boolean emailVerified;
   private GoogleSub googleSub;
   private Timestamp updatedAt;
+  private String verificationToken;
+  private Instant verificationTokenExpiresAt;
 
   private UserAggregate(
       UserId id, Username username, Email email, HashedPassword password, Timestamp createdAt) {
@@ -70,7 +74,9 @@ public class UserAggregate extends AggregateRoot {
       GoogleSub googleSub,
       Timestamp createdAt,
       Timestamp updatedAt,
-      List<String> roles) {
+      List<String> roles,
+      String verificationToken,
+      Instant verificationTokenExpiresAt) {
 
     UserAggregate user = new UserAggregate(id, username, email, password, createdAt);
 
@@ -80,7 +86,14 @@ public class UserAggregate extends AggregateRoot {
     user.updatedAt = updatedAt;
     user.roles.clear();
     user.roles.addAll(roles);
+    user.verificationToken = verificationToken;
+    user.verificationTokenExpiresAt = verificationTokenExpiresAt;
     return user;
+  }
+
+  public void setVerificationToken(String token, Instant expiresAt) {
+    this.verificationToken = token;
+    this.verificationTokenExpiresAt = expiresAt;
   }
 
   public void activate() {
@@ -102,9 +115,18 @@ public class UserAggregate extends AggregateRoot {
     recordEvent(new UserDeactivatedEvent(this.id.value().toString(), this.email.value()));
   }
 
-  public void verifyEmail() {
+  public void verifyEmail(String providedToken) {
     if (this.emailVerified) {
       throw new EmailAlreadyVerifiedException("Email is already verified");
+    }
+
+    if (verificationToken == null || !verificationToken.equals(providedToken)) {
+      throw new IllegalArgumentException("Invalid verification token");
+    }
+
+    if (verificationTokenExpiresAt != null
+        && Instant.now().isAfter(verificationTokenExpiresAt)) {
+      throw new VerificationTokenExpiredException("Verification token has expired");
     }
 
     this.emailVerified = true;
@@ -175,5 +197,13 @@ public class UserAggregate extends AggregateRoot {
 
   public List<String> getRoles() {
     return Collections.unmodifiableList(roles);
+  }
+
+  public String getVerificationToken() {
+    return verificationToken;
+  }
+
+  public Instant getVerificationTokenExpiresAt() {
+    return verificationTokenExpiresAt;
   }
 }
