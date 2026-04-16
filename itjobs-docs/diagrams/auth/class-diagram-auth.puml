@@ -15,8 +15,7 @@ package "domain.aggregate" #E8F5E9 {
         - googleSub : GoogleSub
         - active : boolean
         - emailVerified : boolean
-        - verificationToken : String
-        - verificationTokenExpiresAt : Instant
+        - verificationToken : VerificationToken
         - roles : List<String>
         - createdAt : Timestamp
         - updatedAt : Timestamp
@@ -27,7 +26,7 @@ package "domain.aggregate" #E8F5E9 {
         --
         + activate()
         + deactivate()
-        + verifyEmail(token)
+        + verifyEmail()
         + changePassword(hashed)
         + linkGoogleAccount(sub)
         + updateEmail(email)
@@ -49,6 +48,13 @@ package "domain.valueobjects" #DCEDC8 {
     class GoogleSub <<ValueObject>> {
         - value : String
         + of(raw) : GoogleSub
+    }
+    class VerificationToken <<ValueObject>> {
+        - token : String
+        - expiresAt : Instant
+        + of(token, expiresAt) : VerificationToken
+        + matches(token) : boolean
+        + isExpired() : boolean
     }
 }
 
@@ -106,12 +112,16 @@ package "application.ports.out" #A5D6A7 {
         + generateAccessToken(userId, roles) : String
         + generateRefreshToken(userId) : String
     }
+    interface VerificationTokenValidatorPort {
+        + validate(token: VerificationToken, providedToken: String)
+    }
 }
 
 ' ─── Relations ───────────────────────────────
 UserAggregate *-- Username
 UserAggregate *-- HashedPassword
 UserAggregate *-- GoogleSub
+UserAggregate *-- VerificationToken
 
 UserAggregate ..> UserRegisteredEvent : records
 UserAggregate ..> UserActivatedEvent  : records

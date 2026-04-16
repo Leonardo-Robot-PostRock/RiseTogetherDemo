@@ -57,26 +57,19 @@ package "shared" {
 package "authentication" {
 
     class UserAggregate <<Aggregate>> {
-        - id : UserId
-        - username : Username
-        - email : Email
-        - password : HashedPassword
         - active : boolean
         - emailVerified : boolean
-        - googleSub : GoogleSub
-        - createdAt : Timestamp
-        - updatedAt : Timestamp
+        - verificationToken : VerificationToken
         - roles : List<String>
-        - domainEvents : List<DomainEvent>
         + create() : UserAggregate
         + createGoogleUser() : UserAggregate
         + activate()
         + deactivate()
         + verifyEmail()
-        + changePassword()
-        + linkGoogleAccount()
-        + updateEmail()
-        + addRole()
+        + changePassword(hashed)
+        + linkGoogleAccount(sub)
+        + updateEmail(email)
+        + addRole(role)
     }
 
     class Username <<ValueObject>> {

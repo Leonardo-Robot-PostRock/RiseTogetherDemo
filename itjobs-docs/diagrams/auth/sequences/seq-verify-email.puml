@@ -8,6 +8,7 @@ participant "AuthController\n<<REST>>" as CTRL
 participant "VerifyEmailUseCase\n<<Use Case>>" as UC
 participant "UserId\n<<Value Object>>" as UID
 participant "LoadUserPort\n<<Out Port>>" as LOAD
+participant "VerificationTokenValidatorPort\n<<Out Port>>" as VAL
 participant "UserAggregate\n<<Aggregate>>" as AGG
 participant "SaveUserPort\n<<Out Port>>" as SAVE
 participant "DomainEventPublisher\n<<Out Port>>" as PUB
@@ -40,12 +41,16 @@ deactivate LOAD
 
 UC -> UC : orElseThrow()\nUsuario no encontrado → 400
 
+' Validar token a través del puerto
+UC -> VAL : validate(user.getVerificationToken(), command.token())
+activate VAL
+VAL --> UC : void (throws if invalid/expired)
+deactivate VAL
+
 ' Verificar token en el agregado
-UC -> AGG : user.verifyEmail(command.token())
+UC -> AGG : user.verifyEmail()
 activate AGG
-AGG -> AGG : Validar token != null\ny no expirado
 AGG -> AGG : emailVerified = true
-AGG -> AGG : limpiar verification_token
 AGG -> AGG : recordEvent(EmailVerifiedEvent)
 AGG --> UC : void
 deactivate AGG

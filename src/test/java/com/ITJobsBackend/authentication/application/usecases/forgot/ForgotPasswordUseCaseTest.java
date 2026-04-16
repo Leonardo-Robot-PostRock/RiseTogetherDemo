@@ -51,7 +51,6 @@ class ForgotPasswordUseCaseTest {
         Timestamp.now(),
         Timestamp.now(),
         List.of("ROLE_USER"),
-        null,
         null);
   }
 

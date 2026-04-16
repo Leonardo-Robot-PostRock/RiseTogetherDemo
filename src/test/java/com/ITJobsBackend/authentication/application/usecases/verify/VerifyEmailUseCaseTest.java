@@ -20,11 +20,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.ITJobsBackend.authentication.application.ports.out.LoadUserPort;
 import com.ITJobsBackend.authentication.application.ports.out.SaveUserPort;
+import com.ITJobsBackend.authentication.application.ports.out.VerificationTokenValidatorPort;
 import com.ITJobsBackend.authentication.domain.aggregate.UserAggregate;
 import com.ITJobsBackend.authentication.domain.exceptions.EmailAlreadyVerifiedException;
 import com.ITJobsBackend.authentication.domain.exceptions.VerificationTokenExpiredException;
 import com.ITJobsBackend.authentication.domain.valueobjects.HashedPassword;
 import com.ITJobsBackend.authentication.domain.valueobjects.Username;
+import com.ITJobsBackend.authentication.domain.valueobjects.VerificationToken;
 import com.ITJobsBackend.shared.application.ports.out.DomainEventPublisher;
 import com.ITJobsBackend.shared.domain.valueobjects.Email;
 import com.ITJobsBackend.shared.domain.valueobjects.Timestamp;
@@ -40,6 +42,7 @@ class VerifyEmailUseCaseTest {
   @Mock private LoadUserPort loadUserPort;
   @Mock private SaveUserPort saveUserPort;
   @Mock private DomainEventPublisher domainEventPublisher;
+  @Mock private VerificationTokenValidatorPort verificationTokenValidatorPort;
 
   @InjectMocks private VerifyEmailUseCase useCase;
 
@@ -56,6 +59,9 @@ class VerifyEmailUseCaseTest {
 
   private UserAggregate buildUser(
       boolean active, boolean emailVerified, String verificationToken, Instant expiresAt) {
+    VerificationToken token = verificationToken != null
+        ? VerificationToken.of(verificationToken, expiresAt)
+        : null;
     return UserAggregate.reconstitute(
         UserId.of(USER_ID),
         Username.of("john"),
@@ -67,8 +73,7 @@ class VerifyEmailUseCaseTest {
         Timestamp.now(),
         Timestamp.now(),
         List.of("ROLE_USER"),
-        verificationToken,
-        expiresAt);
+        token);
   }
 
   @Test
@@ -82,6 +87,7 @@ class VerifyEmailUseCaseTest {
     assertTrue(user.isEmailVerified());
     then(saveUserPort).should().save(user);
     then(domainEventPublisher).should().publishAll(any());
+    then(verificationTokenValidatorPort).should().validate(user.getVerificationToken(), TOKEN);
   }
 
   @Test
@@ -98,6 +104,8 @@ class VerifyEmailUseCaseTest {
   void shouldThrowExceptionWhenVerificationTokenExpired() {
     UserAggregate user = buildUser(false, false, TOKEN, Instant.now().minus(1, ChronoUnit.HOURS));
     given(loadUserPort.findById(UserId.of(USER_ID))).willReturn(Optional.of(user));
+    willThrow(new VerificationTokenExpiredException("Verification token has expired"))
+        .given(verificationTokenValidatorPort).validate(any(), eq(TOKEN));
 
     assertThrows(VerificationTokenExpiredException.class, () -> useCase.execute(command));
     then(saveUserPort).should(never()).save(any(UserAggregate.class));
@@ -109,6 +117,8 @@ class VerifyEmailUseCaseTest {
     UserAggregate user =
         buildUser(false, false, "different-token", Instant.now().plus(24, ChronoUnit.HOURS));
     given(loadUserPort.findById(UserId.of(USER_ID))).willReturn(Optional.of(user));
+    willThrow(new IllegalArgumentException("Invalid verification token"))
+        .given(verificationTokenValidatorPort).validate(any(), eq(TOKEN));
 
     assertThrows(IllegalArgumentException.class, () -> useCase.execute(command));
     then(saveUserPort).should(never()).save(any(UserAggregate.class));

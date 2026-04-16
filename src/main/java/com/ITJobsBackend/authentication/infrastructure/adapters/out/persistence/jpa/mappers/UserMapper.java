@@ -8,6 +8,7 @@ import com.ITJobsBackend.authentication.domain.aggregate.UserAggregate;
 import com.ITJobsBackend.authentication.domain.valueobjects.GoogleSub;
 import com.ITJobsBackend.authentication.domain.valueobjects.HashedPassword;
 import com.ITJobsBackend.authentication.domain.valueobjects.Username;
+import com.ITJobsBackend.authentication.domain.valueobjects.VerificationToken;
 import com.ITJobsBackend.authentication.infrastructure.adapters.out.persistence.jpa.entities.UserEntity;
 import com.ITJobsBackend.shared.domain.valueobjects.Email;
 import com.ITJobsBackend.shared.domain.valueobjects.Timestamp;
@@ -28,14 +29,21 @@ public class UserMapper {
     entity.setUpdatedAt(domain.getUpdatedAt().value());
     entity.setRoles(new ArrayList<>(domain.getRoles()));
     entity.setGoogleSub(domain.getGoogleSub() != null ? domain.getGoogleSub().value() : null);
-    entity.setVerificationToken(domain.getVerificationToken());
-    entity.setVerificationTokenExpiresAt(domain.getVerificationTokenExpiresAt());
+    entity.setVerificationToken(
+        domain.getVerificationToken() != null ? domain.getVerificationToken().token() : null);
+    entity.setVerificationTokenExpiresAt(
+        domain.getVerificationToken() != null ? domain.getVerificationToken().expiresAt() : null);
     return entity;
   }
 
   public UserAggregate toDomain(UserEntity entity) {
     GoogleSub googleSub =
         entity.getGoogleSub() != null ? GoogleSub.of(entity.getGoogleSub()) : null;
+
+    VerificationToken verificationToken =
+        entity.getVerificationToken() != null
+            ? VerificationToken.of(entity.getVerificationToken(), entity.getVerificationTokenExpiresAt())
+            : null;
 
     return UserAggregate.reconstitute(
         UserId.of(entity.getId()),
@@ -48,7 +56,6 @@ public class UserMapper {
         Timestamp.of(entity.getCreatedAt()),
         Timestamp.of(entity.getUpdatedAt()),
         entity.getRoles(),
-        entity.getVerificationToken(),
-        entity.getVerificationTokenExpiresAt());
+        verificationToken);
   }
 }

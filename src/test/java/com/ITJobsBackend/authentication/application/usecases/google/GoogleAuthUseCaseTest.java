@@ -63,7 +63,6 @@ class GoogleAuthUseCaseTest {
         Timestamp.now(),
         Timestamp.now(),
         List.of("ROLE_USER"),
-        null,
         null);
   }
 
@@ -121,7 +120,6 @@ class GoogleAuthUseCaseTest {
             Timestamp.now(),
             Timestamp.now(),
             List.of("ROLE_USER"),
-            null,
             null);
     given(loadUserPort.findByEmail(Email.of(EMAIL))).willReturn(Optional.of(userWithoutSub));
     givenTokensAreStubbed();

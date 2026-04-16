@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.ITJobsBackend.authentication.application.ports.in.VerifyEmailPort;
 import com.ITJobsBackend.authentication.application.ports.out.LoadUserPort;
 import com.ITJobsBackend.authentication.application.ports.out.SaveUserPort;
+import com.ITJobsBackend.authentication.application.ports.out.VerificationTokenValidatorPort;
 import com.ITJobsBackend.authentication.domain.aggregate.UserAggregate;
 import com.ITJobsBackend.shared.application.ports.out.DomainEventPublisher;
 import com.ITJobsBackend.shared.domain.valueobjects.UserId;
@@ -23,14 +24,17 @@ public class VerifyEmailUseCase implements VerifyEmailPort {
   private final LoadUserPort loadUserPort;
   private final SaveUserPort saveUserPort;
   private final DomainEventPublisher domainEventPublisher;
+  private final VerificationTokenValidatorPort verificationTokenValidatorPort;
 
   public VerifyEmailUseCase(
       LoadUserPort loadUserPort,
       SaveUserPort saveUserPort,
-      DomainEventPublisher domainEventPublisher) {
+      DomainEventPublisher domainEventPublisher,
+      VerificationTokenValidatorPort verificationTokenValidatorPort) {
     this.loadUserPort = loadUserPort;
     this.saveUserPort = saveUserPort;
     this.domainEventPublisher = domainEventPublisher;
+    this.verificationTokenValidatorPort = verificationTokenValidatorPort;
   }
 
   @Override
@@ -44,7 +48,8 @@ public class VerifyEmailUseCase implements VerifyEmailPort {
         userOpt.orElseThrow(
             () -> new IllegalArgumentException("User not found: " + command.userId()));
 
-    user.verifyEmail(command.token());
+    verificationTokenValidatorPort.validate(user.getVerificationToken(), command.token());
+    user.verifyEmail();
     saveUserPort.save(user);
     domainEventPublisher.publishAll(user.pullDomainEvents());
 

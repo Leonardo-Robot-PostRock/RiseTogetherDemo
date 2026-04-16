@@ -1,0 +1,71 @@
+@startuml AuthOverview
+
+title Authentication — Capas Hexagonales (visión de componentes)
+
+left to right direction
+
+skinparam packageStyle rectangle
+skinparam defaultTextAlignment center
+skinparam rectangle {
+    BackgroundColor #FAFAFA
+    BorderColor #AAAAAA
+}
+
+' ── Fila AuthController ──────────────────────────────────────────
+package "REST Adapters  (Driving)" #E8EAF6 {
+    rectangle "AuthController\n/api/v1/auth/**" as CTRL1
+    rectangle "AccountController\n/api/v1/account/**" as CTRL2
+}
+
+package "Ports IN — AuthController" #C8E6C9 {
+    rectangle "RegisterUserPort\nLoginPort\nGoogleAuthPort\nVerifyEmailPort\n(ForgotPasswordPort — pendiente)" as PORTS_AUTH
+}
+
+package "Use Cases — AuthController" #DCEDC8 {
+    rectangle "RegisterUserUseCase\nLoginUseCase\nGoogleAuthUseCase\nVerifyEmailUseCase\nForgotPasswordUseCase" as UCS_AUTH
+}
+
+' ── Fila AccountController ───────────────────────────────────────
+package "Ports IN — AccountController" #C8E6C9 {
+    rectangle "ChangePasswordPort" as PORTS_ACC
+}
+
+package "Use Cases — AccountController" #DCEDC8 {
+    rectangle "ChangePasswordUseCase" as UCS_ACC
+}
+
+' ── Capas compartidas ────────────────────────────────────────────
+package "Domain" #FFF3E0 {
+    rectangle "UserAggregate\nCredentialsVerifier" as DOM
+}
+
+package "Ports OUT" #A5D6A7 {
+    rectangle "LoadUserPort  SaveUserPort\nPasswordEncoderPort  TokenGeneratorPort\nDomainEventPublisher\nVerificationTokenValidatorPort" as PORTS_OUT
+}
+
+package "Infrastructure Adapters  (Driven)" #F3E5F5 {
+    rectangle "LoadUserPortAdapter (JPA)  SaveUserPortAdapter (JPA)\nBCryptPasswordEncoderAdapter  JwtTokenGeneratorAdapter\nSpringDomainEventPublisher\nVerificationTokenValidatorAdapter" as ADAPTERS
+}
+
+' ── Relaciones ───────────────────────────────────────────────────
+CTRL1      --> PORTS_AUTH : invoca
+CTRL2      --> PORTS_ACC  : invoca
+
+PORTS_AUTH --> UCS_AUTH   : implementado por
+PORTS_ACC  --> UCS_ACC    : implementado por
+
+UCS_AUTH   --> DOM        : usa
+UCS_ACC    --> DOM        : usa
+
+UCS_AUTH   --> PORTS_OUT  : invoca
+UCS_ACC    --> PORTS_OUT  : invoca
+
+PORTS_OUT  --> ADAPTERS   : implementado por
+
+note bottom
+  auth-usecases-write.puml → Register, VerifyEmail, ChangePassword, ForgotPassword
+  auth-usecases-auth.puml  → Login, GoogleAuth
+  seq-*.puml               → flujos de secuencia completos
+end note
+
+@enduml

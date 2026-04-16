@@ -64,7 +64,6 @@ class ChangePasswordUseCaseTest {
         Timestamp.now(),
         Timestamp.now(),
         List.of("ROLE_USER"),
-        null,
         null);
   }
 
