@@ -17,6 +17,7 @@
 | V7        | `salary_min`, `salary_max` de DOUBLE a DECIMAL(15,2) |
 | V8        | `salary_min`, `salary_max` NOT NULL (transparencia)  |
 | V9        | Agregar `google_sub` a `users`                       |
+| V10        | Agregar `verification_token` y expiración a `users`   
 
 ---
 
@@ -33,6 +34,8 @@ Almacena la información de autenticación de los usuarios.
 - **active**: Si el usuario está activo.
 - **email_verified**: Si el email fue verificado.
 - **google_sub**: ID de cuenta de Google (único) añadido en V9.
+- **verification_token**: Token para verificar email (V10).
+- **verification_token_expires_at**: Expiración del token (V10).
 - **created_at**: Fecha de creación.
 - **updated_at**: Fecha de última actualización.
 
@@ -45,6 +48,8 @@ CREATE TABLE users (
     active BOOLEAN NOT NULL DEFAULT FALSE,
     email_verified BOOLEAN NOT NULL DEFAULT FALSE,
     google_sub VARCHAR(255) UNIQUE, -- V9: add google_sub
+    verification_token VARCHAR(255), -- V10: add verification_token
+    verification_token_expires_at DATETIME(3), -- V10: token expiration
     created_at TIMESTAMP NOT NULL,
     updated_at TIMESTAMP NOT NULL
 );
