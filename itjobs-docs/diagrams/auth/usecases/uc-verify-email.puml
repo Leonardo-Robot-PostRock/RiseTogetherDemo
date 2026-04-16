@@ -1,0 +1,43 @@
+@startuml UcVerifyEmail
+
+title Authentication — VerifyEmailUseCase
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam componentStyle rectangle
+skinparam linetype ortho
+
+' ── Ports OUT ─────────────────────────────────
+interface "LoadUserPort"                    as LOAD #A5D6A7
+interface "SaveUserPort"                    as SAVE #A5D6A7
+interface "VerificationTokenValidatorPort"  as VAL  #A5D6A7
+interface "DomainEventPublisher"            as PUB  #A5D6A7
+
+component [UserAggregate] as UA #FFF9C4
+
+' ══ VerifyEmailUseCase ═══════════════════════
+package "VerifyEmailUseCase" #E3F2FD {
+    interface "VerifyEmailPort" as P_VER
+    component [VerifyEmailUseCase] as UC_VER
+    P_VER ..|> UC_VER
+}
+
+UC_VER --> LOAD : findById(userId)
+UC_VER --> VAL  : validate(token, providedToken)
+UC_VER --> UA   : verifyEmail()
+UC_VER --> SAVE : save(user)
+UC_VER --> PUB  : EmailVerifiedEvent
+
+note right of VAL
+  VerificationTokenValidatorAdapter:
+  · comprueba token.matches(provided)
+  · comprueba !token.isExpired()
+end note
+
+note right of PUB
+  EmailVerifiedEvent puede
+  disparar activación de usuario
+end note
+
+@enduml
+

@@ -1,0 +1,37 @@
+@startuml UcLogin
+
+title Authentication — LoginUseCase
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam componentStyle rectangle
+skinparam linetype ortho
+
+' ── Ports OUT ─────────────────────────────────
+interface "LoadUserPort"        as LOAD #A5D6A7
+interface "PasswordEncoderPort" as ENC  #A5D6A7
+interface "TokenGeneratorPort"  as TOK  #A5D6A7
+
+component [UserAggregate]       as UA   #FFF9C4
+component [CredentialsVerifier] as CV   #FFF9C4
+
+' ══ LoginUseCase ══════════════════════════════
+package "LoginUseCase" #E8F5E9 {
+    interface "LoginPort"   as P_LOG
+    component [LoginUseCase] as UC_LOG
+    P_LOG ..|> UC_LOG
+}
+
+UC_LOG --> LOAD : findByEmail(email)
+UC_LOG --> CV   : verifyCredentials(user, rawPwd, encoder)
+UC_LOG --> ENC  : matches(rawPwd, hash)
+UC_LOG --> TOK  : generateAccessToken + generateRefreshToken
+
+note right of TOK
+  JwtTokenGeneratorAdapter:
+  · accessToken  (15 min)
+  · refreshToken (7 días)
+end note
+
+@enduml
+
