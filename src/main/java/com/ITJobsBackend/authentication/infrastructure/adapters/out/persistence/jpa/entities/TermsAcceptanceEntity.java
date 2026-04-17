@@ -21,27 +21,23 @@ import org.hibernate.type.SqlTypes;
     name = "user_terms_acceptances",
     indexes = @Index(name = "idx_uta_user_id", columnList = "user_id"))
 @Getter
+@Setter
 @NoArgsConstructor
 public class TermsAcceptanceEntity {
 
-    @Id
-    @JdbcTypeCode(SqlTypes.CHAR)
-    @Column(columnDefinition = "CHAR(36)")
-    @Setter
-    private UUID id;
+  @Id
+  @JdbcTypeCode(SqlTypes.CHAR)
+  @Column(columnDefinition = "CHAR(36)")
+  private UUID id;
 
-    @Setter
-    @JdbcTypeCode(SqlTypes.CHAR)
-    @Column(name = "user_id", nullable = false, columnDefinition = "CHAR(36)")
-    private UUID userId;
+  @JdbcTypeCode(SqlTypes.CHAR)
+  @Column(name = "user_id", nullable = false, columnDefinition = "CHAR(36)")
+  private UUID userId;
 
-    @Setter
-    @JdbcTypeCode(SqlTypes.CHAR)
-    @Column(name = "terms_document_id", nullable = false, columnDefinition = "CHAR(36)")
-    private UUID termsDocumentId;
+  @JdbcTypeCode(SqlTypes.CHAR)
+  @Column(name = "terms_document_id", nullable = false, columnDefinition = "CHAR(36)")
+  private UUID termsDocumentId;
 
-    @Setter
-    @Column(name = "accepted_at", nullable = false, updatable = false)
-    private Instant acceptedAt;
+  @Column(name = "accepted_at", nullable = false, updatable = false)
+  private Instant acceptedAt;
 }
-

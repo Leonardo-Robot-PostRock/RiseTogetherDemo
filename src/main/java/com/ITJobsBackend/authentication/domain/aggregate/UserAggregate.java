@@ -57,10 +57,8 @@ public class UserAggregate extends AggregateRoot {
       Username username, Email email, HashedPassword hashedPassword, GoogleSub googleSub) {
     UserAggregate user =
         new UserAggregate(UserId.generate(), username, email, hashedPassword, Timestamp.now());
-
     user.googleSub = googleSub;
     user.status = UserStatus.ACTIVE;
-
     return user;
   }
 
@@ -78,14 +76,12 @@ public class UserAggregate extends AggregateRoot {
       VerificationToken verificationToken) {
 
     UserAggregate user = new UserAggregate(id, username, email, password, createdAt);
-
     user.status = UserStatus.from(active, emailVerified);
     user.googleSub = googleSub;
     user.updatedAt = updatedAt;
     user.roles.clear();
     user.roles.addAll(roles);
     user.verificationToken = verificationToken;
-
     return user;
   }
 
@@ -94,7 +90,6 @@ public class UserAggregate extends AggregateRoot {
       throw new EmailAlreadyVerifiedException(
           "Cannot assign a verification token to an already verified email");
     }
-
     this.verificationToken = verificationToken;
     this.updatedAt = Timestamp.now();
   }
@@ -103,10 +98,8 @@ public class UserAggregate extends AggregateRoot {
     if (this.status == UserStatus.ACTIVE) {
       throw new UserAlreadyActivatedException("User is already active");
     }
-
     this.status = UserStatus.ACTIVE;
     this.updatedAt = Timestamp.now();
-
     recordEvent(new UserActivatedEvent(this.id, this.email));
   }
 
@@ -114,10 +107,8 @@ public class UserAggregate extends AggregateRoot {
     if (this.status != UserStatus.ACTIVE) {
       throw new UserAlreadyDeactivatedException("User is already deactivated");
     }
-
     this.status = UserStatus.SUSPENDED;
     this.updatedAt = Timestamp.now();
-
     recordEvent(new UserDeactivatedEvent(this.id, this.email));
   }
 
@@ -125,24 +116,20 @@ public class UserAggregate extends AggregateRoot {
     if (this.status.isEmailVerified()) {
       throw new EmailAlreadyVerifiedException("Email is already verified");
     }
-
     this.status = UserStatus.ACTIVE;
     this.updatedAt = Timestamp.now();
-
     recordEvent(new EmailVerifiedEvent(this.id, this.email));
   }
 
   public void changePassword(HashedPassword newPassword) {
     this.password = newPassword;
     this.updatedAt = Timestamp.now();
-
     recordEvent(new PasswordChangedEvent(this.id));
   }
 
   public void linkGoogleAccount(GoogleSub googleSub) {
     this.googleSub = googleSub;
     this.updatedAt = Timestamp.now();
-
     recordEvent(new GoogleAccountLinkedEvent(this.id, googleSub));
   }
 
@@ -150,81 +137,38 @@ public class UserAggregate extends AggregateRoot {
     this.email = newEmail;
     this.status = UserStatus.PENDING_VERIFICATION;
     this.updatedAt = Timestamp.now();
-
     recordEvent(new EmailChangedEvent(this.id, this.email));
   }
 
   public void addRole(String role) {
     String normalized = role.trim().toUpperCase();
-    
     if (!this.roles.contains(normalized)) {
       this.roles.add(normalized);
       this.updatedAt = Timestamp.now();
     }
   }
 
-  public UserId getId() {
-    return id;
-  }
-
-  public Username getUsername() {
-    return username;
-  }
-
-  public Email getEmail() {
-    return email;
-  }
-
-  public HashedPassword getPassword() {
-    return password;
-  }
-
-  public UserStatus getStatus() {
-    return status;
-  }
-
-  public boolean isActive() {
-    return status.isActive();
-  }
-
-  public boolean isEmailVerified() {
-    return status.isEmailVerified();
-  }
-
-  public GoogleSub getGoogleSub() {
-    return googleSub;
-  }
-
-  public Timestamp getCreatedAt() {
-    return createdAt;
-  }
-
-  public Timestamp getUpdatedAt() {
-    return updatedAt;
-  }
-
-  public List<String> getRoles() {
-    return Collections.unmodifiableList(roles);
-  }
-
-  public VerificationToken getVerificationToken() {
-    return verificationToken;
-  }
+  public UserId getId() { return id; }
+  public Username getUsername() { return username; }
+  public Email getEmail() { return email; }
+  public HashedPassword getPassword() { return password; }
+  public UserStatus getStatus() { return status; }
+  public boolean isActive() { return status.isActive(); }
+  public boolean isEmailVerified() { return status.isEmailVerified(); }
+  public GoogleSub getGoogleSub() { return googleSub; }
+  public Timestamp getCreatedAt() { return createdAt; }
+  public Timestamp getUpdatedAt() { return updatedAt; }
+  public List<String> getRoles() { return Collections.unmodifiableList(roles); }
+  public VerificationToken getVerificationToken() { return verificationToken; }
 
   @Override
   public String toString() {
     return "UserAggregate{"
-        + "id="
-        + id
-        + ", username="
-        + username
-        + ", email='"
-        + email.mask()
-        + '\''
-        + ", status="
-        + status
-        + ", roles="
-        + roles
+        + "id=" + id
+        + ", username=" + username
+        + ", email='" + email.mask() + '\''
+        + ", status=" + status
+        + ", roles=" + roles
         + '}';
   }
 }

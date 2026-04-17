@@ -23,34 +23,30 @@ import com.ITJobsBackend.authentication.domain.valueobjects.TermsType;
 @Entity
 @Table(
     name = "terms_documents",
-    uniqueConstraints = @UniqueConstraint(
-        name = "uk_terms_type_version",
-        columnNames = {"terms_type", "version"}))
+    uniqueConstraints =
+        @UniqueConstraint(
+            name = "uk_terms_type_version",
+            columnNames = {"terms_type", "version"}))
 @Getter
+@Setter
 @NoArgsConstructor
 public class TermsDocumentEntity {
 
-    @Id
-    @JdbcTypeCode(SqlTypes.CHAR)
-    @Column(columnDefinition = "CHAR(36)")
-    @Setter
-    private UUID id;
+  @Id
+  @JdbcTypeCode(SqlTypes.CHAR)
+  @Column(columnDefinition = "CHAR(36)")
+  private UUID id;
 
-    @Setter
-    @Enumerated(EnumType.STRING)
-    @Column(name = "terms_type", nullable = false, length = 30)
-    private TermsType termsType;
+  @Enumerated(EnumType.STRING)
+  @Column(name = "terms_type", nullable = false, length = 30)
+  private TermsType termsType;
 
-    @Setter
-    @Column(nullable = false, length = 10)
-    private String version;
+  @Column(nullable = false, length = 10)
+  private String version;
 
-    @Setter
-    @Column(nullable = false, columnDefinition = "TEXT")
-    private String content;
+  @Column(nullable = false, columnDefinition = "TEXT")
+  private String content;
 
-    @Setter
-    @Column(name = "published_at", nullable = false, updatable = false)
-    private Instant publishedAt;
+  @Column(name = "published_at", nullable = false, updatable = false)
+  private Instant publishedAt;
 }
-

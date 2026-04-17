@@ -30,57 +30,47 @@ import org.hibernate.type.SqlTypes;
       @Index(name = "idx_username", columnList = "username", unique = true)
     })
 @Getter
+@Setter
 @NoArgsConstructor
 public class UserEntity {
+
   @Id
   @JdbcTypeCode(SqlTypes.CHAR)
   @Column(columnDefinition = "CHAR(36)")
-  @Setter
   private UUID id;
 
-  @Setter
   @Column(nullable = false, unique = true, length = 50)
   private String username;
 
-  @Setter
   @Column(nullable = false, unique = true, length = 255)
   private String email;
 
-  @Setter
   @Column(nullable = false, length = 255)
   private String password;
 
-  @Setter
   @Column(nullable = false)
   private boolean active;
 
-  @Setter
   @Column(name = "email_verified", nullable = false)
   private boolean emailVerified;
 
-  @Setter
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
 
-  @Setter
   @Column(name = "updated_at", nullable = false)
   private Instant updatedAt;
 
-  @Setter
   @ElementCollection(fetch = FetchType.EAGER)
   @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
   @Column(name = "role")
   private List<String> roles = new ArrayList<>();
 
-  @Setter
   @Column(name = "google_sub", unique = true, length = 255)
   private String googleSub;
 
-  @Setter
   @Column(name = "verification_token", length = 255)
   private String verificationToken;
 
-  @Setter
   @Column(name = "verification_token_expires_at")
   private Instant verificationTokenExpiresAt;
 }

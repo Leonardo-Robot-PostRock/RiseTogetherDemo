@@ -48,7 +48,8 @@ public class AuthController {
   @PostMapping("/register")
   public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest request) {
     RegisterUserCommand command =
-        new RegisterUserCommand(request.username(), request.email(), request.password());
+        new RegisterUserCommand(
+            request.username(), request.email(), request.password(), request.termsAccepted());
 
     RegisterUserResponse response = registerUserPort.execute(command);
 
@@ -79,7 +80,8 @@ public class AuthController {
   @PostMapping("/login/google")
   public ResponseEntity<AuthResponse> googleLogin(@Valid @RequestBody GoogleLoginRequest request) {
     GoogleAuthCommand command =
-        new GoogleAuthCommand(request.googleSub(), request.email(), request.name());
+        new GoogleAuthCommand(
+            request.googleSub(), request.email(), request.name(), request.termsAccepted());
 
     AuthTokenResponse response = googleAuthPort.execute(command);
 

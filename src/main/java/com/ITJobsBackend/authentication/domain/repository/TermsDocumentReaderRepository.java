@@ -7,7 +7,6 @@ import com.ITJobsBackend.authentication.domain.valueobjects.TermsType;
 
 public interface TermsDocumentReaderRepository {
 
-    /** Returns the most recently published document for the given type. */
-    Optional<TermsDocument> findLatestByType(TermsType type);
+  /** Returns the most recently published document for the given type. */
+  Optional<TermsDocument> findLatestByType(TermsType type);
 }
-
