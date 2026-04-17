@@ -8,6 +8,7 @@ import com.ITJobsBackend.jobs.domain.aggregate.JobAggregate;
 import com.ITJobsBackend.jobs.domain.valueobjects.JobId;
 import com.ITJobsBackend.jobs.domain.valueobjects.Salary;
 import com.ITJobsBackend.jobs.infrastructure.adapters.out.persistence.jpa.entities.JobEntity;
+import com.ITJobsBackend.shared.domain.valueobjects.EmployerId;
 import com.ITJobsBackend.shared.domain.valueobjects.Timestamp;
 
 @Component
@@ -32,6 +33,8 @@ public class JobMapper {
   }
 
   public JobAggregate toDomain(JobEntity entity) {
+    EmployerId employerId =
+        entity.getEmployerId() != null ? EmployerId.of(entity.getEmployerId()) : null;
     return JobAggregate.reconstitute(
         JobId.of(entity.getId()),
         entity.getTitle(),
@@ -43,6 +46,7 @@ public class JobMapper {
         entity.getStatus(),
         entity.getSkills(),
         Timestamp.of(entity.getCreatedAt()),
-        Timestamp.of(entity.getUpdatedAt()));
+        Timestamp.of(entity.getUpdatedAt()),
+        employerId);
   }
 }

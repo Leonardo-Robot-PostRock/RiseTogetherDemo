@@ -16,6 +16,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 import lombok.Getter;
@@ -27,6 +28,7 @@ import org.hibernate.type.SqlTypes;
 
 import com.ITJobsBackend.jobs.domain.valueobjects.EmploymentType;
 import com.ITJobsBackend.jobs.domain.valueobjects.JobStatus;
+import com.ITJobsBackend.profiles.infrastructure.adapters.out.persistence.jpa.entities.EmployerEntity;
 
 @Entity
 @Table(
@@ -36,63 +38,58 @@ import com.ITJobsBackend.jobs.domain.valueobjects.JobStatus;
       @Index(name = "idx_job_company", columnList = "company")
     })
 @Getter
+@Setter
 @NoArgsConstructor
 public class JobEntity {
   @Id
   @JdbcTypeCode(SqlTypes.CHAR)
   @Column(columnDefinition = "CHAR(36)")
-  @Setter
   private UUID id;
 
-  @Setter
   @Column(nullable = false, length = 200)
   private String title;
 
-  @Setter
   @Column(columnDefinition = "TEXT")
   private String description;
 
-  @Setter
   @Column(nullable = false, length = 100)
   private String company;
 
-  @Setter
   @Column(length = 100)
   private String location;
 
-  @Setter
   @Column(name = "salary_min", precision = 15, scale = 2)
   private BigDecimal salaryMin;
 
-  @Setter
   @Column(name = "salary_max", precision = 15, scale = 2)
   private BigDecimal salaryMax;
 
-  @Setter
   @Column(length = 10)
   private String currency;
 
-  @Setter
   @Column(name = "employment_type", nullable = false, length = 20)
   @Enumerated(EnumType.STRING)
   private EmploymentType employmentType;
 
-  @Setter
   @Column(nullable = false, length = 20)
   @Enumerated(EnumType.STRING)
   private JobStatus status;
 
-  @Setter
   @ElementCollection(fetch = FetchType.EAGER)
   @CollectionTable(name = "job_skills", joinColumns = @JoinColumn(name = "job_id"))
   @Column(name = "skill")
   private List<String> skills = new ArrayList<>();
 
-  @Setter
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
 
-  @Setter
   @Column(name = "updated_at", nullable = false)
   private Instant updatedAt;
+
+  @Column(name = "employer_id", columnDefinition = "CHAR(36)")
+  private UUID employerId;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "employer_id", insertable = false, updatable = false)
+  private EmployerEntity employer;
 }
