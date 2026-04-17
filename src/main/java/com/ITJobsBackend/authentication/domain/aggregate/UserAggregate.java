@@ -4,7 +4,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import com.ITJobsBackend.authentication.domain.event.EmailChangedEvent;
 import com.ITJobsBackend.authentication.domain.event.EmailVerifiedEvent;
+import com.ITJobsBackend.authentication.domain.event.GoogleAccountLinkedEvent;
+import com.ITJobsBackend.authentication.domain.event.PasswordChangedEvent;
 import com.ITJobsBackend.authentication.domain.event.UserActivatedEvent;
 import com.ITJobsBackend.authentication.domain.event.UserDeactivatedEvent;
 import com.ITJobsBackend.authentication.domain.exceptions.EmailAlreadyVerifiedException;
@@ -87,8 +90,12 @@ public class UserAggregate extends AggregateRoot {
     return user;
   }
 
-  public void setVerificationToken(VerificationToken verificationToken) {
+  public void assignVerificationToken(VerificationToken verificationToken) {
+    if (this.emailVerified) {
+      throw new EmailAlreadyVerifiedException("Cannot assign a verification token to an already verified email");
+    }
     this.verificationToken = verificationToken;
+    this.updatedAt = Timestamp.now();
   }
 
   public void activate() {
@@ -97,7 +104,8 @@ public class UserAggregate extends AggregateRoot {
     }
     this.active = true;
     this.updatedAt = Timestamp.now();
-    recordEvent(new UserActivatedEvent(this.id.value().toString(), this.email.value()));
+
+    recordEvent(new UserActivatedEvent(this.id, this.email));
   }
 
   public void deactivate() {
@@ -107,7 +115,8 @@ public class UserAggregate extends AggregateRoot {
 
     this.active = false;
     this.updatedAt = Timestamp.now();
-    recordEvent(new UserDeactivatedEvent(this.id.value().toString(), this.email.value()));
+
+    recordEvent(new UserDeactivatedEvent(this.id, this.email));
   }
 
   public void verifyEmail() {
@@ -117,25 +126,32 @@ public class UserAggregate extends AggregateRoot {
 
     this.emailVerified = true;
     this.updatedAt = Timestamp.now();
-    recordEvent(new EmailVerifiedEvent(this.id.value().toString(), this.email.value()));
+
+    recordEvent(new EmailVerifiedEvent(this.id, this.email));
   }
 
   public void changePassword(HashedPassword newPassword) {
     this.password = newPassword;
     this.updatedAt = Timestamp.now();
+
+    recordEvent(new PasswordChangedEvent(this.id));
   }
 
   public void linkGoogleAccount(GoogleSub googleSub) {
     this.googleSub = googleSub;
     this.updatedAt = Timestamp.now();
+
+    recordEvent(new GoogleAccountLinkedEvent(this.id, googleSub));
   }
 
   public void updateEmail(Email newEmail) {
     this.email = newEmail;
     this.emailVerified = false;
     this.updatedAt = Timestamp.now();
-  }
 
+    recordEvent(new EmailChangedEvent(this.id, this.email));
+  }
+  
   public void addRole(String role) {
     String normalized = role.trim().toUpperCase();
 
@@ -187,5 +203,23 @@ public class UserAggregate extends AggregateRoot {
 
   public VerificationToken getVerificationToken() {
     return verificationToken;
+  }
+
+  @Override
+  public String toString() {
+    return "UserAggregate{"
+        + "id="
+        + id
+        + ", username="
+        + username
+        + ", email=[PROTECTED]"
+        + email.mask()
+        + ", active="
+        + active
+        + ", emailVerified="
+        + emailVerified
+        + ", roles="
+        + roles
+        + '}';
   }
 }
