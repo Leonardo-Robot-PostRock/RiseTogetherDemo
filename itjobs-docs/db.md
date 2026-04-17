@@ -1,6 +1,8 @@
 ## **Documentación de la Base de Datos para el Sistema de Búsqueda de Empleo**
 
-> **Nota:** Todos los IDs usan UUID (`CHAR(36)`). El esquema está versionado con Flyway (V1–V9).
+> **Nota:** Todos los IDs usan UUID (`CHAR(36)`). El esquema está versionado con Flyway (V1–V10).
+> 
+> ⚠️ **Migraciones V11+**: Ver [`requirements-v2.md`](requirements-v2.md) §5 para el plan completo de migraciones que agrega matching, moderación, billing, analytics, onboarding y help center.
 
 ---
 

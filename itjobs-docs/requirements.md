@@ -1,5 +1,7 @@
 # Requisitos — ITJobs Backend
 
+> ⚠️ **Versión extendida disponible**: Ver [`requirements-v2.md`](requirements-v2.md) para la documentación completa con matching explicable, moderación, monetización B2B, onboarding, analítica y nuevos bounded contexts.
+
 ## Bounded Contexts
 
 | Bounded Context    | Estado                 | Paquete                            |
