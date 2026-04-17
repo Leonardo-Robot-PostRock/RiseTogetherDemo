@@ -6,11 +6,11 @@ import java.util.UUID;
 
 import com.ITJobsBackend.shared.domain.exceptions.ValidationException;
 
-public record ResetToken(String value, Instant expiresAt) {
+public record PasswordResetToken(String value, Instant expiresAt) {
 
   private static final long EXPIRY_HOURS = 1;
 
-  public ResetToken {
+  public PasswordResetToken {
     if (value == null || value.isBlank()) {
       throw new ValidationException("Reset token cannot be blank");
     }
@@ -19,13 +19,13 @@ public record ResetToken(String value, Instant expiresAt) {
     }
   }
 
-  public static ResetToken generate() {
-    return new ResetToken(
+  public static PasswordResetToken generate() {
+    return new PasswordResetToken(
         UUID.randomUUID().toString(), Instant.now().plus(EXPIRY_HOURS, ChronoUnit.HOURS));
   }
 
-  public static ResetToken of(String value, Instant expiresAt) {
-    return new ResetToken(value, expiresAt);
+  public static PasswordResetToken of(String value, Instant expiresAt) {
+    return new PasswordResetToken(value, expiresAt);
   }
 
   public boolean matches(String provided) {
