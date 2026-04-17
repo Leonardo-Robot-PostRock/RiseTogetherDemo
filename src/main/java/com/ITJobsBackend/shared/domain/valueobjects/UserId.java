@@ -3,12 +3,10 @@ package com.ITJobsBackend.shared.domain.valueobjects;
 import java.util.Objects;
 import java.util.UUID;
 
-public final class UserId {
+public record UserId(UUID value) implements Identifier {
 
-  private final UUID value;
-
-  private UserId(UUID value) {
-    this.value = Objects.requireNonNull(value, "UserId cannot be null");
+  public UserId {
+    Objects.requireNonNull(value, "UserId cannot be null");
   }
 
   public static UserId generate() {
@@ -25,22 +23,6 @@ public final class UserId {
 
   public static UserId of(UUID uuid) {
     return new UserId(uuid);
-  }
-
-  public UUID value() {
-    return value;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (!(o instanceof UserId userId)) return false;
-    return value.equals(userId.value);
-  }
-
-  @Override
-  public int hashCode() {
-    return value.hashCode();
   }
 
   @Override
