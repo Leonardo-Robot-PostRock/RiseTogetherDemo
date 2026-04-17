@@ -1,8 +1,6 @@
 ## **Documentación de la Base de Datos para el Sistema de Búsqueda de Empleo**
 
-> **Nota:** Todos los IDs usan UUID (`CHAR(36)`). El esquema está versionado con Flyway (V1–V10).
-> 
-> ⚠️ **Migraciones V11+**: Ver [`requirements-v2.md`](requirements-v2.md) §5 para el plan completo de migraciones que agrega matching, moderación, billing, analytics, onboarding y help center.
+> **Nota:** Todos los IDs usan UUID (`CHAR(36)`). El esquema está versionado con Flyway (V1–V13).
 
 ---
 
@@ -19,7 +17,10 @@
 | V7        | `salary_min`, `salary_max` de DOUBLE a DECIMAL(15,2) |
 | V8        | `salary_min`, `salary_max` NOT NULL (transparencia)  |
 | V9        | Agregar `google_sub` a `users`                       |
-| V10        | Agregar `verification_token` y expiración a `users`   
+| V10       | Agregar `verification_token` y expiración a `users`  |
+| V11       | Agregar `employer_id CHAR(36)` FK a `jobs` → `employers` |
+| V12       | Agregar `company_size VARCHAR(20)` a `employers`     |
+| V13       | Agregar `logo_url VARCHAR(500)` y `description TEXT` a `employers` |
 
 ---
 
@@ -89,6 +90,7 @@ Ofertas de empleo publicadas.
 - **currency**: Moneda del salario.
 - **employment_type**: Tipo de empleo (`FULL_TIME`, `PART_TIME`, `CONTRACT`, `FREELANCE`, `INTERNSHIP`).
 - **status**: Estado (`OPEN`, `CLOSED`, `DRAFT`, `EXPIRED`, `INACTIVE`).
+- **employer_id** (FK, nullable): Referencia al empleador (`employers.id`). Añadido en V11.
 - **created_at**: Fecha de creación.
 - **updated_at**: Fecha de última actualización.
 
@@ -98,18 +100,21 @@ CREATE TABLE jobs (
     title VARCHAR(200) NOT NULL,
     description TEXT,
     company VARCHAR(100) NOT NULL,
-    location VARCHAR(100) NOT NULL,  -- obligatorio desde ahora
-    salary_min DOUBLE,                -- V7: ALTER to DECIMAL(15,2)
-    salary_max DOUBLE,                -- V7: ALTER to DECIMAL(15,2)
+    location VARCHAR(100) NOT NULL,
+    salary_min DECIMAL(15,2) NOT NULL,  -- V7+V8: DECIMAL NOT NULL
+    salary_max DECIMAL(15,2) NOT NULL,
     currency VARCHAR(10),
     employment_type VARCHAR(20) NOT NULL,
-    status VARCHAR(20) NOT NULL, -- OPEN, CLOSED, DRAFT, EXPIRED, INACTIVE
+    status VARCHAR(20) NOT NULL,        -- OPEN, CLOSED, DRAFT, EXPIRED, INACTIVE
+    employer_id CHAR(36),               -- V11: FK → employers
     created_at TIMESTAMP NOT NULL,
-    updated_at TIMESTAMP NOT NULL
+    updated_at TIMESTAMP NOT NULL,
+    FOREIGN KEY (employer_id) REFERENCES employers(id) ON DELETE SET NULL
 );
 
 CREATE INDEX idx_job_title ON jobs(title);
 CREATE INDEX idx_job_company ON jobs(company);
+CREATE INDEX idx_job_employer ON jobs(employer_id);  -- V11
 ```
 
 ### **4. Tabla `job_skills`**
@@ -143,9 +148,10 @@ Perfil de empresa/empleador vinculado a un usuario.
 - **location**: Ubicación.
 - **contact_person**: Persona de contacto.
 - **contact_email**: Email de contacto.
+- **company_size**: Tamaño de la empresa (ej. `SMALL`, `MEDIUM`, `LARGE`). Añadido en V12.
+- **logo_url**: URL del logo de la empresa. Añadido en V13.
+- **description**: Descripción de la empresa. Añadido en V13.
 - **created_at** / **updated_at**: Timestamps.
-
-> Futuro: `jobs.company` podría reemplazarse por `jobs.employer_id` FK a esta tabla.
 
 ```sql
 CREATE TABLE employers (
@@ -156,6 +162,9 @@ CREATE TABLE employers (
     location VARCHAR(100),
     contact_person VARCHAR(100),
     contact_email VARCHAR(255),
+    company_size VARCHAR(20),     -- V12
+    logo_url VARCHAR(500),        -- V13
+    description TEXT,             -- V13
     created_at TIMESTAMP NOT NULL,
     updated_at TIMESTAMP NOT NULL,
     FOREIGN KEY (id) REFERENCES users(id) ON DELETE CASCADE
