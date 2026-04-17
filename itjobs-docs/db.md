@@ -1,6 +1,6 @@
 ## **Documentación de la Base de Datos para el Sistema de Búsqueda de Empleo**
 
-> **Nota:** Todos los IDs usan UUID (`CHAR(36)`). El esquema está versionado con Flyway (V1–V13).
+> **Nota:** Todos los IDs usan UUID (`CHAR(36)`). El esquema está versionado con Flyway (V1–V21).
 
 ---
 
@@ -21,6 +21,14 @@
 | V11       | Agregar `employer_id CHAR(36)` FK a `jobs` → `employers` |
 | V12       | Agregar `company_size VARCHAR(20)` a `employers`     |
 | V13       | Agregar `logo_url VARCHAR(500)` y `description TEXT` a `employers` |
+| V14       | Agregar `terms_version` y `terms_accepted_at` a `users` *(reemplazado por V15)* |
+| V15       | Crear `terms_documents` y `user_terms_acceptances`; migrar datos de V14; eliminar columnas de `users` |
+| V16       | Agregar `employer_type` a `employers` (HR_AGENCY, SOFTWARE_HOUSE, CONSULTING_FIRM, STARTUP, OTHER) |
+| V17       | Agregar `created_by_user_id`, `posted_on_behalf_of_employer_id`, `job_type`, `remote_allowed`, `expires_at`, `featured`, `featured_until` a `jobs` |
+| V18       | Crear `recruiter_employer_associations` (recruiter ↔ employers, many-to-many) |
+| V19       | Extender `candidates` con `years_of_experience`, `desired_salary_min/max`, `desired_employment_type`, `open_to_remote`, `available_for_freelance` |
+| V20       | Crear `freelancer_profiles` (perfil público de freelancer vinculado a usuario) |
+| V21       | Agregar `work_modality` a `jobs` (`REMOTE`, `HYBRID`, `ON_SITE`) |
 
 ---
 
@@ -89,6 +97,7 @@ Ofertas de empleo publicadas.
 - **salary_min** / **salary_max**: Rango salarial (**obligatorio**, DECIMAL(15,2)).
 - **currency**: Moneda del salario.
 - **employment_type**: Tipo de empleo (`FULL_TIME`, `PART_TIME`, `CONTRACT`, `FREELANCE`, `INTERNSHIP`).
+- **work_modality**: Modalidad de trabajo (`REMOTE`, `HYBRID`, `ON_SITE`). Añadido en V21.
 - **status**: Estado (`OPEN`, `CLOSED`, `DRAFT`, `EXPIRED`, `INACTIVE`).
 - **employer_id** (FK, nullable): Referencia al empleador (`employers.id`). Añadido en V11.
 - **created_at**: Fecha de creación.
@@ -105,6 +114,7 @@ CREATE TABLE jobs (
     salary_max DECIMAL(15,2) NOT NULL,
     currency VARCHAR(10),
     employment_type VARCHAR(20) NOT NULL,
+    work_modality   VARCHAR(20) NOT NULL DEFAULT 'ON_SITE', -- V21: REMOTE | HYBRID | ON_SITE
     status VARCHAR(20) NOT NULL,        -- OPEN, CLOSED, DRAFT, EXPIRED, INACTIVE
     employer_id CHAR(36),               -- V11: FK → employers
     created_at TIMESTAMP NOT NULL,
@@ -330,3 +340,229 @@ CREATE TABLE recruiters (
 
 CREATE INDEX idx_recruiter_company ON recruiters(company_id);
 ```
+
+---
+
+## V15 — Terms (Documentos y Aceptaciones)
+
+### **13. Tabla `terms_documents`**
+
+Catálogo de documentos legales publicados (Términos de Servicio, Política de Privacidad, etc.).
+
+- **id** (PK): UUID del documento.
+- **terms_type**: Tipo de documento (`TERMS_OF_SERVICE`, `PRIVACY_POLICY`, etc.).
+- **version**: Versión del documento (ej. `1`, `2`).
+- **content**: Contenido completo del documento.
+- **published_at**: Fecha de publicación.
+- UNIQUE constraint en `(terms_type, version)`.
+
+```sql
+CREATE TABLE terms_documents (
+    id           CHAR(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL PRIMARY KEY,
+    terms_type   VARCHAR(30) NOT NULL,
+    version      VARCHAR(10) NOT NULL,
+    content      TEXT        NOT NULL,
+    published_at TIMESTAMP   NOT NULL,
+    UNIQUE KEY uk_terms_type_version (terms_type, version)
+);
+```
+
+### **14. Tabla `user_terms_acceptances`**
+
+Registro de auditoría de aceptaciones de documentos legales por usuario.
+
+- **id** (PK): UUID de la aceptación.
+- **user_id** (FK): Usuario que aceptó (`users.id`).
+- **terms_document_id** (FK): Documento aceptado (`terms_documents.id`).
+- **accepted_at**: Timestamp de la aceptación.
+
+```sql
+CREATE TABLE user_terms_acceptances (
+    id                CHAR(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL PRIMARY KEY,
+    user_id           CHAR(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+    terms_document_id CHAR(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+    accepted_at       TIMESTAMP NOT NULL,
+    CONSTRAINT fk_uta_user FOREIGN KEY (user_id)           REFERENCES users(id),
+    CONSTRAINT fk_uta_doc  FOREIGN KEY (terms_document_id) REFERENCES terms_documents(id)
+);
+
+CREATE INDEX idx_uta_user_id ON user_terms_acceptances(user_id);
+```
+
+> **Nota de collation:** Las columnas `CHAR(36)` declaran explícitamente `utf8mb4_0900_ai_ci` para
+> garantizar compatibilidad con las tablas existentes independientemente del collation por defecto
+> del servidor MySQL (que puede variar entre entornos local y Docker).
+
+---
+
+## V16 — Tipo de empresa
+
+### Tabla `employers` (ALTER)
+
+Agrega `employer_type` para representar la naturaleza real de la empresa y ser transparente frente a los candidatos.
+
+- **employer_type**: `HR_AGENCY`, `SOFTWARE_HOUSE`, `CONSULTING_FIRM`, `STARTUP`, `ENTERPRISE`, `OTHER`.
+
+```sql
+ALTER TABLE employers
+    ADD COLUMN employer_type VARCHAR(30) NULL;
+-- Valores: HR_AGENCY | SOFTWARE_HOUSE | CONSULTING_FIRM | STARTUP | ENTERPRISE | OTHER
+```
+
+---
+
+## V17 — Modelo de publicación dual en `jobs`
+
+Separa **quién publica** la oferta del **empleador que contrata**, permitiendo recruiters independientes, freelancers y empresas en el mismo modelo.
+
+### Tabla `jobs` (ALTER)
+
+| Columna | Tipo | Descripción |
+|---------|------|-------------|
+| `created_by_user_id` | `CHAR(36)` FK → `users.id` | Usuario que creó/publicó la oferta. Obligatorio. |
+| `posted_on_behalf_of_employer_id` | `CHAR(36)` FK → `employers.id` (nullable) | Empresa a quien representa el recruiter. Null si es oferta independiente. |
+| `job_type` | `VARCHAR(20)` | `TRADITIONAL`, `FREELANCE`, `PROJECT`, `INFORMAL`. |
+| `remote_allowed` | `BOOLEAN` | Si acepta trabajo remoto. |
+| `expires_at` | `TIMESTAMP` (nullable) | Fecha de expiración automática. |
+| `featured` | `BOOLEAN` | Si la oferta está destacada/promocionada. |
+| `featured_until` | `TIMESTAMP` (nullable) | Fin del periodo de destaque. |
+
+```sql
+ALTER TABLE jobs
+    ADD COLUMN created_by_user_id            CHAR(36) NULL,
+    ADD COLUMN posted_on_behalf_of_employer_id CHAR(36) NULL,
+    ADD COLUMN job_type                      VARCHAR(20) NOT NULL DEFAULT 'TRADITIONAL',
+    ADD COLUMN remote_allowed                BOOLEAN NOT NULL DEFAULT FALSE,
+    ADD COLUMN expires_at                    TIMESTAMP NULL,
+    ADD COLUMN featured                      BOOLEAN NOT NULL DEFAULT FALSE,
+    ADD COLUMN featured_until                TIMESTAMP NULL,
+    ADD CONSTRAINT fk_job_created_by   FOREIGN KEY (created_by_user_id)
+        REFERENCES users(id) ON DELETE SET NULL,
+    ADD CONSTRAINT fk_job_on_behalf_of FOREIGN KEY (posted_on_behalf_of_employer_id)
+        REFERENCES employers(id) ON DELETE SET NULL;
+
+CREATE INDEX idx_job_created_by ON jobs(created_by_user_id);
+CREATE INDEX idx_job_type       ON jobs(job_type);
+CREATE INDEX idx_job_featured   ON jobs(featured);
+```
+
+> **Relación con `employer_id` (V11):** `employer_id` original se conserva por compatibilidad y puede
+> representar el empleador que contrata (quién paga el salario). `posted_on_behalf_of_employer_id`
+> representa la empresa para la que trabaja el recruiter que publica. Pueden coincidir o diferir.
+
+---
+
+## V18 — Asociaciones recruiter ↔ empresas (many-to-many)
+
+Un recruiter puede trabajar para múltiples empleadores simultáneamente o ser independiente (freelance recruiter). La tabla `recruiters.company_id` existente queda como empresa principal; esta tabla es el historial de asociaciones.
+
+### **Tabla `recruiter_employer_associations`**
+
+- **id** (PK): UUID.
+- **recruiter_user_id** (FK): Usuario con rol RECRUITER (`users.id`).
+- **employer_id** (FK): Empresa asociada (`employers.id`).
+- **role_in_company**: Descripción del rol (`INTERNAL`, `EXTERNAL`, `FREELANCE`).
+- **active**: Si la asociación está vigente.
+- **started_at** / **ended_at**: Vigencia.
+
+```sql
+CREATE TABLE recruiter_employer_associations (
+    id               CHAR(36) PRIMARY KEY,
+    recruiter_user_id CHAR(36) NOT NULL,
+    employer_id      CHAR(36) NOT NULL,
+    role_in_company  VARCHAR(20) NOT NULL DEFAULT 'INTERNAL',
+    active           BOOLEAN NOT NULL DEFAULT TRUE,
+    started_at       TIMESTAMP NOT NULL,
+    ended_at         TIMESTAMP NULL,
+    UNIQUE KEY uk_recruiter_employer (recruiter_user_id, employer_id),
+    FOREIGN KEY (recruiter_user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (employer_id)       REFERENCES employers(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_rea_recruiter ON recruiter_employer_associations(recruiter_user_id);
+CREATE INDEX idx_rea_employer  ON recruiter_employer_associations(employer_id);
+```
+
+---
+
+## V19 — Extensión de perfil candidato
+
+Agrega campos para matching y soporte de trabajos freelance/proyectos.
+
+### Tabla `candidates` (ALTER)
+
+| Columna | Tipo | Descripción |
+|---------|------|-------------|
+| `years_of_experience` | `SMALLINT` (nullable) | Años de experiencia total. |
+| `desired_salary_min` | `DECIMAL(15,2)` (nullable) | Expectativa salarial mínima. |
+| `desired_salary_max` | `DECIMAL(15,2)` (nullable) | Expectativa salarial máxima. |
+| `desired_employment_type` | `VARCHAR(20)` (nullable) | Tipo de empleo buscado. |
+| `open_to_remote` | `BOOLEAN` | Si el candidato acepta remoto. |
+| `available_for_freelance` | `BOOLEAN` | Si el candidato acepta proyectos freelance. |
+
+```sql
+ALTER TABLE candidates
+    ADD COLUMN years_of_experience      SMALLINT NULL,
+    ADD COLUMN desired_salary_min       DECIMAL(15,2) NULL,
+    ADD COLUMN desired_salary_max       DECIMAL(15,2) NULL,
+    ADD COLUMN desired_employment_type  VARCHAR(20) NULL,
+    ADD COLUMN open_to_remote           BOOLEAN NOT NULL DEFAULT FALSE,
+    ADD COLUMN available_for_freelance  BOOLEAN NOT NULL DEFAULT FALSE;
+```
+
+---
+
+## V20 — Perfil de freelancer
+
+Perfil público independiente para usuarios con rol FREELANCER. Complementa (no reemplaza) el perfil de candidato.
+
+### **Tabla `freelancer_profiles`**
+
+- **id** (PK, FK): UUID del usuario (`users.id`). CASCADE al eliminar.
+- **headline**: Título profesional corto (ej. "Senior React Developer").
+- **hourly_rate_min** / **hourly_rate_max**: Rango de tarifa por hora (`DECIMAL(10,2)`).
+- **currency**: Moneda de la tarifa (ej. `USD`).
+- **availability**: Disponibilidad (`FULL_TIME`, `PART_TIME`, `WEEKENDS`, `ON_DEMAND`).
+- **portfolio_url**: Enlace a portfolio.
+- **bio**: Descripción extendida del freelancer.
+- **created_at** / **updated_at**: Timestamps.
+
+```sql
+CREATE TABLE freelancer_profiles (
+    id               CHAR(36) PRIMARY KEY,
+    headline         VARCHAR(150) NOT NULL,
+    hourly_rate_min  DECIMAL(10,2) NULL,
+    hourly_rate_max  DECIMAL(10,2) NULL,
+    currency         VARCHAR(10) NULL,
+    availability     VARCHAR(20) NOT NULL DEFAULT 'ON_DEMAND',
+    portfolio_url    VARCHAR(500) NULL,
+    bio              TEXT NULL,
+    created_at       TIMESTAMP NOT NULL,
+    updated_at       TIMESTAMP NOT NULL,
+    FOREIGN KEY (id) REFERENCES users(id) ON DELETE CASCADE
+);
+```
+
+---
+
+## V21 — Modalidad de trabajo en `jobs`
+
+Reemplaza el booleano `remote_allowed` (V17) con un campo de enum explícito que modela con precisión si una oferta es presencial, remota o híbrida.
+
+### Tabla `jobs` (ALTER)
+
+| Columna | Tipo | Valores | Descripción |
+|---------|------|---------|-------------|
+| `work_modality` | `VARCHAR(20)` | `REMOTE`, `HYBRID`, `ON_SITE` | Modalidad de trabajo de la oferta. Default `ON_SITE`. |
+
+```sql
+ALTER TABLE jobs
+    ADD COLUMN work_modality VARCHAR(20) NOT NULL DEFAULT 'ON_SITE';
+
+CREATE INDEX idx_job_work_modality ON jobs(work_modality);
+```
+
+> **Nota:** `remote_allowed` (V17) queda en la BD por compatibilidad retroactiva pero la fuente de verdad
+> para la modalidad es `work_modality`. Los valores válidos son gestionados por el enum `WorkModality`
+> en el dominio (`com.ITJobsBackend.jobs.domain.valueobjects.WorkModality`).
+

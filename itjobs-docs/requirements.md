@@ -31,6 +31,10 @@
 - [x] Cerrar/desactivar oferta
 - [ ] Asignar skills a oferta (DB creada, sin controller)
 - [ ] Asignar categorías (DB creada, sin controller)
+- [ ] Vincular oferta a usuario publicador (`created_by_user_id`, V17) — RF-28
+- [ ] Soporte para job_type: TRADITIONAL, FREELANCE, PROJECT, INFORMAL (V17) — RF-72
+- [ ] Ofertas con expiración automática (V17) — RF-31
+- [ ] Ofertas destacadas/promocionadas (V17) — RF-33
 
 **Applications** — DB creada, sin código
 
@@ -39,11 +43,12 @@
 - [ ] Cambiar estado de postulación
 - [ ] Guardar/eliminar favoritos
 
-**Profiles** — DB creada, sin código
+**Profiles** — DB creada, sin código (extensión pendiente V19–V20)
 
 - [ ] Crear/gestionar perfil candidato
 - [ ] Crear/gestionar perfil empleador
-- [ ] Registrar reclutador
+- [ ] Registrar reclutador (independiente o asociado a empresa)
+- [ ] Crear/gestionar perfil freelancer (V20) — RF-70
 
 **Administration** — Pendiente
 
@@ -55,13 +60,18 @@
 
 ## Actores del sistema
 
-| Actor          | Descripción                                                                        |
-|----------------|------------------------------------------------------------------------------------|
-| **Candidato**  | Usuario que busca empleo. Se postula a ofertas, guarda favoritos, gestiona perfil. |
-| **Empleador**  | Empresa que publica ofertas de trabajo. Gestiona reclutadores.                     |
-| **Reclutador** | Persona que trabaja para un empleador. Gestiona postulaciones y ofertas.           |
-| **Moderador**  | Usuario que modera contenido (reportes, spam, ofertas inapropiadas).               |
-| **Admin**      | Administrador del sistema. Gestiona usuarios, roles, categorías.                   |
+| Actor                    | Descripción                                                                                                      |
+|--------------------------|------------------------------------------------------------------------------------------------------------------|
+| **Candidato**            | Usuario que busca empleo tradicional. Se postula a ofertas, guarda favoritos, gestiona perfil.                  |
+| **Freelancer**           | Usuario que ofrece servicios por proyecto/hora. Puede postularse a ofertas FREELANCE o PROJECT.                 |
+| **Empleador**            | Organización (startup, empresa, consulting) que publica ofertas. Puede tener reclutadores asociados.           |
+| **Reclutador**           | Usuario con rol RECRUITER. Puede ser independiente (freelance recruiter) o asociado a una o varias empresas.    |
+| **Moderador**            | Usuario que modera contenido (reportes, spam, ofertas inapropiadas).                                            |
+| **Admin**                | Administrador del sistema. Gestiona usuarios, roles, categorías.                                                |
+
+> **Multi-rol**: Un mismo usuario puede tener varios roles simultáneamente (ej. CANDIDATE + FREELANCER,
+> o RECRUITER trabajando para múltiples empleadores). Los roles se gestionan en `user_roles` (globales)
+> y en `recruiter_employer_associations` (contextuales por empresa, V18).
 
 ---
 
@@ -80,24 +90,33 @@
 
 ### Bounded Context: Profiles
 
-| ID    | Requisito                                                                |
-|-------|--------------------------------------------------------------------------|
-| RF-07 | Crear perfil de candidato (nombre, apellido, resumen, ubicación, skills) |
-| RF-08 | Actualizar perfil de candidato                                           |
-| RF-09 | Crear perfil de empleador (empresa, industria, website, contacto)        |
-| RF-10 | Actualizar perfil de empleador                                           |
-| RF-11 | Registrar reclutador vinculado a un empleador                            |
+| ID    | Requisito                                                                           |
+|-------|-------------------------------------------------------------------------------------|
+| RF-07 | Crear perfil de candidato (nombre, apellido, resumen, ubicación, skills)            |
+| RF-08 | Actualizar perfil de candidato                                                      |
+| RF-09 | Crear perfil de empleador (empresa, industria, website, contacto, `employer_type`)  |
+| RF-10 | Actualizar perfil de empleador                                                      |
+| RF-11 | Registrar reclutador (puede ser independiente o vinculado a una o más empresas)     |
+| RF-70 | Crear perfil de freelancer (`headline`, tarifa/hora, disponibilidad, portfolio)     |
+| RF-71 | Asociar recruiter a empresa mediante `recruiter_employer_associations` (V18)        |
 
 ### Bounded Context: Jobs
 
-| ID    | Requisito                                                                       |
-|-------|---------------------------------------------------------------------------------|
-| RF-12 | Crear oferta de empleo (título, empresa, descripción, salario, tipo, ubicación) |
-| RF-13 | Buscar ofertas por título                                                       |
-| RF-14 | Cerrar oferta de empleo                                                         |
-| RF-15 | Desactivar oferta de empleo                                                     |
-| RF-16 | Agregar skills requeridos a una oferta                                          |
-| RF-17 | Asignar categorías a una oferta                                                 |
+| ID    | Requisito                                                                                                             |
+|-------|-----------------------------------------------------------------------------------------------------------------------|
+| RF-12 | Crear oferta de empleo (título, empresa, descripción, salario, tipo, ubicación)                                       |
+| RF-13 | Buscar ofertas por título                                                                                             |
+| RF-14 | Cerrar oferta de empleo                                                                                               |
+| RF-15 | Desactivar oferta de empleo                                                                                           |
+| RF-16 | Agregar skills requeridos a una oferta                                                                                |
+| RF-17 | Asignar categorías a una oferta                                                                                       |
+| RF-28 | Vincular oferta a usuario publicador (`created_by_user_id`) y opcionalmente a empresa (`posted_on_behalf_of_employer_id`) — *extiende RF-28 de v2* |
+| RF-29 | Buscar ofertas por múltiples filtros: título, ubicación, tipo empleo, rango salarial, skills, categoría, remoto — *extiende RF-29 de v2*           |
+| RF-30 | Crear oferta como borrador (DRAFT) y publicar después — *extiende RF-30 de v2*                                                                     |
+| RF-31 | Soporte de expiración automática de ofertas (`expires_at`, V17) — *extiende RF-31 de v2*                                                           |
+| RF-33 | Marcar oferta como destacada/promocionada (`featured` + `featured_until`, V17) — *extiende RF-33 de v2*                                            |
+| RF-72 | Publicar ofertas de tipo TRADITIONAL, FREELANCE, PROJECT o INFORMAL (`job_type`, V17)                                                              |
+| RF-73 | Marcar/desmarcar oferta como remota (`remote_allowed`, V17)                                                                                        |
 
 ### Bounded Context: Applications
 
@@ -134,7 +153,7 @@
 | RNF-02 | Seguridad         | Password hasheado con BCrypt                                                 |
 | RNF-03 | Arquitectura      | Hexagonal (Ports & Adapters) con DDD táctico                                 |
 | RNF-04 | Base de datos     | MySQL 8.0 en producción, H2 en memoria para tests                            |
-| RNF-05 | Migraciones       | Esquema versionado con Flyway (V1–V10)                                       |
+| RNF-05 | Migraciones       | Esquema versionado con Flyway (V1–V20); nunca eliminar migraciones existentes |
 | RNF-06 | Despliegue        | Docker Compose (MySQL + Spring Boot)                                         |
 | RNF-07 | Manejo de errores | GlobalExceptionHandler centralizado                                          |
 | RNF-08 | Validación        | Jakarta Validation en capa REST                                              |
@@ -143,3 +162,5 @@
 | RNF-11 | Perfiles          | Spring profiles: `dev` (local), `prod` (Docker), `staging` (pendiente)       |
 | RNF-12 | Charset           | Base de datos con charset `utf8mb4_unicode_ci`                               |
 | RNF-13 | UUID              | UUIDs mapeados como `VARCHAR(36)` vía `@JdbcTypeCode(SqlTypes.VARCHAR)`      |
+| RNF-14 | Multi-rol         | Un usuario puede tener múltiples roles simultáneamente (CANDIDATE, RECRUITER, FREELANCER, EMPLOYER_OWNER, ADMIN) |
+| RNF-15 | Transparencia     | Todos los jobs deben tener salario obligatorio (`salary_min/max NOT NULL`) y `employer_type` visible para el candidato |
