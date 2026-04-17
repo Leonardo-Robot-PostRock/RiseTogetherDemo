@@ -6,23 +6,11 @@ import com.ITJobsBackend.shared.domain.valueobjects.UserId;
 public class PasswordChangedEvent extends DomainEvent {
 
   public PasswordChangedEvent(UserId userId) {
-    super(userId, "UserAggregate", "user.password_changed");
+    super(userId, "UserAggregate", UserEventTypes.PASSWORD_CHANGED);
   }
 
   @Override
   public String toString() {
-    return "PasswordChangedEvent{"
-        + "aggregateId='"
-        + getAggregateId()
-        + '\''
-        + ", aggregateType='"
-        + getAggregateType()
-        + '\''
-        + ", eventType='"
-        + getEventType()
-        + '\''
-        + ", occurredOn="
-        + getOccurredOn()
-        + '}';
+    return "PasswordChangedEvent{" + baseFields() + '}';
   }
 }

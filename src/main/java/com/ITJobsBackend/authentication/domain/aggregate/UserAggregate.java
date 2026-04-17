@@ -15,6 +15,7 @@ import com.ITJobsBackend.authentication.domain.exceptions.UserAlreadyActivatedEx
 import com.ITJobsBackend.authentication.domain.exceptions.UserAlreadyDeactivatedException;
 import com.ITJobsBackend.authentication.domain.valueobjects.GoogleSub;
 import com.ITJobsBackend.authentication.domain.valueobjects.HashedPassword;
+import com.ITJobsBackend.authentication.domain.valueobjects.UserStatus;
 import com.ITJobsBackend.authentication.domain.valueobjects.Username;
 import com.ITJobsBackend.authentication.domain.valueobjects.VerificationToken;
 import com.ITJobsBackend.shared.domain.AggregateRoot;
@@ -29,8 +30,7 @@ public class UserAggregate extends AggregateRoot {
   private Username username;
   private Email email;
   private HashedPassword password;
-  private boolean active;
-  private boolean emailVerified;
+  private UserStatus status;
   private GoogleSub googleSub;
   private Timestamp updatedAt;
   private VerificationToken verificationToken;
@@ -41,8 +41,7 @@ public class UserAggregate extends AggregateRoot {
     this.username = username;
     this.email = email;
     this.password = password;
-    this.active = false;
-    this.emailVerified = false;
+    this.status = UserStatus.PENDING_VERIFICATION;
     this.createdAt = createdAt;
     this.updatedAt = createdAt;
     this.roles = new ArrayList<>();
@@ -60,8 +59,8 @@ public class UserAggregate extends AggregateRoot {
         new UserAggregate(UserId.generate(), username, email, hashedPassword, Timestamp.now());
 
     user.googleSub = googleSub;
-    user.active = true;
-    user.emailVerified = true;
+    user.status = UserStatus.ACTIVE;
+
     return user;
   }
 
@@ -80,51 +79,54 @@ public class UserAggregate extends AggregateRoot {
 
     UserAggregate user = new UserAggregate(id, username, email, password, createdAt);
 
-    user.active = active;
-    user.emailVerified = emailVerified;
+    user.status = UserStatus.from(active, emailVerified);
     user.googleSub = googleSub;
     user.updatedAt = updatedAt;
     user.roles.clear();
     user.roles.addAll(roles);
     user.verificationToken = verificationToken;
+
     return user;
   }
 
   public void assignVerificationToken(VerificationToken verificationToken) {
-    if (this.emailVerified) {
-      throw new EmailAlreadyVerifiedException("Cannot assign a verification token to an already verified email");
+    if (this.status.isEmailVerified()) {
+      throw new EmailAlreadyVerifiedException(
+          "Cannot assign a verification token to an already verified email");
     }
+
     this.verificationToken = verificationToken;
     this.updatedAt = Timestamp.now();
   }
 
   public void activate() {
-    if (this.active) {
+    if (this.status == UserStatus.ACTIVE) {
       throw new UserAlreadyActivatedException("User is already active");
     }
-    this.active = true;
+
+    this.status = UserStatus.ACTIVE;
     this.updatedAt = Timestamp.now();
 
     recordEvent(new UserActivatedEvent(this.id, this.email));
   }
 
   public void deactivate() {
-    if (!this.active) {
+    if (this.status != UserStatus.ACTIVE) {
       throw new UserAlreadyDeactivatedException("User is already deactivated");
     }
 
-    this.active = false;
+    this.status = UserStatus.SUSPENDED;
     this.updatedAt = Timestamp.now();
 
     recordEvent(new UserDeactivatedEvent(this.id, this.email));
   }
 
   public void verifyEmail() {
-    if (this.emailVerified) {
+    if (this.status.isEmailVerified()) {
       throw new EmailAlreadyVerifiedException("Email is already verified");
     }
 
-    this.emailVerified = true;
+    this.status = UserStatus.ACTIVE;
     this.updatedAt = Timestamp.now();
 
     recordEvent(new EmailVerifiedEvent(this.id, this.email));
@@ -146,15 +148,15 @@ public class UserAggregate extends AggregateRoot {
 
   public void updateEmail(Email newEmail) {
     this.email = newEmail;
-    this.emailVerified = false;
+    this.status = UserStatus.PENDING_VERIFICATION;
     this.updatedAt = Timestamp.now();
 
     recordEvent(new EmailChangedEvent(this.id, this.email));
   }
-  
+
   public void addRole(String role) {
     String normalized = role.trim().toUpperCase();
-
+    
     if (!this.roles.contains(normalized)) {
       this.roles.add(normalized);
       this.updatedAt = Timestamp.now();
@@ -177,12 +179,16 @@ public class UserAggregate extends AggregateRoot {
     return password;
   }
 
+  public UserStatus getStatus() {
+    return status;
+  }
+
   public boolean isActive() {
-    return active;
+    return status.isActive();
   }
 
   public boolean isEmailVerified() {
-    return emailVerified;
+    return status.isEmailVerified();
   }
 
   public GoogleSub getGoogleSub() {
@@ -212,12 +218,11 @@ public class UserAggregate extends AggregateRoot {
         + id
         + ", username="
         + username
-        + ", email=[PROTECTED]"
+        + ", email='"
         + email.mask()
-        + ", active="
-        + active
-        + ", emailVerified="
-        + emailVerified
+        + '\''
+        + ", status="
+        + status
         + ", roles="
         + roles
         + '}';

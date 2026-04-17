@@ -92,7 +92,7 @@ class ForgotPasswordUseCaseTest {
     assertEquals(USER_ID, event.getAggregateId());
     assertEquals(Email.of(EMAIL), event.getEmail());
 
-    PasswordResetToken passwordResetToken = event.getResetToken();
+    PasswordResetToken passwordResetToken = event.getPasswordResetToken();
 
     assertNotNull(passwordResetToken);
     assertNotNull(passwordResetToken.value());

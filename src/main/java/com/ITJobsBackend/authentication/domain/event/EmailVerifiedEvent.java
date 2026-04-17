@@ -8,7 +8,7 @@ public class EmailVerifiedEvent extends DomainEvent {
   private final Email email;
 
   public EmailVerifiedEvent(UserId userId, Email email) {
-    super(userId, "UserAggregate", "email.verified");
+    super(userId, "UserAggregate", UserEventTypes.EMAIL_VERIFIED);
     this.email = email;
   }
 
@@ -18,21 +18,6 @@ public class EmailVerifiedEvent extends DomainEvent {
 
   @Override
   public String toString() {
-    return "EmailVerifiedEvent{"
-        + "aggregateId='"
-        + getAggregateId()
-        + '\''
-        + ", aggregateType='"
-        + getAggregateType()
-        + '\''
-        + ", eventType='"
-        + getEventType()
-        + '\''
-        + ", occurredOn="
-        + getOccurredOn()
-        + ", email='"
-        + email.mask()
-        + '\''
-        + '}';
+    return "EmailVerifiedEvent{" + baseFields() + ", email='" + email.mask() + "'}";
   }
 }

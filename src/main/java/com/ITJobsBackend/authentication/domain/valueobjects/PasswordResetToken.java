@@ -38,6 +38,6 @@ public record PasswordResetToken(String value, Instant expiresAt) {
 
   @Override
   public String toString() {
-    return "ResetToken{value='[PROTECTED]', expiresAt=" + expiresAt + "}";
+    return "PasswordResetToken{value='[PROTECTED]', expiresAt=" + expiresAt + "}";
   }
 }

@@ -7,7 +7,7 @@ public class JobDeactivatedEvent extends DomainEvent {
   private final String jobTitle;
 
   public JobDeactivatedEvent(JobId jobId, String jobTitle) {
-    super(jobId, "JobAggregate", "job.deactivated");
+    super(jobId, "JobAggregate", JobEventTypes.JOB_DEACTIVATED);
     this.jobTitle = jobTitle;
   }
 
@@ -17,21 +17,6 @@ public class JobDeactivatedEvent extends DomainEvent {
 
   @Override
   public String toString() {
-    return "JobDeactivatedEvent{"
-        + "aggregateId='"
-        + getAggregateId()
-        + '\''
-        + ", aggregateType='"
-        + getAggregateType()
-        + '\''
-        + ", eventType='"
-        + getEventType()
-        + '\''
-        + ", occurredOn="
-        + getOccurredOn()
-        + ", jobTitle='"
-        + jobTitle
-        + '\''
-        + '}';
+    return "JobDeactivatedEvent{" + baseFields() + ", jobTitle='" + jobTitle + "'}";
   }
 }

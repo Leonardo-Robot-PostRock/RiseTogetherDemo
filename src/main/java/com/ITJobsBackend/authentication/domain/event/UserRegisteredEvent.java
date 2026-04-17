@@ -8,7 +8,7 @@ public class UserRegisteredEvent extends DomainEvent {
   private final Email email;
 
   public UserRegisteredEvent(UserId userId, Email email) {
-    super(userId, "UserAggregate", "user.registered");
+    super(userId, "UserAggregate", UserEventTypes.USER_REGISTERED);
     this.email = email;
   }
 
@@ -18,21 +18,6 @@ public class UserRegisteredEvent extends DomainEvent {
 
   @Override
   public String toString() {
-    return "UserRegisteredEvent{"
-        + "aggregateId='"
-        + getAggregateId()
-        + '\''
-        + ", aggregateType='"
-        + getAggregateType()
-        + '\''
-        + ", eventType='"
-        + getEventType()
-        + '\''
-        + ", occurredOn="
-        + getOccurredOn()
-        + ", email='"
-        + email.mask()
-        + '\''
-        + '}';
+    return "UserRegisteredEvent{" + baseFields() + ", email='" + email.mask() + "'}";
   }
 }

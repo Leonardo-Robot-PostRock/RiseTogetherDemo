@@ -8,7 +8,7 @@ public class UserDeactivatedEvent extends DomainEvent {
   private final Email email;
 
   public UserDeactivatedEvent(UserId userId, Email email) {
-    super(userId, "UserAggregate", "user.deactivated");
+    super(userId, "UserAggregate", UserEventTypes.USER_DEACTIVATED);
     this.email = email;
   }
 
@@ -18,21 +18,6 @@ public class UserDeactivatedEvent extends DomainEvent {
 
   @Override
   public String toString() {
-    return "UserDeactivatedEvent{"
-        + "aggregateId='"
-        + getAggregateId()
-        + '\''
-        + ", aggregateType='"
-        + getAggregateType()
-        + '\''
-        + ", eventType='"
-        + getEventType()
-        + '\''
-        + ", occurredOn="
-        + getOccurredOn()
-        + ", email='"
-        + email.mask()
-        + '\''
-        + '}';
+    return "UserDeactivatedEvent{" + baseFields() + ", email='" + email.mask() + "'}";
   }
 }

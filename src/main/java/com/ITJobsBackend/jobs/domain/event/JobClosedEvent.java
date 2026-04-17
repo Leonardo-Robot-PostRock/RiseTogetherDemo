@@ -8,7 +8,7 @@ public class JobClosedEvent extends DomainEvent {
   private final String company;
 
   public JobClosedEvent(JobId jobId, String jobTitle, String company) {
-    super(jobId, "JobAggregate", "job.closed");
+    super(jobId, "JobAggregate", JobEventTypes.JOB_CLOSED);
     this.jobTitle = jobTitle;
     this.company = company;
   }
@@ -23,24 +23,6 @@ public class JobClosedEvent extends DomainEvent {
 
   @Override
   public String toString() {
-    return "JobClosedEvent{"
-        + "aggregateId='"
-        + getAggregateId()
-        + '\''
-        + ", aggregateType='"
-        + getAggregateType()
-        + '\''
-        + ", eventType='"
-        + getEventType()
-        + '\''
-        + ", occurredOn="
-        + getOccurredOn()
-        + ", jobTitle='"
-        + jobTitle
-        + '\''
-        + ", company='"
-        + company
-        + '\''
-        + '}';
+    return "JobClosedEvent{" + baseFields() + ", jobTitle='" + jobTitle + "', company='" + company + "'}";
   }
 }

@@ -1,8 +1,8 @@
 package com.ITJobsBackend.authentication.domain.valueobjects;
 
 /**
- * Encapsulates the lifecycle state of a user, derived from the combination of
- * {@code active} and {@code emailVerified} flags.
+ * Encapsulates the lifecycle state of a user, derived from the combination of {@code active} and
+ * {@code emailVerified} flags.
  *
  * <ul>
  *   <li>{@code PENDING_VERIFICATION} — newly registered, email not yet verified, account inactive
@@ -16,8 +16,8 @@ public enum UserStatus {
   SUSPENDED;
 
   /**
-   * Derives the status from the two legacy boolean columns stored in the database.
-   * Used exclusively by the persistence mapper when reconstituting the aggregate.
+   * Derives the status from the two legacy boolean columns stored in the database. Used exclusively
+   * by the persistence mapper when reconstituting the aggregate.
    */
   public static UserStatus from(boolean active, boolean emailVerified) {
     if (active) return ACTIVE;
@@ -33,4 +33,3 @@ public enum UserStatus {
     return this == ACTIVE || this == SUSPENDED;
   }
 }
-

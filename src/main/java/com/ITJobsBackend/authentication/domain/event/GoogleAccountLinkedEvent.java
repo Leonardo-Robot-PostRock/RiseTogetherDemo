@@ -8,7 +8,7 @@ public class GoogleAccountLinkedEvent extends DomainEvent {
   private final GoogleSub googleSub;
 
   public GoogleAccountLinkedEvent(UserId userId, GoogleSub googleSub) {
-    super(userId, "UserAggregate", "user.google_account_linked");
+    super(userId, "UserAggregate", UserEventTypes.GOOGLE_ACCOUNT_LINKED);
     this.googleSub = googleSub;
   }
 
@@ -18,20 +18,6 @@ public class GoogleAccountLinkedEvent extends DomainEvent {
 
   @Override
   public String toString() {
-    return "GoogleAccountLinkedEvent{"
-        + "aggregateId='"
-        + getAggregateId()
-        + '\''
-        + ", aggregateType='"
-        + getAggregateType()
-        + '\''
-        + ", eventType='"
-        + getEventType()
-        + '\''
-        + ", occurredOn="
-        + getOccurredOn()
-        + ", googleSub=[PROTECTED]"
-        + '}';
+    return "GoogleAccountLinkedEvent{" + baseFields() + ", googleSub=[PROTECTED]}";
   }
 }
-

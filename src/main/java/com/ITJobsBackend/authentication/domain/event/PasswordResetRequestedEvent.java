@@ -9,8 +9,9 @@ public class PasswordResetRequestedEvent extends DomainEvent {
   private final Email email;
   private final PasswordResetToken passwordResetToken;
 
-  public PasswordResetRequestedEvent(UserId userId, Email email, PasswordResetToken passwordResetToken) {
-    super(userId, "UserAggregate", "user.password_reset_requested");
+  public PasswordResetRequestedEvent(
+      UserId userId, Email email, PasswordResetToken passwordResetToken) {
+    super(userId, "UserAggregate", UserEventTypes.PASSWORD_RESET_REQUESTED);
     this.email = email;
     this.passwordResetToken = passwordResetToken;
   }
@@ -19,28 +20,16 @@ public class PasswordResetRequestedEvent extends DomainEvent {
     return email;
   }
 
-  public PasswordResetToken getResetToken() {
+  public PasswordResetToken getPasswordResetToken() {
     return passwordResetToken;
   }
 
   @Override
   public String toString() {
     return "PasswordResetRequestedEvent{"
-        + "aggregateId='"
-        + getAggregateId()
-        + '\''
-        + ", aggregateType='"
-        + getAggregateType()
-        + '\''
-        + ", eventType='"
-        + getEventType()
-        + '\''
-        + ", occurredOn="
-        + getOccurredOn()
+        + baseFields()
         + ", email='"
         + email.mask()
-        + '\''
-        + ", resetToken=[PROTECTED]"
-        + '}';
+        + "', resetToken=[PROTECTED]}";
   }
 }

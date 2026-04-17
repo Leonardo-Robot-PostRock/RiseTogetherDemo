@@ -40,11 +40,8 @@ public abstract class DomainEvent {
     return occurredOn;
   }
 
-  @Override
-  public String toString() {
-    return getClass().getSimpleName()
-        + "{"
-        + "aggregateId='"
+  protected String baseFields() {
+    return "aggregateId='"
         + aggregateId
         + '\''
         + ", aggregateType='"
@@ -54,7 +51,11 @@ public abstract class DomainEvent {
         + eventType
         + '\''
         + ", occurredOn="
-        + occurredOn
-        + '}';
+        + occurredOn;
+  }
+
+  @Override
+  public String toString() {
+    return getClass().getSimpleName() + "{" + baseFields() + '}';
   }
 }
