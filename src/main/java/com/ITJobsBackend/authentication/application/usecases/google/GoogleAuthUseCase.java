@@ -5,18 +5,24 @@ import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.ITJobsBackend.authentication.application.ports.in.GoogleAuthPort;
+import com.ITJobsBackend.authentication.application.ports.out.LoadTermsDocumentPort;
 import com.ITJobsBackend.authentication.application.ports.out.LoadUserPort;
+import com.ITJobsBackend.authentication.application.ports.out.SaveTermsAcceptancePort;
 import com.ITJobsBackend.authentication.application.ports.out.SaveUserPort;
 import com.ITJobsBackend.authentication.application.ports.out.TokenGeneratorPort;
 import com.ITJobsBackend.authentication.application.usecases.login.AuthTokenResponse;
 import com.ITJobsBackend.authentication.domain.aggregate.UserAggregate;
+import com.ITJobsBackend.authentication.domain.entity.TermsAcceptance;
 import com.ITJobsBackend.authentication.domain.exceptions.InvalidCredentialsException;
+import com.ITJobsBackend.authentication.domain.exceptions.TermsDocumentNotFoundException;
 import com.ITJobsBackend.authentication.domain.valueobjects.GoogleSub;
 import com.ITJobsBackend.authentication.domain.valueobjects.HashedPassword;
+import com.ITJobsBackend.authentication.domain.valueobjects.TermsType;
 import com.ITJobsBackend.authentication.domain.valueobjects.Username;
 import com.ITJobsBackend.shared.domain.valueobjects.Email;
 
@@ -28,24 +34,35 @@ public class GoogleAuthUseCase implements GoogleAuthPort {
   private final LoadUserPort loadUserPort;
   private final SaveUserPort saveUserPort;
   private final TokenGeneratorPort tokenGenerator;
+  private final LoadTermsDocumentPort loadTermsDocumentPort;
+  private final SaveTermsAcceptancePort saveTermsAcceptancePort;
 
   public GoogleAuthUseCase(
-      LoadUserPort loadUserPort, SaveUserPort saveUserPort, TokenGeneratorPort tokenGenerator) {
+      LoadUserPort loadUserPort,
+      SaveUserPort saveUserPort,
+      TokenGeneratorPort tokenGenerator,
+      LoadTermsDocumentPort loadTermsDocumentPort,
+      SaveTermsAcceptancePort saveTermsAcceptancePort) {
     this.loadUserPort = loadUserPort;
     this.saveUserPort = saveUserPort;
     this.tokenGenerator = tokenGenerator;
+    this.loadTermsDocumentPort = loadTermsDocumentPort;
+    this.saveTermsAcceptancePort = saveTermsAcceptancePort;
   }
 
   @Override
   public AuthTokenResponse execute(GoogleAuthCommand command) {
     log.info("Google authentication attempt for email: {}", command.email());
 
+    if (!command.termsAccepted()) {
+      throw new IllegalArgumentException("Terms and conditions must be accepted");
+    }
+
     Email email = Email.of(command.email());
     GoogleSub googleSub = GoogleSub.of(command.googleSub());
 
     Optional<UserAggregate> existingUser = loadUserPort.findByEmail(email);
 
-    // If a user with the same email exists, ensure the Google sub matches
     existingUser.ifPresent(
         u -> {
           GoogleSub storedSub = u.getGoogleSub();
@@ -54,8 +71,13 @@ public class GoogleAuthUseCase implements GoogleAuthPort {
           }
         });
 
+    boolean isNewUser = existingUser.isEmpty();
     UserAggregate user =
         existingUser.orElseGet(() -> createNewGoogleUser(googleSub, email, command.name()));
+
+    if (isNewUser) {
+      recordTermsAcceptance(user, TermsType.TERMS_OF_SERVICE);
+    }
 
     String accessToken =
         tokenGenerator.generateAccessToken(user.getId().value().toString(), user.getRoles());
@@ -76,8 +98,16 @@ public class GoogleAuthUseCase implements GoogleAuthPort {
 
     Username username = Username.of(name != null ? name : email.value().split("@")[0]);
     HashedPassword password = HashedPassword.fromHash(UUID.randomUUID().toString());
-
     UserAggregate user = UserAggregate.createGoogleUser(username, email, password, googleSub);
+
     return saveUserPort.save(user);
+  }
+
+  private void recordTermsAcceptance(UserAggregate user, TermsType termsType) {
+    var termsDocument =
+        loadTermsDocumentPort
+            .findLatestByType(termsType)
+            .orElseThrow(() -> new TermsDocumentNotFoundException(termsType.name()));
+    saveTermsAcceptancePort.save(TermsAcceptance.create(user.getId(), termsDocument.getId()));
   }
 }
