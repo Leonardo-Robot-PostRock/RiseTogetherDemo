@@ -28,6 +28,7 @@ import org.hibernate.type.SqlTypes;
 
 import com.ITJobsBackend.jobs.domain.valueobjects.EmploymentType;
 import com.ITJobsBackend.jobs.domain.valueobjects.JobStatus;
+import com.ITJobsBackend.jobs.domain.valueobjects.WorkModality;
 import com.ITJobsBackend.profiles.infrastructure.adapters.out.persistence.jpa.entities.EmployerEntity;
 
 @Entity
@@ -70,6 +71,10 @@ public class JobEntity {
   @Column(name = "employment_type", nullable = false, length = 20)
   @Enumerated(EnumType.STRING)
   private EmploymentType employmentType;
+
+  @Column(name = "work_modality", nullable = false, length = 20)
+  @Enumerated(EnumType.STRING)
+  private WorkModality workModality;
 
   @Column(nullable = false, length = 20)
   @Enumerated(EnumType.STRING)

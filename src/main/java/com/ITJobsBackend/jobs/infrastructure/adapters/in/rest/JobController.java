@@ -43,6 +43,7 @@ public class JobController {
             request.salaryMax(),
             request.currency(),
             request.employmentType(),
+            request.workModality(),
             request.employerId());
 
     JobResponse response = createJobUseCase.execute(command);

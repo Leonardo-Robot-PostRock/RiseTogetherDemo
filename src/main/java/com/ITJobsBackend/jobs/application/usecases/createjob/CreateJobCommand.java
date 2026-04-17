@@ -11,4 +11,5 @@ public record CreateJobCommand(
     BigDecimal salaryMax,
     String currency,
     String employmentType,
+    String workModality,
     String employerId) {}

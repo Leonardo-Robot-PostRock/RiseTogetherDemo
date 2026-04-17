@@ -41,6 +41,7 @@ public class SearchJobsUseCase implements SearchJobsPort {
         job.getSalary().max(),
         job.getSalary().currency(),
         job.getEmploymentType().name(),
+        job.getWorkModality().name(),
         job.getStatus().name(),
         job.getCreatedAt().value());
   }

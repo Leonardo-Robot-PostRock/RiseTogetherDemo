@@ -13,5 +13,6 @@ public record JobResponse(
     BigDecimal salaryMax,
     String currency,
     String employmentType,
+    String workModality,
     String status,
     Instant createdAt) {}

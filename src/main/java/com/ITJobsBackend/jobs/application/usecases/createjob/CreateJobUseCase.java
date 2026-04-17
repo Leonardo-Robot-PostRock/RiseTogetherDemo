@@ -12,6 +12,7 @@ import com.ITJobsBackend.jobs.domain.aggregate.JobAggregate;
 import com.ITJobsBackend.jobs.domain.repository.JobWriterRepository;
 import com.ITJobsBackend.jobs.domain.valueobjects.EmploymentType;
 import com.ITJobsBackend.jobs.domain.valueobjects.Salary;
+import com.ITJobsBackend.jobs.domain.valueobjects.WorkModality;
 import com.ITJobsBackend.shared.application.ports.out.DomainEventPublisher;
 import com.ITJobsBackend.shared.domain.valueobjects.EmployerId;
 
@@ -34,6 +35,9 @@ public class CreateJobUseCase implements CreateJobPort {
 
     Salary salary = Salary.of(command.salaryMin(), command.salaryMax(), command.currency());
     EmploymentType type = EmploymentType.valueOf(command.employmentType().toUpperCase());
+    WorkModality modality = command.workModality() != null
+        ? WorkModality.valueOf(command.workModality().toUpperCase())
+        : WorkModality.ON_SITE;
 
     EmployerId employerId = null;
     if (command.employerId() != null && !command.employerId().isBlank()) {
@@ -48,6 +52,7 @@ public class CreateJobUseCase implements CreateJobPort {
             command.location(),
             salary,
             type,
+            modality,
             employerId);
 
     JobAggregate savedJob = jobRepository.save(job);
@@ -65,6 +70,7 @@ public class CreateJobUseCase implements CreateJobPort {
         savedJob.getSalary().max(),
         savedJob.getSalary().currency(),
         savedJob.getEmploymentType().name(),
+        savedJob.getWorkModality().name(),
         savedJob.getStatus().name(),
         savedJob.getCreatedAt().value());
   }

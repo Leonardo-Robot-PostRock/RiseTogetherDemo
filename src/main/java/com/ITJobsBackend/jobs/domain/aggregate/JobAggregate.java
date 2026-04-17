@@ -11,6 +11,7 @@ import com.ITJobsBackend.jobs.domain.valueobjects.EmploymentType;
 import com.ITJobsBackend.jobs.domain.valueobjects.JobId;
 import com.ITJobsBackend.jobs.domain.valueobjects.JobStatus;
 import com.ITJobsBackend.jobs.domain.valueobjects.Salary;
+import com.ITJobsBackend.jobs.domain.valueobjects.WorkModality;
 import com.ITJobsBackend.shared.domain.AggregateRoot;
 import com.ITJobsBackend.shared.domain.exceptions.ValidationException;
 import com.ITJobsBackend.shared.domain.valueobjects.EmployerId;
@@ -27,6 +28,7 @@ public class JobAggregate extends AggregateRoot {
   private Salary salary;
   private EmploymentType employmentType;
   private JobStatus status;
+  private WorkModality workModality;
   private Timestamp updatedAt;
   private EmployerId employerId;
 
@@ -38,6 +40,7 @@ public class JobAggregate extends AggregateRoot {
       String location,
       Salary salary,
       EmploymentType employmentType,
+      WorkModality workModality,
       Timestamp createdAt,
       EmployerId employerId) {
     this.id = id;
@@ -47,6 +50,7 @@ public class JobAggregate extends AggregateRoot {
     this.location = location;
     this.salary = salary;
     this.employmentType = employmentType;
+    this.workModality = workModality;
     this.status = JobStatus.OPEN;
     this.skills = new ArrayList<>();
     this.createdAt = createdAt;
@@ -61,6 +65,7 @@ public class JobAggregate extends AggregateRoot {
       String location,
       Salary salary,
       EmploymentType employmentType,
+      WorkModality workModality,
       EmployerId employerId) {
     if (title == null || title.isBlank()) {
       throw new ValidationException("Job title cannot be empty");
@@ -77,6 +82,7 @@ public class JobAggregate extends AggregateRoot {
         location,
         salary,
         employmentType,
+        workModality != null ? workModality : WorkModality.ON_SITE,
         Timestamp.now(),
         employerId);
   }
@@ -89,6 +95,7 @@ public class JobAggregate extends AggregateRoot {
       String location,
       Salary salary,
       EmploymentType employmentType,
+      WorkModality workModality,
       JobStatus status,
       List<String> skills,
       Timestamp createdAt,
@@ -103,6 +110,7 @@ public class JobAggregate extends AggregateRoot {
             location,
             salary,
             employmentType,
+            workModality != null ? workModality : WorkModality.ON_SITE,
             createdAt,
             employerId);
     job.status = status;
@@ -179,6 +187,10 @@ public class JobAggregate extends AggregateRoot {
 
   public EmploymentType getEmploymentType() {
     return employmentType;
+  }
+
+  public WorkModality getWorkModality() {
+    return workModality;
   }
 
   public JobStatus getStatus() {

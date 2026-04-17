@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import com.ITJobsBackend.jobs.domain.aggregate.JobAggregate;
 import com.ITJobsBackend.jobs.domain.valueobjects.JobId;
 import com.ITJobsBackend.jobs.domain.valueobjects.Salary;
+import com.ITJobsBackend.jobs.domain.valueobjects.WorkModality;
 import com.ITJobsBackend.jobs.infrastructure.adapters.out.persistence.jpa.entities.JobEntity;
 import com.ITJobsBackend.shared.domain.valueobjects.EmployerId;
 import com.ITJobsBackend.shared.domain.valueobjects.Timestamp;
@@ -25,6 +26,7 @@ public class JobMapper {
     entity.setSalaryMax(domain.getSalary().max());
     entity.setCurrency(domain.getSalary().currency());
     entity.setEmploymentType(domain.getEmploymentType());
+    entity.setWorkModality(domain.getWorkModality());
     entity.setStatus(domain.getStatus());
     entity.setSkills(new ArrayList<>(domain.getSkills()));
     entity.setCreatedAt(domain.getCreatedAt().value());
@@ -35,6 +37,8 @@ public class JobMapper {
   public JobAggregate toDomain(JobEntity entity) {
     EmployerId employerId =
         entity.getEmployerId() != null ? EmployerId.of(entity.getEmployerId()) : null;
+    WorkModality workModality =
+        entity.getWorkModality() != null ? entity.getWorkModality() : WorkModality.ON_SITE;
     return JobAggregate.reconstitute(
         JobId.of(entity.getId()),
         entity.getTitle(),
@@ -43,6 +47,7 @@ public class JobMapper {
         entity.getLocation(),
         Salary.of(entity.getSalaryMin(), entity.getSalaryMax(), entity.getCurrency()),
         entity.getEmploymentType(),
+        workModality,
         entity.getStatus(),
         entity.getSkills(),
         Timestamp.of(entity.getCreatedAt()),

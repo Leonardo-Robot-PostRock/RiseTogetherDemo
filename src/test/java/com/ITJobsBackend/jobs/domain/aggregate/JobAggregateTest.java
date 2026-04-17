@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import com.ITJobsBackend.jobs.domain.valueobjects.EmploymentType;
 import com.ITJobsBackend.jobs.domain.valueobjects.JobStatus;
 import com.ITJobsBackend.jobs.domain.valueobjects.Salary;
+import com.ITJobsBackend.jobs.domain.valueobjects.WorkModality;
 import com.ITJobsBackend.shared.domain.exceptions.ValidationException;
 
 class JobAggregateTest {
@@ -21,6 +22,7 @@ class JobAggregateTest {
         "Remote",
         Salary.of(new BigDecimal("80000"), new BigDecimal("120000"), "USD"),
         EmploymentType.FULL_TIME,
+        WorkModality.REMOTE,
         null);
   }
 
@@ -39,6 +41,49 @@ class JobAggregateTest {
   }
 
   @Test
+  void shouldCreateJobWithWorkModality() {
+    // When
+    JobAggregate job = createOpenJob();
+
+    // Then
+    assertEquals(WorkModality.REMOTE, job.getWorkModality());
+  }
+
+  @Test
+  void shouldDefaultWorkModalityToOnSiteWhenNull() {
+    // When
+    JobAggregate job = JobAggregate.create(
+        "Developer",
+        "desc",
+        "Company",
+        "Madrid",
+        Salary.of(new BigDecimal("30000"), new BigDecimal("50000"), "EUR"),
+        EmploymentType.FULL_TIME,
+        null,
+        null);
+
+    // Then
+    assertEquals(WorkModality.ON_SITE, job.getWorkModality());
+  }
+
+  @Test
+  void shouldCreateJobWithHybridModality() {
+    // When
+    JobAggregate job = JobAggregate.create(
+        "Developer",
+        "desc",
+        "Company",
+        "Barcelona",
+        Salary.of(new BigDecimal("40000"), new BigDecimal("60000"), "EUR"),
+        EmploymentType.FULL_TIME,
+        WorkModality.HYBRID,
+        null);
+
+    // Then
+    assertEquals(WorkModality.HYBRID, job.getWorkModality());
+  }
+
+  @Test
   void shouldThrowWhenTitleIsNull() {
     // When & Then
     assertThrows(
@@ -51,6 +96,7 @@ class JobAggregateTest {
                 "loc",
                 Salary.of(BigDecimal.ONE, BigDecimal.TEN, "USD"),
                 EmploymentType.FULL_TIME,
+                WorkModality.ON_SITE,
                 null));
   }
 
@@ -67,6 +113,7 @@ class JobAggregateTest {
                 "loc",
                 Salary.of(BigDecimal.ONE, BigDecimal.TEN, "USD"),
                 EmploymentType.FULL_TIME,
+                WorkModality.ON_SITE,
                 null));
   }
 
