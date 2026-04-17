@@ -1,4 +1,38 @@
 package com.ITJobsBackend.authentication.domain.event;
 
-public class EmailChangedEvent {
+import com.ITJobsBackend.shared.domain.event.DomainEvent;
+import com.ITJobsBackend.shared.domain.valueobjects.Email;
+import com.ITJobsBackend.shared.domain.valueobjects.UserId;
+
+public class EmailChangedEvent extends DomainEvent {
+  private final Email newEmail;
+
+  public EmailChangedEvent(UserId userId, Email newEmail) {
+    super(userId, "UserAggregate", "email.changed");
+    this.newEmail = newEmail;
+  }
+
+  public Email getNewEmail() {
+    return newEmail;
+  }
+
+  @Override
+  public String toString() {
+    return "EmailChangedEvent{"
+        + "aggregateId='"
+        + getAggregateId()
+        + '\''
+        + ", aggregateType='"
+        + getAggregateType()
+        + '\''
+        + ", eventType='"
+        + getEventType()
+        + '\''
+        + ", occurredOn="
+        + getOccurredOn()
+        + ", newEmail='"
+        + newEmail.mask()
+        + '\''
+        + '}';
+  }
 }
