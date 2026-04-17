@@ -3,11 +3,12 @@ package com.ITJobsBackend.jobs.domain.valueobjects;
 import java.util.Objects;
 import java.util.UUID;
 
-public final class JobId {
-  private final UUID value;
+import com.ITJobsBackend.shared.domain.valueobjects.Identifier;
 
-  private JobId(UUID value) {
-    this.value = value;
+public record JobId(UUID value) implements Identifier {
+
+  public JobId {
+    Objects.requireNonNull(value, "JobId cannot be null");
   }
 
   public static JobId generate() {
@@ -26,25 +27,8 @@ public final class JobId {
     return new JobId(uuid);
   }
 
-  public UUID value() {
-    return value;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (!(o instanceof JobId)) return false;
-    JobId jobId = (JobId) o;
-    return Objects.equals(value, jobId.value);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(value);
-  }
-
-  @Override
-  public String toString() {
+    @Override
+    public String toString() {
     return value.toString();
   }
 }
