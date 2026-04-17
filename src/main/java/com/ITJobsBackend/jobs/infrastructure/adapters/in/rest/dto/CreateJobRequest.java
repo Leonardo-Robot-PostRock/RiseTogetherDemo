@@ -13,4 +13,5 @@ public record CreateJobRequest(
     @NotNull BigDecimal salaryMin,
     @NotNull BigDecimal salaryMax,
     @NotBlank String currency,
-    @NotBlank String employmentType) {}
+    @NotBlank String employmentType,
+    String employerId) {}

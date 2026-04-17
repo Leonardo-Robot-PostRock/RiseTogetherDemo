@@ -13,6 +13,7 @@ import com.ITJobsBackend.jobs.domain.repository.JobWriterRepository;
 import com.ITJobsBackend.jobs.domain.valueobjects.EmploymentType;
 import com.ITJobsBackend.jobs.domain.valueobjects.Salary;
 import com.ITJobsBackend.shared.application.ports.out.DomainEventPublisher;
+import com.ITJobsBackend.shared.domain.valueobjects.EmployerId;
 
 @Service
 @Transactional
@@ -34,6 +35,11 @@ public class CreateJobUseCase implements CreateJobPort {
     Salary salary = Salary.of(command.salaryMin(), command.salaryMax(), command.currency());
     EmploymentType type = EmploymentType.valueOf(command.employmentType().toUpperCase());
 
+    EmployerId employerId = null;
+    if (command.employerId() != null && !command.employerId().isBlank()) {
+      employerId = EmployerId.of(command.employerId());
+    }
+
     JobAggregate job =
         JobAggregate.create(
             command.title(),
@@ -41,7 +47,8 @@ public class CreateJobUseCase implements CreateJobPort {
             command.company(),
             command.location(),
             salary,
-            type);
+            type,
+            employerId);
 
     JobAggregate savedJob = jobRepository.save(job);
     domainEventPublisher.publishAll(savedJob.pullDomainEvents());

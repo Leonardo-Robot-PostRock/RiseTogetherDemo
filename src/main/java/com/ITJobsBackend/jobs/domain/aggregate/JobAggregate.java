@@ -13,6 +13,7 @@ import com.ITJobsBackend.jobs.domain.valueobjects.JobStatus;
 import com.ITJobsBackend.jobs.domain.valueobjects.Salary;
 import com.ITJobsBackend.shared.domain.AggregateRoot;
 import com.ITJobsBackend.shared.domain.exceptions.ValidationException;
+import com.ITJobsBackend.shared.domain.valueobjects.EmployerId;
 import com.ITJobsBackend.shared.domain.valueobjects.Timestamp;
 
 public class JobAggregate extends AggregateRoot {
@@ -27,6 +28,7 @@ public class JobAggregate extends AggregateRoot {
   private EmploymentType employmentType;
   private JobStatus status;
   private Timestamp updatedAt;
+  private EmployerId employerId;
 
   private JobAggregate(
       JobId id,
@@ -36,7 +38,8 @@ public class JobAggregate extends AggregateRoot {
       String location,
       Salary salary,
       EmploymentType employmentType,
-      Timestamp createdAt) {
+      Timestamp createdAt,
+      EmployerId employerId) {
     this.id = id;
     this.title = title;
     this.description = description;
@@ -48,6 +51,7 @@ public class JobAggregate extends AggregateRoot {
     this.skills = new ArrayList<>();
     this.createdAt = createdAt;
     this.updatedAt = createdAt;
+    this.employerId = employerId;
   }
 
   public static JobAggregate create(
@@ -56,7 +60,8 @@ public class JobAggregate extends AggregateRoot {
       String company,
       String location,
       Salary salary,
-      EmploymentType employmentType) {
+      EmploymentType employmentType,
+      EmployerId employerId) {
     if (title == null || title.isBlank()) {
       throw new ValidationException("Job title cannot be empty");
     }
@@ -72,7 +77,8 @@ public class JobAggregate extends AggregateRoot {
         location,
         salary,
         employmentType,
-        Timestamp.now());
+        Timestamp.now(),
+        employerId);
   }
 
   public static JobAggregate reconstitute(
@@ -86,10 +92,12 @@ public class JobAggregate extends AggregateRoot {
       JobStatus status,
       List<String> skills,
       Timestamp createdAt,
-      Timestamp updatedAt) {
+      Timestamp updatedAt,
+      EmployerId employerId) {
     JobAggregate job =
         new JobAggregate(
-            id, title, description, company, location, salary, employmentType, createdAt);
+            id, title, description, company, location, salary, employmentType, createdAt,
+            employerId);
     job.status = status;
     job.skills.clear();
     job.skills.addAll(skills);
@@ -178,5 +186,16 @@ public class JobAggregate extends AggregateRoot {
 
   public Timestamp getUpdatedAt() {
     return updatedAt;
+  }
+
+  public EmployerId getEmployerId() {
+    return employerId;
+  }
+
+  public void linkToEmployer(EmployerId employerId) {
+    if (this.employerId == null) {
+      this.employerId = employerId;
+      this.updatedAt = Timestamp.now();
+    }
   }
 }

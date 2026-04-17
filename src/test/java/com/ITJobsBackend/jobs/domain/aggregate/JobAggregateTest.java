@@ -20,7 +20,8 @@ class JobAggregateTest {
         "TechCorp",
         "Remote",
         Salary.of(new BigDecimal("80000"), new BigDecimal("120000"), "USD"),
-        EmploymentType.FULL_TIME);
+        EmploymentType.FULL_TIME,
+        null);
   }
 
   @Test
@@ -34,6 +35,7 @@ class JobAggregateTest {
     assertEquals("TechCorp", job.getCompany());
     assertEquals(JobStatus.OPEN, job.getStatus());
     assertTrue(job.getSkills().isEmpty());
+    assertNull(job.getEmployerId());
   }
 
   @Test
@@ -48,7 +50,8 @@ class JobAggregateTest {
                 "company",
                 "loc",
                 Salary.of(BigDecimal.ONE, BigDecimal.TEN, "USD"),
-                EmploymentType.FULL_TIME));
+                EmploymentType.FULL_TIME,
+                null));
   }
 
   @Test
@@ -63,7 +66,8 @@ class JobAggregateTest {
                 "  ",
                 "loc",
                 Salary.of(BigDecimal.ONE, BigDecimal.TEN, "USD"),
-                EmploymentType.FULL_TIME));
+                EmploymentType.FULL_TIME,
+                null));
   }
 
   @Test
@@ -177,5 +181,33 @@ class JobAggregateTest {
 
     // Then
     assertFalse(job.pullDomainEvents().isEmpty());
+  }
+
+  @Test
+  void shouldLinkToEmployer() {
+    // Given
+    JobAggregate job = createOpenJob();
+
+    // When
+    var employerId = com.ITJobsBackend.shared.domain.valueobjects.EmployerId.generate();
+    job.linkToEmployer(employerId);
+
+    // Then
+    assertEquals(employerId, job.getEmployerId());
+  }
+
+  @Test
+  void shouldNotReassignEmployer() {
+    // Given
+    var employerId1 = com.ITJobsBackend.shared.domain.valueobjects.EmployerId.generate();
+    var employerId2 = com.ITJobsBackend.shared.domain.valueobjects.EmployerId.generate();
+    JobAggregate job = createOpenJob();
+    job.linkToEmployer(employerId1);
+
+    // When
+    job.linkToEmployer(employerId2);
+
+    // Then
+    assertEquals(employerId1, job.getEmployerId());
   }
 }

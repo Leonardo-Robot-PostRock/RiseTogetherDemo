@@ -42,7 +42,8 @@ public class JobController {
             request.salaryMin(),
             request.salaryMax(),
             request.currency(),
-            request.employmentType());
+            request.employmentType(),
+            request.employerId());
 
     JobResponse response = createJobUseCase.execute(command);
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
