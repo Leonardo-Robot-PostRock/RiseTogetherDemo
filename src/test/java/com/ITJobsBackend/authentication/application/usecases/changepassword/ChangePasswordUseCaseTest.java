@@ -25,6 +25,7 @@ import com.ITJobsBackend.authentication.domain.exceptions.InvalidCredentialsExce
 import com.ITJobsBackend.authentication.domain.service.CredentialsVerifier;
 import com.ITJobsBackend.authentication.domain.valueobjects.HashedPassword;
 import com.ITJobsBackend.authentication.domain.valueobjects.Username;
+import com.ITJobsBackend.shared.application.ports.out.DomainEventPublisher;
 import com.ITJobsBackend.shared.domain.valueobjects.Email;
 import com.ITJobsBackend.shared.domain.valueobjects.Timestamp;
 import com.ITJobsBackend.shared.domain.valueobjects.UserId;
@@ -41,6 +42,7 @@ class ChangePasswordUseCaseTest {
   @Mock private LoadUserPort loadUserPort;
   @Mock private SaveUserPort saveUserPort;
   @Mock private PasswordEncoderPort passwordEncoder;
+  @Mock private DomainEventPublisher domainEventPublisher;
   @Spy private CredentialsVerifier credentialsVerifier;
 
   @InjectMocks private ChangePasswordUseCase useCase;
@@ -73,11 +75,13 @@ class ChangePasswordUseCaseTest {
     given(loadUserPort.findById(UserId.of(USER_ID))).willReturn(Optional.of(user));
     given(passwordEncoder.matches(OLD_PASSWORD, "$2a$10$hashed")).willReturn(true);
     given(passwordEncoder.encode(NEW_PASSWORD)).willReturn(NEW_HASH);
+    given(saveUserPort.save(user)).willReturn(user);
 
     useCase.execute(command);
 
     then(credentialsVerifier).should().verifyCredentials(user, OLD_PASSWORD, passwordEncoder);
     then(saveUserPort).should().save(user);
+    then(domainEventPublisher).should().publishAll(any());
   }
 
   @Test

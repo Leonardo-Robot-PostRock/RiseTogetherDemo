@@ -15,6 +15,7 @@ import com.ITJobsBackend.authentication.application.ports.out.SaveUserPort;
 import com.ITJobsBackend.authentication.domain.aggregate.UserAggregate;
 import com.ITJobsBackend.authentication.domain.service.CredentialsVerifier;
 import com.ITJobsBackend.authentication.domain.valueobjects.HashedPassword;
+import com.ITJobsBackend.shared.application.ports.out.DomainEventPublisher;
 import com.ITJobsBackend.shared.domain.valueobjects.UserId;
 
 @Service
@@ -26,16 +27,19 @@ public class ChangePasswordUseCase implements ChangePasswordPort {
   private final SaveUserPort saveUserPort;
   private final PasswordEncoderPort passwordEncoder;
   private final CredentialsVerifier credentialsVerifier;
+  private final DomainEventPublisher domainEventPublisher;
 
   public ChangePasswordUseCase(
       LoadUserPort loadUserPort,
       SaveUserPort saveUserPort,
       PasswordEncoderPort passwordEncoder,
-      CredentialsVerifier credentialsVerifier) {
+      CredentialsVerifier credentialsVerifier,
+      DomainEventPublisher domainEventPublisher) {
     this.loadUserPort = loadUserPort;
     this.saveUserPort = saveUserPort;
     this.passwordEncoder = passwordEncoder;
     this.credentialsVerifier = credentialsVerifier;
+    this.domainEventPublisher = domainEventPublisher;
   }
 
   @Override
@@ -53,7 +57,8 @@ public class ChangePasswordUseCase implements ChangePasswordPort {
 
     String newHashedPassword = passwordEncoder.encode(command.newPassword());
     user.changePassword(HashedPassword.fromHash(newHashedPassword));
-    saveUserPort.save(user);
+    UserAggregate savedUser = saveUserPort.save(user);
+    domainEventPublisher.publishAll(savedUser.pullDomainEvents());
 
     log.info("Password changed successfully for user: {}", userId);
   }

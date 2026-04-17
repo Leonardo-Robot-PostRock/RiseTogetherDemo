@@ -20,6 +20,7 @@ import com.ITJobsBackend.authentication.application.ports.out.LoadUserPort;
 import com.ITJobsBackend.authentication.domain.aggregate.UserAggregate;
 import com.ITJobsBackend.authentication.domain.event.PasswordResetRequestedEvent;
 import com.ITJobsBackend.authentication.domain.valueobjects.HashedPassword;
+import com.ITJobsBackend.authentication.domain.valueobjects.PasswordResetToken;
 import com.ITJobsBackend.authentication.domain.valueobjects.Username;
 import com.ITJobsBackend.shared.application.ports.out.DomainEventPublisher;
 import com.ITJobsBackend.shared.domain.event.DomainEvent;
@@ -85,9 +86,16 @@ class ForgotPasswordUseCaseTest {
 
     List<DomainEvent> published = captor.getValue();
     assertEquals(1, published.size());
+
     PasswordResetRequestedEvent event = (PasswordResetRequestedEvent) published.get(0);
+
     assertEquals(USER_ID, event.getAggregateId());
-    assertEquals(EMAIL, event.getEmail());
-    assertNotNull(event.getResetToken());
+    assertEquals(Email.of(EMAIL), event.getEmail());
+
+    PasswordResetToken passwordResetToken = event.getResetToken();
+
+    assertNotNull(passwordResetToken);
+    assertNotNull(passwordResetToken.value());
+    assertFalse(passwordResetToken.isExpired());
   }
 }

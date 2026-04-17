@@ -59,6 +59,6 @@ class PasswordTest {
     Password password = Password.of("SecureP@ss123");
 
     // When & Then
-    assertEquals("[PROTECTED]", password.toString());
+    assertEquals("Password[PROTECTED]", password.toString());
   }
 }

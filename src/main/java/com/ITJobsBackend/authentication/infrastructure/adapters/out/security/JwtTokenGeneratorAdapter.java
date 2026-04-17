@@ -91,4 +91,17 @@ public class JwtTokenGeneratorAdapter implements TokenGeneratorPort {
     }
     return List.of();
   }
+
+  @Override
+  public String toString() {
+    return "JwtTokenGeneratorAdapter{"
+        + "secretKey=[PROTECTED]"
+        + ", accessTokenValidity="
+        + accessTokenValidity
+        + "ms"
+        + ", refreshTokenValidity="
+        + refreshTokenValidity
+        + "ms"
+        + '}';
+  }
 }
