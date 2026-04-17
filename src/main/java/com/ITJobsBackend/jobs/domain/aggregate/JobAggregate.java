@@ -96,14 +96,21 @@ public class JobAggregate extends AggregateRoot {
       EmployerId employerId) {
     JobAggregate job =
         new JobAggregate(
-            id, title, description, company, location, salary, employmentType, createdAt,
+            id,
+            title,
+            description,
+            company,
+            location,
+            salary,
+            employmentType,
+            createdAt,
             employerId);
     job.status = status;
     job.skills.clear();
     job.skills.addAll(skills);
     job.updatedAt = updatedAt;
 
-    job.recordEvent(new JobCreatedEvent(job.id.value().toString(), title, company));
+    job.recordEvent(new JobCreatedEvent(job.id, title, company));
     return job;
   }
 
@@ -116,7 +123,8 @@ public class JobAggregate extends AggregateRoot {
     }
     this.status = JobStatus.CLOSED;
     this.updatedAt = Timestamp.now();
-    recordEvent(new JobClosedEvent(this.id.value().toString(), this.title, this.company));
+
+    recordEvent(new JobClosedEvent(this.id, this.title, this.company));
   }
 
   public void deactivate() {
@@ -128,7 +136,8 @@ public class JobAggregate extends AggregateRoot {
     }
     this.status = JobStatus.INACTIVE;
     this.updatedAt = Timestamp.now();
-    recordEvent(new JobDeactivatedEvent(this.id.value().toString(), this.title));
+
+    recordEvent(new JobDeactivatedEvent(this.id, this.title));
   }
 
   public void addSkill(String skill) {
