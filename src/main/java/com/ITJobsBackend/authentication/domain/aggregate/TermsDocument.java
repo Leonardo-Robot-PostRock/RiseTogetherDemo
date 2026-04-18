@@ -30,6 +30,15 @@ public class TermsDocument {
     this.publishedAt = publishedAt;
   }
 
+  /**
+   * Publishes a new legal document.
+   *
+   * @param termsType the category of the document; must not be {@code null}
+   * @param version   a human-readable version identifier (e.g. {@code "1.2"}); must not be blank
+   * @param content   the full text of the document; must not be blank
+   * @return a new {@code TermsDocument} with a generated id and {@code publishedAt = now()}
+   * @throws com.ITJobsBackend.shared.domain.exceptions.ValidationException if any argument is invalid
+   */
   public static TermsDocument create(TermsType termsType, String version, String content) {
     if (termsType == null) {
       throw new ValidationException("Terms type cannot be null");
@@ -47,6 +56,11 @@ public class TermsDocument {
         TermsDocumentId.generate(), termsType, version, content, Timestamp.now());
   }
 
+  /**
+   * Rebuilds a {@code TermsDocument} from persisted data without side effects.
+   *
+   * <p>Intended for use exclusively by persistence mappers.
+   */
   public static TermsDocument reconstitute(
       TermsDocumentId id,
       TermsType termsType,
