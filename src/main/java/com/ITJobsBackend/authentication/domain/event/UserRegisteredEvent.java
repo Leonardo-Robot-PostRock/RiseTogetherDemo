@@ -16,6 +16,10 @@ public class UserRegisteredEvent extends DomainEvent {
     return email;
   }
 
+  public UserId getUserId() {
+    return UserId.of(getAggregateId());
+  }
+
   @Override
   public String toString() {
     return "UserRegisteredEvent{" + baseFields() + ", email='" + email.mask() + "'}";
