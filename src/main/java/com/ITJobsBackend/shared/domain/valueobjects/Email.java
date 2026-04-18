@@ -4,6 +4,21 @@ import java.util.regex.Pattern;
 
 import com.ITJobsBackend.shared.domain.exceptions.ValidationException;
 
+/**
+ * Value object representing a valid email address.
+ *
+ * <p>The value is normalised (trimmed and lower-cased) at construction time.
+ * Use the factory method {@link #of(String)} to create instances.
+ *
+ * <p>Invariants:
+ * <ul>
+ *   <li>Must not be blank</li>
+ *   <li>Must match the pattern {@code localPart@domain.tld}</li>
+ * </ul>
+ *
+ * <p>{@link #toString()} returns a masked representation to avoid leaking PII in logs.
+ * Use {@link #value()} only when the full address is explicitly required.
+ */
 public record Email(String value) {
 
   private static final Pattern EMAIL_PATTERN =
@@ -21,10 +36,22 @@ public record Email(String value) {
     }
   }
 
+  /**
+   * Factory method — validates, normalises and wraps the given string.
+   *
+   * @param email the raw email address
+   * @return a valid {@code Email} instance
+   * @throws ValidationException if the value is blank or has an invalid format
+   */
   public static Email of(String email) {
     return new Email(email);
   }
 
+  /**
+   * Returns a partially-masked version of the address suitable for logging (e.g. {@code j***@example.com}).
+   *
+   * @return masked email string
+   */
   public String mask() {
     int atIndex = value.indexOf('@');
 

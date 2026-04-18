@@ -2,9 +2,14 @@ package com.ITJobsBackend.jobs.domain.specification;
 
 import com.ITJobsBackend.jobs.domain.aggregate.JobAggregate;
 
-public class TitleContainsSpecification implements JobSpecification {
-  private final String keyword;
-
+/**
+ * {@link JobSpecification} that matches jobs whose title contains a given keyword (case-insensitive
+ * substring match).
+ */
+public record TitleContainsSpecification(String keyword) implements JobSpecification {
+  /**
+   * @param keyword the keyword to search for in the job title (matched case-insensitively)
+   */
   public TitleContainsSpecification(String keyword) {
     this.keyword = keyword.toLowerCase();
   }

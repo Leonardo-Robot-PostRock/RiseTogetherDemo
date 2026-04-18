@@ -2,12 +2,12 @@ package com.ITJobsBackend.jobs.domain.specification;
 
 import com.ITJobsBackend.jobs.domain.aggregate.JobAggregate;
 
-public class CompanySpecification implements JobSpecification {
-  private final String company;
-
-  public CompanySpecification(String company) {
-    this.company = company;
-  }
+/** {@link JobSpecification} that matches jobs from a specific company (case-insensitive). */
+public record CompanySpecification(String company) implements JobSpecification {
+  /**
+   * @param company the exact company name to match (case-insensitive)
+   */
+  public CompanySpecification {}
 
   @Override
   public boolean isSatisfiedBy(JobAggregate job) {

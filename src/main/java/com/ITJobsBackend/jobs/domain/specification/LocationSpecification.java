@@ -2,9 +2,15 @@ package com.ITJobsBackend.jobs.domain.specification;
 
 import com.ITJobsBackend.jobs.domain.aggregate.JobAggregate;
 
-public class LocationSpecification implements JobSpecification {
-  private final String location;
-
+/**
+ * {@link JobSpecification} that matches jobs whose location contains the given keyword
+ * (case-insensitive substring match). Jobs with a {@code null} location never satisfy this
+ * specification.
+ */
+public record LocationSpecification(String location) implements JobSpecification {
+  /**
+   * @param location the location keyword to match (case-insensitive substring)
+   */
   public LocationSpecification(String location) {
     this.location = location.toLowerCase();
   }
