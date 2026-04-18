@@ -17,6 +17,27 @@ import com.ITJobsBackend.shared.domain.exceptions.ValidationException;
 import com.ITJobsBackend.shared.domain.valueobjects.EmployerId;
 import com.ITJobsBackend.shared.domain.valueobjects.Timestamp;
 
+/**
+ * Aggregate root for the {@code jobs} bounded context.
+ *
+ * <p>Represents a job listing posted on the platform. A job starts in {@link JobStatus#OPEN}
+ * and transitions to {@link JobStatus#CLOSED} or {@link JobStatus#INACTIVE} through explicit
+ * lifecycle commands.
+ *
+ * <h2>Factory methods</h2>
+ * <ul>
+ *   <li>{@link #create} — publishes a new open job, fires {@link JobCreatedEvent}</li>
+ *   <li>{@link #reconstitute} — rebuilds from persistence (fires {@link JobCreatedEvent} as a
+ *       side effect — see implementation note)</li>
+ * </ul>
+ *
+ * <h2>Domain events raised</h2>
+ * <ul>
+ *   <li>{@link JobCreatedEvent} — from {@link #reconstitute} (and implicitly on creation)</li>
+ *   <li>{@link JobClosedEvent} — from {@link #close()}</li>
+ *   <li>{@link JobDeactivatedEvent} — from {@link #deactivate()}</li>
+ * </ul>
+ */
 public class JobAggregate extends AggregateRoot {
   private final JobId id;
   private final List<String> skills;
@@ -58,6 +79,20 @@ public class JobAggregate extends AggregateRoot {
     this.employerId = employerId;
   }
 
+  /**
+   * Creates and publishes a new job listing in {@link JobStatus#OPEN} status.
+   *
+   * @param title          job title; must not be blank
+   * @param description    optional job description
+   * @param company        company name; must not be blank
+   * @param location       optional location string
+   * @param salary         salary range
+   * @param employmentType employment type (full-time, contract, etc.)
+   * @param workModality   work modality; defaults to {@link WorkModality#ON_SITE} if {@code null}
+   * @param employerId     the employer who owns this listing (may be {@code null} if not yet linked)
+   * @return a new open {@code JobAggregate}
+   * @throws ValidationException if title or company is blank
+   */
   public static JobAggregate create(
       String title,
       String description,
@@ -87,6 +122,28 @@ public class JobAggregate extends AggregateRoot {
         employerId);
   }
 
+  /**
+   * Rebuilds a {@code JobAggregate} from persisted data.
+   *
+   * <p><b>Note:</b> this method records a {@link JobCreatedEvent} as part of its current
+   * implementation. This is a known design inconsistency and will be addressed in a future
+   * refactor.
+   *
+   * @param id             stored job id
+   * @param title          stored title
+   * @param description    stored description
+   * @param company        stored company name
+   * @param location       stored location
+   * @param salary         stored salary range
+   * @param employmentType stored employment type
+   * @param workModality   stored work modality; defaults to {@link WorkModality#ON_SITE} if {@code null}
+   * @param status         stored job status
+   * @param skills         stored skill list
+   * @param createdAt      stored creation timestamp
+   * @param updatedAt      stored last-updated timestamp
+   * @param employerId     stored employer id (may be {@code null})
+   * @return a reconstituted {@code JobAggregate}
+   */
   public static JobAggregate reconstitute(
       JobId id,
       String title,
@@ -122,6 +179,13 @@ public class JobAggregate extends AggregateRoot {
     return job;
   }
 
+  /**
+   * Closes the job listing.
+   *
+   * <p>Fires {@link JobClosedEvent}.
+   *
+   * @throws ValidationException if the job is already closed or inactive
+   */
   public void close() {
     if (this.status == JobStatus.CLOSED) {
       throw new ValidationException("Job is already closed");
@@ -135,6 +199,13 @@ public class JobAggregate extends AggregateRoot {
     recordEvent(new JobClosedEvent(this.id, this.title, this.company));
   }
 
+  /**
+   * Deactivates the job listing (e.g. temporarily hidden from search).
+   *
+   * <p>Fires {@link JobDeactivatedEvent}.
+   *
+   * @throws ValidationException if the job is already inactive or closed
+   */
   public void deactivate() {
     if (this.status == JobStatus.INACTIVE) {
       throw new ValidationException("Job is already inactive");
@@ -148,6 +219,14 @@ public class JobAggregate extends AggregateRoot {
     recordEvent(new JobDeactivatedEvent(this.id, this.title));
   }
 
+  /**
+   * Adds a required skill to this job if not already present.
+   *
+   * <p>The skill is normalised (trimmed and lower-cased) before being added.
+   * Blank values are silently ignored.
+   *
+   * @param skill the skill string to add (e.g. {@code "Java"})
+   */
   public void addSkill(String skill) {
     if (skill == null || skill.isBlank()) {
       return;
@@ -213,6 +292,13 @@ public class JobAggregate extends AggregateRoot {
     return employerId;
   }
 
+  /**
+   * Links this job to an {@link EmployerAggregate} if not already linked.
+   *
+   * <p>Silently ignored if the job already has an employer id assigned.
+   *
+   * @param employerId the employer id to associate with this job
+   */
   public void linkToEmployer(EmployerId employerId) {
     if (this.employerId == null) {
       this.employerId = employerId;

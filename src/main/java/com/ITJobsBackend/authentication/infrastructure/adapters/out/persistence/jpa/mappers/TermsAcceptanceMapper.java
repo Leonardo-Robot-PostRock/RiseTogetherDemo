@@ -22,10 +22,10 @@ public class TermsAcceptanceMapper {
 
   public TermsAcceptanceEntity toEntity(TermsAcceptance domain) {
     TermsAcceptanceEntity entity = new TermsAcceptanceEntity();
-    entity.setId(domain.getId().value());
-    entity.setUserId(domain.getUserId().value());
-    entity.setTermsDocumentId(domain.getTermsDocumentId().value());
-    entity.setAcceptedAt(domain.getAcceptedAt().value());
+    entity.setId(domain.id().value());
+    entity.setUserId(domain.userId().value());
+    entity.setTermsDocumentId(domain.termsDocumentId().value());
+    entity.setAcceptedAt(domain.acceptedAt().value());
     return entity;
   }
 }
