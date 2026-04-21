@@ -1,15 +1,16 @@
 package com.ITJobsBackend.jobs.domain.specification;
 
 import com.ITJobsBackend.jobs.domain.aggregate.JobAggregate;
+import com.ITJobsBackend.shared.domain.specification.Specification;
 
 /**
- * Specification pattern interface for filtering {@link JobAggregate} instances.
+ * Typed {@link Specification} for filtering {@link JobAggregate} instances.
  *
- * <p>Implementations encapsulate a single filtering criterion and can be composed via
- * {@link #and(JobSpecification)} and {@link #or(JobSpecification)} to build complex queries
- * in a type-safe, testable way.
+ * <p>Implementations encapsulate a single filtering criterion. Compose them via the inherited
+ * {@link #and(Specification)} and {@link #or(Specification)} default methods.
  *
  * <p>Example usage:
+ *
  * <pre>{@code
  * JobSpecification spec = new TitleContainsSpecification("java")
  *     .and(new JobStatusSpecification(JobStatus.OPEN));
@@ -17,35 +18,4 @@ import com.ITJobsBackend.jobs.domain.aggregate.JobAggregate;
  * }</pre>
  */
 @FunctionalInterface
-public interface JobSpecification {
-
-  /**
-   * Evaluates whether the given job satisfies this specification.
-   *
-   * @param job the job to evaluate
-   * @return {@code true} if the job matches this criterion
-   */
-  boolean isSatisfiedBy(JobAggregate job);
-
-  /**
-   * Returns a composed specification that is satisfied only when both {@code this} and
-   * {@code other} are satisfied.
-   *
-   * @param other the second specification
-   * @return a new AND-composed {@code JobSpecification}
-   */
-  default JobSpecification and(JobSpecification other) {
-    return job -> this.isSatisfiedBy(job) && other.isSatisfiedBy(job);
-  }
-
-  /**
-   * Returns a composed specification that is satisfied when either {@code this} or
-   * {@code other} is satisfied.
-   *
-   * @param other the second specification
-   * @return a new OR-composed {@code JobSpecification}
-   */
-  default JobSpecification or(JobSpecification other) {
-    return job -> this.isSatisfiedBy(job) || other.isSatisfiedBy(job);
-  }
-}
+public interface JobSpecification extends Specification<JobAggregate> {}

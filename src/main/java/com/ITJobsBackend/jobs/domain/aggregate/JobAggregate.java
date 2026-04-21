@@ -27,13 +27,12 @@ import com.ITJobsBackend.shared.domain.valueobjects.Timestamp;
  * <h2>Factory methods</h2>
  * <ul>
  *   <li>{@link #create} — publishes a new open job, fires {@link JobCreatedEvent}</li>
- *   <li>{@link #reconstitute} — rebuilds from persistence (fires {@link JobCreatedEvent} as a
- *       side effect — see implementation note)</li>
+ *   <li>{@link #reconstitute} — rebuilds from persistence with no side effects</li>
  * </ul>
  *
  * <h2>Domain events raised</h2>
  * <ul>
- *   <li>{@link JobCreatedEvent} — from {@link #reconstitute} (and implicitly on creation)</li>
+ *   <li>{@link JobCreatedEvent} — from {@link #create}</li>
  *   <li>{@link JobClosedEvent} — from {@link #close()}</li>
  *   <li>{@link JobDeactivatedEvent} — from {@link #deactivate()}</li>
  * </ul>
@@ -109,25 +108,27 @@ public class JobAggregate extends AggregateRoot {
       throw new ValidationException("Company name cannot be empty");
     }
 
-    return new JobAggregate(
-        JobId.generate(),
-        title,
-        description,
-        company,
-        location,
-        salary,
-        employmentType,
-        workModality != null ? workModality : WorkModality.ON_SITE,
-        Timestamp.now(),
-        employerId);
+    JobAggregate job =
+        new JobAggregate(
+            JobId.generate(),
+            title,
+            description,
+            company,
+            location,
+            salary,
+            employmentType,
+            workModality != null ? workModality : WorkModality.ON_SITE,
+            Timestamp.now(),
+            employerId);
+    job.recordEvent(new JobCreatedEvent(job.id, title, company));
+    return job;
   }
 
   /**
    * Rebuilds a {@code JobAggregate} from persisted data.
    *
-   * <p><b>Note:</b> this method records a {@link JobCreatedEvent} as part of its current
-   * implementation. This is a known design inconsistency and will be addressed in a future
-   * refactor.
+   * <p>No domain events are recorded; this method is purely for reconstituting state from the
+   * database without triggering side effects.
    *
    * @param id             stored job id
    * @param title          stored title
@@ -175,7 +176,6 @@ public class JobAggregate extends AggregateRoot {
     job.skills.addAll(skills);
     job.updatedAt = updatedAt;
 
-    job.recordEvent(new JobCreatedEvent(job.id, title, company));
     return job;
   }
 

@@ -2,7 +2,6 @@ package com.ITJobsBackend.jobs.infrastructure.adapters.out.persistence.jpa;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Repository;
 
@@ -38,18 +37,16 @@ public class JpaJobRepositoryAdapter implements JobRepository {
 
   @Override
   public List<JobAggregate> findAll() {
-    return jpaRepository.findAll().stream().map(mapper::toDomain).collect(Collectors.toList());
+    return jpaRepository.findAll().stream().map(mapper::toDomain).toList();
   }
 
   @Override
   public List<JobAggregate> findAll(JobSpecification spec) {
-    return findAll().stream().filter(spec::isSatisfiedBy).collect(Collectors.toList());
+    return findAll().stream().filter(spec::isSatisfiedBy).toList();
   }
 
   @Override
   public List<JobAggregate> searchByTitle(String title) {
-    return jpaRepository.searchByTitle(title).stream()
-        .map(mapper::toDomain)
-        .collect(Collectors.toList());
+    return jpaRepository.searchByTitle(title).stream().map(mapper::toDomain).toList();
   }
 }

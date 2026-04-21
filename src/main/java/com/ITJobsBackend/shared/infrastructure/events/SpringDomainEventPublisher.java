@@ -17,7 +17,7 @@ public class SpringDomainEventPublisher implements DomainEventPublisher {
   }
 
   @Override
-  public void publishAll(List<DomainEvent> events) {
+  public void publishAll(List<? extends DomainEvent> events) {
     events.forEach(springPublisher::publishEvent);
   }
 }

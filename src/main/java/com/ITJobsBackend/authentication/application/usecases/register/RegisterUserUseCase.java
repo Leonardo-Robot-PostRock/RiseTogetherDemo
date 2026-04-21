@@ -2,6 +2,7 @@ package com.ITJobsBackend.authentication.application.usecases.register;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +19,7 @@ import com.ITJobsBackend.authentication.domain.valueobjects.HashedPassword;
 import com.ITJobsBackend.authentication.domain.valueobjects.TermsType;
 import com.ITJobsBackend.authentication.domain.valueobjects.Username;
 import com.ITJobsBackend.shared.application.ports.out.DomainEventPublisher;
+import com.ITJobsBackend.shared.domain.exceptions.ValidationException;
 import com.ITJobsBackend.shared.domain.valueobjects.Email;
 import com.ITJobsBackend.shared.domain.valueobjects.Password;
 
@@ -50,7 +52,7 @@ public class RegisterUserUseCase implements RegisterUserPort {
     log.info("Registering new user with email: {}", command.email());
 
     if (!command.termsAccepted()) {
-      throw new IllegalArgumentException("Terms and conditions must be accepted");
+      throw new ValidationException("Terms and conditions must be accepted");
     }
 
     Email email = Email.of(command.email());

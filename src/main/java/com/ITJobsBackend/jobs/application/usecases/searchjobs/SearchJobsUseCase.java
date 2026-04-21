@@ -1,7 +1,6 @@
 package com.ITJobsBackend.jobs.application.usecases.searchjobs;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,7 +26,7 @@ public class SearchJobsUseCase implements SearchJobsPort {
     } else {
       jobs = jobRepository.findAll();
     }
-    return jobs.stream().map(this::toResponse).collect(Collectors.toList());
+    return jobs.stream().map(this::toResponse).toList();
   }
 
   private JobResponse toResponse(JobAggregate job) {

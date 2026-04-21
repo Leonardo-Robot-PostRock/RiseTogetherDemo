@@ -25,6 +25,7 @@ import com.ITJobsBackend.authentication.domain.aggregate.TermsDocument;
 import com.ITJobsBackend.authentication.domain.exceptions.UserAlreadyExistsException;
 import com.ITJobsBackend.authentication.domain.valueobjects.TermsType;
 import com.ITJobsBackend.shared.application.ports.out.DomainEventPublisher;
+import com.ITJobsBackend.shared.domain.exceptions.ValidationException;
 import com.ITJobsBackend.shared.domain.valueobjects.Email;
 
 @ExtendWith(MockitoExtension.class)
@@ -68,7 +69,7 @@ class RegisterUserUseCaseTest {
   void shouldThrowExceptionWhenTermsNotAccepted() {
     // When & Then
     assertThrows(
-        IllegalArgumentException.class,
+        ValidationException.class,
         () -> useCase.execute(new RegisterUserCommand(USERNAME, EMAIL, PASSWORD, false)));
     then(saveUserPort).should(never()).save(any());
   }

@@ -1,7 +1,5 @@
 package com.ITJobsBackend.jobs.infrastructure.adapters.in.rest.mappers;
 
-import java.util.List;
-
 import org.mapstruct.Mapper;
 
 import com.ITJobsBackend.jobs.application.usecases.addskills.AddSkillsCommand;
