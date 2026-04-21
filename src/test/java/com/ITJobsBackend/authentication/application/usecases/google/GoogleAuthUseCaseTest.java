@@ -3,9 +3,12 @@ package com.ITJobsBackend.authentication.application.usecases.google;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.BDDMockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.never;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -37,126 +40,150 @@ import com.ITJobsBackend.shared.domain.valueobjects.UserId;
 @ExtendWith(MockitoExtension.class)
 class GoogleAuthUseCaseTest {
 
-  private static final String USER_ID = "550e8400-e29b-41d4-a716-446655440000";
-  private static final String EMAIL = "john@gmail.com";
-  private static final String GOOGLE_SUB = "google-sub-123";
-  private static final String NAME = "John Doe";
+    // ── Constants ─────────────────────────────────────────────────────────────
+    private static final String USER_ID         = "550e8400-e29b-41d4-a716-446655440000";
+    private static final String EMAIL           = "john@gmail.com";
+    private static final String GOOGLE_SUB      = "google-sub-123";
+    private static final String NAME            = "John Doe";
+    private static final String HASHED_PASSWORD = "$2a$10$hashed";
 
-  @Mock private SaveUserPort saveUserPort;
-  @Mock private LoadUserPort loadUserPort;
-  @Mock private TokenGeneratorPort tokenGenerator;
-  @Mock private LoadTermsDocumentPort loadTermsDocumentPort;
-  @Mock private SaveTermsAcceptancePort saveTermsAcceptancePort;
+    // ── Mocks (puertos de salida) ──────────────────────────────────────────────
+    @Mock private SaveUserPort             saveUserPort;
+    @Mock private LoadUserPort             loadUserPort;
+    @Mock private TokenGeneratorPort       tokenGenerator;
+    @Mock private LoadTermsDocumentPort    loadTermsDocumentPort;
+    @Mock private SaveTermsAcceptancePort  saveTermsAcceptancePort;
 
-  @InjectMocks private GoogleAuthUseCase useCase;
+    // ── Subject under test ────────────────────────────────────────────────────
+    @InjectMocks private GoogleAuthUseCase useCase;
 
-  private GoogleAuthCommand command;
+    // ── Shared command ────────────────────────────────────────────────────────
+    private GoogleAuthCommand command;
 
-  @BeforeEach
-  void setUp() {
-    command = new GoogleAuthCommand(GOOGLE_SUB, EMAIL, NAME, true);
-  }
+    @BeforeEach
+    void setUp() {
+        command = new GoogleAuthCommand(GOOGLE_SUB, EMAIL, NAME, true);
+    }
 
-  private UserAggregate buildUser() {
-    return UserAggregate.reconstitute(
-        UserId.of(USER_ID),
-        Username.of("john"),
-        Email.of(EMAIL),
-        HashedPassword.fromHash("$2a$10$hashed"),
-        true,
-        true,
-        GoogleSub.of(GOOGLE_SUB),
-        Timestamp.now(),
-        Timestamp.now(),
-        List.of("ROLE_USER"),
-        null);
-  }
+    // ── Helpers ───────────────────────────────────────────────────────────────
+    private UserAggregate buildUser() {
+        return UserAggregate.reconstitute(
+                UserId.of(USER_ID),
+                Username.of("john"),
+                Email.of(EMAIL),
+                HashedPassword.fromHash(HASHED_PASSWORD),
+                true,
+                true,
+                GoogleSub.of(GOOGLE_SUB),
+                Timestamp.now(),
+                Timestamp.now(),
+                List.of("ROLE_USER"),
+                null);
+    }
 
-  private void givenTokensAreStubbed() {
-    given(tokenGenerator.generateAccessToken(any(), any())).willReturn("access-token");
-    given(tokenGenerator.generateRefreshToken(any())).willReturn("refresh-token");
-  }
+    private UserAggregate buildUserWithoutGoogleSub() {
+        return UserAggregate.reconstitute(
+                UserId.of(USER_ID),
+                Username.of("john"),
+                Email.of(EMAIL),
+                HashedPassword.fromHash(HASHED_PASSWORD),
+                true,
+                true,
+                null,
+                Timestamp.now(),
+                Timestamp.now(),
+                List.of("ROLE_USER"),
+                null);
+    }
 
-  private void givenTermsDocumentExists() {
-    given(loadTermsDocumentPort.findLatestByType(TermsType.TERMS_OF_SERVICE))
-        .willReturn(Optional.of(TermsDocument.create(TermsType.TERMS_OF_SERVICE, "1", "ToS")));
-  }
+    private void givenTokensAreStubbed() {
+        given(tokenGenerator.generateAccessToken(any(), any())).willReturn("access-token");
+        given(tokenGenerator.generateRefreshToken(any())).willReturn("refresh-token");
+    }
 
-  @Test
-  void shouldAuthenticateNewGoogleUser() {
-    given(loadUserPort.findByEmail(Email.of(EMAIL))).willReturn(Optional.empty());
-    given(saveUserPort.save(any(UserAggregate.class)))
-        .willAnswer(invocation -> invocation.getArgument(0));
-    givenTokensAreStubbed();
-    givenTermsDocumentExists();
+    private void givenTermsDocumentExists() {
+        given(loadTermsDocumentPort.findLatestByType(TermsType.TERMS_OF_SERVICE))
+                .willReturn(Optional.of(TermsDocument.create(TermsType.TERMS_OF_SERVICE, "1", "ToS")));
+    }
 
-    AuthTokenResponse response = useCase.execute(command);
+    // ── Tests ─────────────────────────────────────────────────────────────────
+    @Test
+    void shouldAuthenticateNewGoogleUser() {
+        // Given
+        given(loadUserPort.findByEmail(Email.of(EMAIL))).willReturn(Optional.empty());
+        given(saveUserPort.save(any(UserAggregate.class)))
+                .willAnswer(invocation -> invocation.getArgument(0));
+        givenTokensAreStubbed();
+        givenTermsDocumentExists();
 
-    assertNotNull(response.userId());
-    then(saveUserPort).should().save(any(UserAggregate.class));
-    then(saveTermsAcceptancePort).should().save(any());
-  }
+        // When
+        AuthTokenResponse response = useCase.execute(command);
 
-  @Test
-  void shouldLoginExistingGoogleUser() {
-    given(loadUserPort.findByEmail(Email.of(EMAIL))).willReturn(Optional.of(buildUser()));
-    givenTokensAreStubbed();
+        // Then
+        assertNotNull(response.userId());
+        then(saveUserPort).should().save(any(UserAggregate.class));
+        then(saveTermsAcceptancePort).should().save(any());
+    }
 
-    AuthTokenResponse response = useCase.execute(command);
+    @Test
+    void shouldLoginExistingGoogleUser() {
+        // Given
+        given(loadUserPort.findByEmail(Email.of(EMAIL))).willReturn(Optional.of(buildUser()));
+        givenTokensAreStubbed();
 
-    assertEquals(USER_ID, response.userId());
-    then(saveUserPort).should(never()).save(any(UserAggregate.class));
-    then(saveTermsAcceptancePort).should(never()).save(any());
-  }
+        // When
+        AuthTokenResponse response = useCase.execute(command);
 
-  @Test
-  void shouldThrowExceptionWhenGoogleSubMismatch() {
-    GoogleAuthCommand differentSubCommand =
-        new GoogleAuthCommand("google-sub-DIFFERENT", EMAIL, NAME, true);
-    given(loadUserPort.findByEmail(Email.of(EMAIL))).willReturn(Optional.of(buildUser()));
+        // Then
+        assertEquals(USER_ID, response.userId());
+        then(saveUserPort).should(never()).save(any(UserAggregate.class));
+        then(saveTermsAcceptancePort).should(never()).save(any());
+    }
 
-    assertThrows(InvalidCredentialsException.class, () -> useCase.execute(differentSubCommand));
-    then(saveUserPort).should(never()).save(any(UserAggregate.class));
-  }
+    @Test
+    void shouldThrowExceptionWhenGoogleSubMismatch() {
+        // Given
+        GoogleAuthCommand differentSubCommand =
+                new GoogleAuthCommand("google-sub-DIFFERENT", EMAIL, NAME, true);
+        given(loadUserPort.findByEmail(Email.of(EMAIL))).willReturn(Optional.of(buildUser()));
 
-  @Test
-  void shouldAuthenticateExistingUserWithNullGoogleSub() {
-    UserAggregate userWithoutSub =
-        UserAggregate.reconstitute(
-            UserId.of(USER_ID),
-            Username.of("john"),
-            Email.of(EMAIL),
-            HashedPassword.fromHash("$2a$10$hashed"),
-            true,
-            true,
-            null,
-            Timestamp.now(),
-            Timestamp.now(),
-            List.of("ROLE_USER"),
-            null);
-    given(loadUserPort.findByEmail(Email.of(EMAIL))).willReturn(Optional.of(userWithoutSub));
-    givenTokensAreStubbed();
+        // When & Then
+        assertThrows(InvalidCredentialsException.class, () -> useCase.execute(differentSubCommand));
+        then(saveUserPort).should(never()).save(any(UserAggregate.class));
+    }
 
-    AuthTokenResponse response = useCase.execute(command);
+    @Test
+    void shouldAuthenticateExistingUserWithNullGoogleSub() {
+        // Given
+        given(loadUserPort.findByEmail(Email.of(EMAIL)))
+                .willReturn(Optional.of(buildUserWithoutGoogleSub()));
+        givenTokensAreStubbed();
 
-    assertEquals(USER_ID, response.userId());
-    then(saveUserPort).should(never()).save(any(UserAggregate.class));
-    then(saveTermsAcceptancePort).should(never()).save(any());
-  }
+        // When
+        AuthTokenResponse response = useCase.execute(command);
 
-  @Test
-  void shouldDeriveUsernameFromEmailWhenNameIsNull() {
-    GoogleAuthCommand nullNameCommand = new GoogleAuthCommand(GOOGLE_SUB, EMAIL, null, true);
-    given(loadUserPort.findByEmail(Email.of(EMAIL))).willReturn(Optional.empty());
-    given(saveUserPort.save(any(UserAggregate.class)))
-        .willAnswer(invocation -> invocation.getArgument(0));
-    givenTokensAreStubbed();
-    givenTermsDocumentExists();
+        // Then
+        assertEquals(USER_ID, response.userId());
+        then(saveUserPort).should(never()).save(any(UserAggregate.class));
+        then(saveTermsAcceptancePort).should(never()).save(any());
+    }
 
-    useCase.execute(nullNameCommand);
+    @Test
+    void shouldDeriveUsernameFromEmailWhenNameIsNull() {
+        // Given
+        GoogleAuthCommand nullNameCommand = new GoogleAuthCommand(GOOGLE_SUB, EMAIL, null, true);
+        given(loadUserPort.findByEmail(Email.of(EMAIL))).willReturn(Optional.empty());
+        given(saveUserPort.save(any(UserAggregate.class)))
+                .willAnswer(invocation -> invocation.getArgument(0));
+        givenTokensAreStubbed();
+        givenTermsDocumentExists();
 
-    ArgumentCaptor<UserAggregate> captor = ArgumentCaptor.forClass(UserAggregate.class);
-    then(saveUserPort).should().save(captor.capture());
-    assertEquals("john", captor.getValue().getUsername().value());
-  }
+        // When
+        useCase.execute(nullNameCommand);
+
+        // Then
+        ArgumentCaptor<UserAggregate> captor = ArgumentCaptor.forClass(UserAggregate.class);
+        then(saveUserPort).should().save(captor.capture());
+        assertEquals("john", captor.getValue().getUsername().value());
+    }
 }

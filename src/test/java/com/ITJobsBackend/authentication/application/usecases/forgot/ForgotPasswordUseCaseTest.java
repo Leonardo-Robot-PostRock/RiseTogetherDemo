@@ -3,9 +3,13 @@ package com.ITJobsBackend.authentication.application.usecases.forgot;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.BDDMockito.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.never;
 
 import org.junit.jupiter.api.Test;
@@ -31,71 +35,82 @@ import com.ITJobsBackend.shared.domain.valueobjects.UserId;
 @ExtendWith(MockitoExtension.class)
 class ForgotPasswordUseCaseTest {
 
-  private static final String USER_ID = "550e8400-e29b-41d4-a716-446655440000";
-  private static final String EMAIL = "john@example.com";
-  private static final String UNKNOWN_EMAIL = "nonexistent@example.com";
+    // ── Constants ─────────────────────────────────────────────────────────────
+    private static final String USER_ID         = "550e8400-e29b-41d4-a716-446655440000";
+    private static final String EMAIL           = "john@example.com";
+    private static final String HASHED_PASSWORD = "$2a$10$hashed";
+    private static final String UNKNOWN_EMAIL   = "nonexistent@example.com";
 
-  @Mock private LoadUserPort loadUserPort;
-  @Mock private DomainEventPublisher domainEventPublisher;
+    // ── Mocks (puertos de salida) ──────────────────────────────────────────────
+    @Mock private LoadUserPort         loadUserPort;
+    @Mock private DomainEventPublisher domainEventPublisher;
 
-  @InjectMocks private ForgotPasswordUseCase useCase;
+    // ── Subject under test ────────────────────────────────────────────────────
+    @InjectMocks private ForgotPasswordUseCase useCase;
 
-  private UserAggregate buildUser() {
-    return UserAggregate.reconstitute(
-        UserId.of(USER_ID),
-        Username.of("john"),
-        Email.of(EMAIL),
-        HashedPassword.fromHash("$2a$10$hashed"),
-        true,
-        true,
-        null,
-        Timestamp.now(),
-        Timestamp.now(),
-        List.of("ROLE_USER"),
-        null);
-  }
+    // ── Helpers ───────────────────────────────────────────────────────────────
+    private UserAggregate buildUser() {
+        return UserAggregate.reconstitute(
+                UserId.of(USER_ID),
+                Username.of("john"),
+                Email.of(EMAIL),
+                HashedPassword.fromHash(HASHED_PASSWORD),
+                true,
+                true,
+                null,
+                Timestamp.now(),
+                Timestamp.now(),
+                List.of("ROLE_USER"),
+                null);
+    }
 
-  @Test
-  void shouldGenerateResetTokenForExistingUser() {
-    given(loadUserPort.findByEmail(Email.of(EMAIL))).willReturn(Optional.of(buildUser()));
-    willDoNothing().given(domainEventPublisher).publishAll(any());
+    // ── Tests ─────────────────────────────────────────────────────────────────
+    @Test
+    void shouldGenerateResetTokenForExistingUser() {
+        // Given
+        given(loadUserPort.findByEmail(Email.of(EMAIL))).willReturn(Optional.of(buildUser()));
 
-    useCase.execute(new ForgotPasswordCommand(EMAIL));
+        // When
+        useCase.execute(new ForgotPasswordCommand(EMAIL));
 
-    then(loadUserPort).should().findByEmail(Email.of(EMAIL));
-    then(domainEventPublisher).should().publishAll(any());
-  }
+        // Then
+        then(loadUserPort).should().findByEmail(Email.of(EMAIL));
+        then(domainEventPublisher).should().publishAll(any());
+    }
 
-  @Test
-  void shouldDoNothingWhenUserNotFound() {
-    given(loadUserPort.findByEmail(Email.of(UNKNOWN_EMAIL))).willReturn(Optional.empty());
+    @Test
+    void shouldDoNothingWhenUserNotFound() {
+        // Given
+        given(loadUserPort.findByEmail(Email.of(UNKNOWN_EMAIL))).willReturn(Optional.empty());
 
-    assertDoesNotThrow(() -> useCase.execute(new ForgotPasswordCommand(UNKNOWN_EMAIL)));
-    then(domainEventPublisher).should(never()).publishAll(any());
-  }
+        // When & Then
+        assertDoesNotThrow(() -> useCase.execute(new ForgotPasswordCommand(UNKNOWN_EMAIL)));
+        then(domainEventPublisher).should(never()).publishAll(any());
+    }
 
-  @SuppressWarnings("unchecked")
-  @Test
-  void shouldPublishEventWithCorrectData() {
-    given(loadUserPort.findByEmail(Email.of(EMAIL))).willReturn(Optional.of(buildUser()));
+    @SuppressWarnings("unchecked")
+    @Test
+    void shouldPublishEventWithCorrectData() {
+        // Given
+        given(loadUserPort.findByEmail(Email.of(EMAIL))).willReturn(Optional.of(buildUser()));
 
-    useCase.execute(new ForgotPasswordCommand(EMAIL));
+        // When
+        useCase.execute(new ForgotPasswordCommand(EMAIL));
 
-    ArgumentCaptor<List<DomainEvent>> captor = ArgumentCaptor.forClass(List.class);
-    then(domainEventPublisher).should().publishAll(captor.capture());
+        // Then
+        ArgumentCaptor<List<DomainEvent>> captor = ArgumentCaptor.forClass(List.class);
+        then(domainEventPublisher).should().publishAll(captor.capture());
 
-    List<DomainEvent> published = captor.getValue();
-    assertEquals(1, published.size());
+        List<DomainEvent> published = captor.getValue();
+        assertEquals(1, published.size());
 
-    PasswordResetRequestedEvent event = (PasswordResetRequestedEvent) published.get(0);
+        PasswordResetRequestedEvent event = (PasswordResetRequestedEvent) published.get(0);
+        assertEquals(USER_ID, event.getAggregateId());
+        assertEquals(Email.of(EMAIL), event.getEmail());
 
-    assertEquals(USER_ID, event.getAggregateId());
-    assertEquals(Email.of(EMAIL), event.getEmail());
-
-    PasswordResetToken passwordResetToken = event.getPasswordResetToken();
-
-    assertNotNull(passwordResetToken);
-    assertNotNull(passwordResetToken.value());
-    assertFalse(passwordResetToken.isExpired());
-  }
+        PasswordResetToken passwordResetToken = event.getPasswordResetToken();
+        assertNotNull(passwordResetToken);
+        assertNotNull(passwordResetToken.value());
+        assertFalse(passwordResetToken.isExpired());
+    }
 }

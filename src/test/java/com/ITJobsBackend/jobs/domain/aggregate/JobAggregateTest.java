@@ -2,7 +2,12 @@ package com.ITJobsBackend.jobs.domain.aggregate;
 
 import java.math.BigDecimal;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
@@ -52,15 +57,16 @@ class JobAggregateTest {
   @Test
   void shouldDefaultWorkModalityToOnSiteWhenNull() {
     // When
-    JobAggregate job = JobAggregate.create(
-        "Developer",
-        "desc",
-        "Company",
-        "Madrid",
-        Salary.of(new BigDecimal("30000"), new BigDecimal("50000"), "EUR"),
-        EmploymentType.FULL_TIME,
-        null,
-        null);
+    JobAggregate job =
+        JobAggregate.create(
+            "Developer",
+            "desc",
+            "Company",
+            "Madrid",
+            Salary.of(new BigDecimal("30000"), new BigDecimal("50000"), "EUR"),
+            EmploymentType.FULL_TIME,
+            null,
+            null);
 
     // Then
     assertEquals(WorkModality.ON_SITE, job.getWorkModality());
@@ -69,15 +75,16 @@ class JobAggregateTest {
   @Test
   void shouldCreateJobWithHybridModality() {
     // When
-    JobAggregate job = JobAggregate.create(
-        "Developer",
-        "desc",
-        "Company",
-        "Barcelona",
-        Salary.of(new BigDecimal("40000"), new BigDecimal("60000"), "EUR"),
-        EmploymentType.FULL_TIME,
-        WorkModality.HYBRID,
-        null);
+    JobAggregate job =
+        JobAggregate.create(
+            "Developer",
+            "desc",
+            "Company",
+            "Barcelona",
+            Salary.of(new BigDecimal("40000"), new BigDecimal("60000"), "EUR"),
+            EmploymentType.FULL_TIME,
+            WorkModality.HYBRID,
+            null);
 
     // Then
     assertEquals(WorkModality.HYBRID, job.getWorkModality());

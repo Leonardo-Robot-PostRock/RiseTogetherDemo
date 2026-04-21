@@ -1,14 +1,18 @@
 package com.ITJobsBackend.authentication.application.usecases.refresh;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.BDDMockito.*;
-
 import java.util.List;
 import java.util.Optional;
 
-import org.junit.jupiter.api.BeforeEach;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -26,52 +30,67 @@ import com.ITJobsBackend.shared.domain.valueobjects.UserId;
 @ExtendWith(MockitoExtension.class)
 class RefreshTokenUseCaseTest {
 
-  @Mock private TokenGeneratorPort tokenGenerator;
-  @Mock private LoadUserPort loadUserPort;
+    // ── Constants ─────────────────────────────────────────────────────────────
+    private static final String USER_ID         = "550e8400-e29b-41d4-a716-446655440000";
+    private static final String EMAIL           = "test@example.com";
+    private static final String USERNAME        = "testuser";
+    private static final String HASHED_PASSWORD = "hashed";
+    private static final String REFRESH_TOKEN   = "refresh-token";
 
-  @InjectMocks private RefreshTokenUseCase refreshTokenUseCase;
+    // ── Mocks (puertos de salida) ──────────────────────────────────────────────
+    @Mock private TokenGeneratorPort tokenGenerator;
+    @Mock private LoadUserPort       loadUserPort;
 
-  private UserAggregate user;
+    // ── Subject under test ────────────────────────────────────────────────────
+    @InjectMocks private RefreshTokenUseCase refreshTokenUseCase;
 
-  @BeforeEach
-  void setUp() {
-    UserId userId = UserId.of("550e8400-e29b-41d4-a716-446655440000");
-    user =
-        UserAggregate.reconstitute(
-            userId,
-            Username.of("testuser"),
-            Email.of("test@example.com"),
-            HashedPassword.fromHash("hashed"),
-            true,
-            true,
-            null,
-            Timestamp.now(),
-            Timestamp.now(),
-            List.of("ROLE_USER"),
-            null);
-  }
+    // ── Helpers ───────────────────────────────────────────────────────────────
+    private UserAggregate buildUser() {
+        return UserAggregate.reconstitute(
+                UserId.of(USER_ID),
+                Username.of(USERNAME),
+                Email.of(EMAIL),
+                HashedPassword.fromHash(HASHED_PASSWORD),
+                true,
+                true,
+                null,
+                Timestamp.now(),
+                Timestamp.now(),
+                List.of("ROLE_USER"),
+                null);
+    }
 
-  @Test
-  void shouldGenerateNewTokens() {
-    given(tokenGenerator.extractUserId("refresh-token")).willReturn("550e8400-e29b-41d4-a716-446655440000");
-    given(loadUserPort.findById(any())).willReturn(Optional.of(user));
-    given(tokenGenerator.generateAccessToken(any(), any())).willReturn("new-access-token");
-    given(tokenGenerator.generateRefreshToken(any())).willReturn("new-refresh-token");
+    // ── Tests ─────────────────────────────────────────────────────────────────
+    @Test
+    void shouldGenerateNewTokens() {
+        // Given
+        given(tokenGenerator.extractUserId(REFRESH_TOKEN)).willReturn(USER_ID);
+        given(loadUserPort.findById(any())).willReturn(Optional.of(buildUser()));
+        given(tokenGenerator.generateAccessToken(any(), any())).willReturn("new-access-token");
+        given(tokenGenerator.generateRefreshToken(any())).willReturn("new-refresh-token");
 
-    AuthTokenResponse response = refreshTokenUseCase.execute("refresh-token");
+        // When
+        AuthTokenResponse response = refreshTokenUseCase.execute(REFRESH_TOKEN);
 
-    assertNotNull(response);
-    assertEquals("550e8400-e29b-41d4-a716-446655440000", response.userId());
-    assertEquals("testuser", response.username());
-    assertEquals("test@example.com", response.email());
-    assertEquals("new-access-token", response.accessToken());
-    assertEquals("new-refresh-token", response.refreshToken());
-  }
+        // Then
+        assertNotNull(response);
+        assertEquals(USER_ID,  response.userId());
+        assertEquals(USERNAME, response.username());
+        assertEquals(EMAIL,    response.email());
+        assertEquals("new-access-token",  response.accessToken());
+        assertEquals("new-refresh-token", response.refreshToken());
+        then(tokenGenerator).should().extractUserId(REFRESH_TOKEN);
+        then(loadUserPort).should().findById(any());
+    }
 
-  @Test
-  void shouldThrowWhenUserNotFound() {
-    given(tokenGenerator.extractUserId("refresh-token")).willReturn("invalid-user-id");
+    @Test
+    void shouldThrowWhenUserNotFound() {
+        // Given
+        given(tokenGenerator.extractUserId(REFRESH_TOKEN)).willReturn("invalid-user-id");
 
-    assertThrows(IllegalArgumentException.class, () -> refreshTokenUseCase.execute("refresh-token"));
-  }
+        // When & Then
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> refreshTokenUseCase.execute(REFRESH_TOKEN));
+    }
 }

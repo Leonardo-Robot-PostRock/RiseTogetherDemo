@@ -2,8 +2,11 @@ package com.ITJobsBackend.authentication.application.usecases.register;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.BDDMockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.never;
 
@@ -63,6 +66,7 @@ class RegisterUserUseCaseTest {
 
   @Test
   void shouldThrowExceptionWhenTermsNotAccepted() {
+    // When & Then
     assertThrows(
         IllegalArgumentException.class,
         () -> useCase.execute(new RegisterUserCommand(USERNAME, EMAIL, PASSWORD, false)));

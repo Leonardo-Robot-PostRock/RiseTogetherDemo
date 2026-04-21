@@ -2,7 +2,10 @@ package com.ITJobsBackend.authentication.domain.valueobjects;
 
 import java.time.Instant;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
@@ -10,49 +13,90 @@ import com.ITJobsBackend.shared.domain.exceptions.ValidationException;
 
 class VerificationTokenTest {
 
-    @Test
-    void shouldCreateVerificationToken() {
-        Instant expiresAt = Instant.now().plusSeconds(3600);
-        VerificationToken token = VerificationToken.of("abc123", expiresAt);
+  // ── Constants ─────────────────────────────────────────────────────────────
+  private static final String TOKEN_VALUE = "abc123";
 
-        assertEquals("abc123", token.token());
-        assertEquals(expiresAt, token.expiresAt());
-    }
+  // ── Helpers ───────────────────────────────────────────────────────────────
+  private VerificationToken buildValidToken() {
+    return VerificationToken.of(TOKEN_VALUE, Instant.now().plusSeconds(3600));
+  }
 
-    @Test
-    void shouldThrowWhenTokenIsBlank() {
-        assertThrows(ValidationException.class,
-            () -> VerificationToken.of("", Instant.now().plusSeconds(3600)));
-    }
+  private VerificationToken buildExpiredToken() {
+    return VerificationToken.of(TOKEN_VALUE, Instant.now().minusSeconds(1));
+  }
 
-    @Test
-    void shouldThrowWhenExpiresAtIsNull() {
-        assertThrows(ValidationException.class,
-            () -> VerificationToken.of("abc123", null));
-    }
+  // ── Tests ─────────────────────────────────────────────────────────────────
+  @Test
+  void shouldCreateVerificationToken() {
+    // Given
+    Instant expiresAt = Instant.now().plusSeconds(3600);
 
-    @Test
-    void shouldMatchCorrectToken() {
-        VerificationToken token = VerificationToken.of("abc123", Instant.now().plusSeconds(3600));
-        assertTrue(token.matches("abc123"));
-    }
+    // When
+    VerificationToken token = VerificationToken.of(TOKEN_VALUE, expiresAt);
 
-    @Test
-    void shouldNotMatchIncorrectToken() {
-        VerificationToken token = VerificationToken.of("abc123", Instant.now().plusSeconds(3600));
-        assertFalse(token.matches("wrong"));
-    }
+    // Then
+    assertEquals(TOKEN_VALUE, token.token());
+    assertEquals(expiresAt, token.expiresAt());
+  }
 
-    @Test
-    void shouldDetectExpiredToken() {
-        VerificationToken token = VerificationToken.of("abc123", Instant.now().minusSeconds(1));
-        assertTrue(token.isExpired());
-    }
+  @Test
+  void shouldThrowWhenTokenIsBlank() {
+    // When & Then
+    assertThrows(
+        ValidationException.class, () -> VerificationToken.of("", Instant.now().plusSeconds(3600)));
+  }
 
-    @Test
-    void shouldDetectNotExpiredToken() {
-        VerificationToken token = VerificationToken.of("abc123", Instant.now().plusSeconds(3600));
-        assertFalse(token.isExpired());
-    }
+  @Test
+  void shouldThrowWhenExpiresAtIsNull() {
+    // When & Then
+    assertThrows(ValidationException.class, () -> VerificationToken.of(TOKEN_VALUE, null));
+  }
+
+  @Test
+  void shouldMatchCorrectToken() {
+    // Given
+    VerificationToken token = buildValidToken();
+
+    // When
+    boolean matches = token.matches(TOKEN_VALUE);
+
+    // Then
+    assertTrue(matches);
+  }
+
+  @Test
+  void shouldNotMatchIncorrectToken() {
+    // Given
+    VerificationToken token = buildValidToken();
+
+    // When
+    boolean matches = token.matches("wrong");
+
+    // Then
+    assertFalse(matches);
+  }
+
+  @Test
+  void shouldDetectExpiredToken() {
+    // Given
+    VerificationToken token = buildExpiredToken();
+
+    // When
+    boolean expired = token.isExpired();
+
+    // Then
+    assertTrue(expired);
+  }
+
+  @Test
+  void shouldDetectNotExpiredToken() {
+    // Given
+    VerificationToken token = buildValidToken();
+
+    // When
+    boolean expired = token.isExpired();
+
+    // Then
+    assertFalse(expired);
+  }
 }
-

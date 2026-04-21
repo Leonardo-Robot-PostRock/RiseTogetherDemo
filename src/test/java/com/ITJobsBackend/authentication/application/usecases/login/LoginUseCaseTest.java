@@ -2,15 +2,19 @@ package com.ITJobsBackend.authentication.application.usecases.login;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.BDDMockito.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.ITJobsBackend.authentication.application.ports.out.LoadUserPort;
@@ -26,21 +30,22 @@ import com.ITJobsBackend.shared.domain.valueobjects.Email;
 @ExtendWith(MockitoExtension.class)
 class LoginUseCaseTest {
 
+  // ── Constants ─────────────────────────────────────────────────────────────
   private static final String EMAIL = "john@example.com";
   private static final String HASHED_PASSWORD = "$2a$10$hashed";
 
+  // ── Mocks (puertos de salida) ──────────────────────────────────────────────
   @Mock private LoadUserPort loadUserPort;
   @Mock private PasswordEncoderPort passwordEncoder;
   @Mock private TokenGeneratorPort tokenGenerator;
 
-  private LoginUseCase loginUseCase;
+  // ── Domain service (instancia real) ───────────────────────────────────────
+  @Spy private CredentialsVerifier credentialsVerifier;
 
-  @BeforeEach
-  void setUp() {
-    loginUseCase =
-        new LoginUseCase(loadUserPort, passwordEncoder, tokenGenerator, new CredentialsVerifier());
-  }
+  // ── Subject under test ────────────────────────────────────────────────────
+  @InjectMocks private LoginUseCase loginUseCase;
 
+  // ── Helpers ───────────────────────────────────────────────────────────────
   private UserAggregate buildUser() {
     return UserAggregate.create(
         Username.of("johndoe"), Email.of(EMAIL), HashedPassword.fromHash(HASHED_PASSWORD));
@@ -51,6 +56,7 @@ class LoginUseCaseTest {
     given(tokenGenerator.generateRefreshToken(any())).willReturn("refresh-token");
   }
 
+  // ── Tests ─────────────────────────────────────────────────────────────────
   @Test
   void shouldLoginSuccessfully() {
     // Given
@@ -98,7 +104,7 @@ class LoginUseCaseTest {
     given(passwordEncoder.matches("short", HASHED_PASSWORD)).willReturn(true);
     givenTokensAreStubbed();
 
-    // When (no exception thrown for short password — validation is on raw Password VO, not here)
-    loginUseCase.execute(new LoginCommand(EMAIL, "short"));
+    // When & Then — short password is accepted (validation happens on raw Password VO, not here)
+    assertDoesNotThrow(() -> loginUseCase.execute(new LoginCommand(EMAIL, "short")));
   }
 }
