@@ -9,7 +9,7 @@
         <version>3.5.13</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>com.personalmanagment</groupId>
+    <groupId>com.personalmanagement</groupId>
     <artifactId>ITJobsBackend</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
@@ -19,6 +19,9 @@
     <properties>
         <maven.compiler.release>17</maven.compiler.release>
         <tomcat.version>10.1.54</tomcat.version>
+        <!-- Spring Framework override — fixes CVE-2026-22740 & CVE-2026-22741 (spring-web/spring-webmvc 6.2.17) -->
+        <spring-framework.version>6.2.18</spring-framework.version>
+
         <!-- JWT -->
         <jjwt.version>0.12.6</jjwt.version>
         <!-- MapStruct -->
