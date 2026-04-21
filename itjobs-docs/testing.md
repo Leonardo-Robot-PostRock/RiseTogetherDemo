@@ -8,9 +8,10 @@
 4. [Tests de dominio (sin Spring)](#4-tests-de-dominio-sin-spring)
 5. [Tests de casos de uso (con Mockito BDD)](#5-tests-de-casos-de-uso-con-mockito-bdd)
 6. [Patrones de estructura](#6-patrones-de-estructura)
-7. [Convenciones de nombres](#7-convenciones-de-nombres)
-8. [Anti-patrones a evitar](#8-anti-patrones-a-evitar)
-9. [Referencia rápida de BDDMockito](#9-referencia-rápida-de-bddmockito)
+7. [Buenas prácticas adicionales con Mockito BDD](#7-buenas-prácticas-adicionales-con-mockito-bdd)
+8. [Convenciones de nombres](#8-convenciones-de-nombres)
+9. [Anti-patrones a evitar](#9-anti-patrones-a-evitar)
+10. [Referencia rápida de BDDMockito](#10-referencia-rápida-de-bddmockito)
 
 ---
 
@@ -336,7 +337,206 @@ void setUp() {
 
 ---
 
-## 7. Convenciones de nombres
+## 7. Buenas prácticas adicionales con Mockito BDD
+
+### Capturar argumentos con `ArgumentCaptor`
+
+Cuando necesitas verificar el **estado real del objeto** que se envía a un puerto, no uses
+`any()` ni `argThat()` con lógica embebida. La forma más clara y mantenible es usar
+`ArgumentCaptor`: permite capturar el objeto que el use case construyó y hacer assertions
+sobre él después de la ejecución.
+
+```java
+import org.mockito.ArgumentCaptor;
+```
+
+#### Ejemplo
+
+```java
+@Test
+void shouldDeriveUsernameFromEmailWhenNameIsNull() {
+    // Given
+    GoogleAuthCommand command = new GoogleAuthCommand(GOOGLE_SUB, EMAIL, null, true);
+
+    given(loadUserPort.findByEmail(Email.of(EMAIL))).willReturn(Optional.empty());
+    given(saveUserPort.save(any(UserAggregate.class)))
+        .willAnswer(invocation -> invocation.getArgument(0));
+    givenTokensAreStubbed();
+    givenTermsDocumentExists();
+
+    // When
+    useCase.execute(command);
+
+    // Then
+    ArgumentCaptor<UserAggregate> captor = ArgumentCaptor.forClass(UserAggregate.class);
+    then(saveUserPort).should().save(captor.capture());
+
+    assertEquals("john", captor.getValue().getUsername().value());
+}
+```
+
+#### ¿Por qué usar `ArgumentCaptor`?
+
+- Inspecciona el objeto **real** construido por el use case, no una aproximación
+- Evita lógica compleja dentro de `argThat`
+- Mantiene los assertions claros y en su sección `// Then`
+
+```java
+// ❌ Difícil de leer
+then(repo).should().save(argThat(u -> u.getUsername().value().equals("john")));
+
+// ✅ Claro y mantenible
+ArgumentCaptor<UserAggregate> captor = ArgumentCaptor.forClass(UserAggregate.class);
+then(repo).should().save(captor.capture());
+assertEquals("john", captor.getValue().getUsername().value());
+```
+
+> **Regla:** `ArgumentCaptor` siempre va dentro de `// Then`, justo antes del `assertEquals`.
+> Nunca lo declares en `// Given` ni lo captures en `// When`.
+
+---
+
+### Cuándo usar `argThat` (y cuándo no)
+
+`argThat` es un matcher inline que acepta una lambda de verificación. Es útil en casos
+muy concretos, pero se vuelve ilegible si la condición es compleja.
+
+```java
+import static org.mockito.ArgumentMatchers.argThat;
+```
+
+#### ✅ Casos donde `argThat` es apropiado
+
+**1. Verificación de un único campo simple en un stub del `// Given`**
+
+Cuando necesitas que el stub reaccione solo si el argumento cumple una condición
+mínima, y no te importa hacer ningún assertion posterior sobre él:
+
+```java
+// Given — solo activar el stub si el email es exactamente el correcto
+given(loadUserPort.findByEmail(argThat(e -> e.value().equals(EMAIL))))
+    .willReturn(Optional.of(buildUser()));
+```
+
+**2. Verificar la llamada y una única propiedad a la vez en `// Then`**
+
+Cuando solo necesitas confirmar un campo sin hacer varios `assertEquals`, y la
+condición cabe en una línea corta:
+
+```java
+// Then — confirmar que se guardó un usuario con el email correcto
+then(saveUserPort).should().save(argThat(u -> u.getEmail().value().equals(EMAIL)));
+```
+
+**3. Verificar con un tipo específico sin captura previa**
+
+Cuando solo te interesa el tipo concreto del argumento y no su estado interno:
+
+```java
+// Then — confirmar que el evento publicado es del tipo correcto
+then(eventPublisher).should().publish(argThat(e -> e instanceof UserRegisteredEvent));
+```
+
+#### ❌ Cuándo NO usar `argThat` — usa `ArgumentCaptor` en su lugar
+
+| Situación | Por qué evitar `argThat` |
+|---|---|
+| Verificar más de un campo | La lambda crece y pierde legibilidad |
+| El mensaje de fallo debe ser descriptivo | `argThat` solo dice "no coincidió", sin detalle |
+| Quieres reutilizar el objeto capturado | `argThat` no da acceso al objeto tras la verificación |
+| Necesitas varios `assertEquals` sobre el mismo objeto | `ArgumentCaptor` es más claro y fácil de depurar |
+
+```java
+// ❌ — múltiples condiciones en argThat
+then(saveUserPort).should().save(argThat(u ->
+    u.getEmail().value().equals(EMAIL) &&
+    u.getUsername().value().equals("john") &&
+    !u.isActive()));
+
+// ✅ — misma verificación con ArgumentCaptor: cada condición es un assertEquals
+ArgumentCaptor<UserAggregate> captor = ArgumentCaptor.forClass(UserAggregate.class);
+then(saveUserPort).should().save(captor.capture());
+UserAggregate saved = captor.getValue();
+assertEquals(EMAIL,  saved.getEmail().value());
+assertEquals("john", saved.getUsername().value());
+assertFalse(saved.isActive());
+```
+
+#### Tabla de decisión: `argThat` vs `ArgumentCaptor`
+
+| Criterio | `argThat` | `ArgumentCaptor` |
+|---|---|---|
+| Una sola condición simple | ✅ | también válido |
+| Múltiples condiciones | ❌ | ✅ |
+| Mensaje de fallo descriptivo | ❌ | ✅ |
+| Reutilizar el objeto capturado | ❌ | ✅ |
+| Stub en `// Given` con condición mínima | ✅ | innecesario |
+
+---
+
+### Simular repositorios con `willAnswer`
+
+Cuando un puerto (p.ej. `save`) devuelve la misma entidad que recibe, usar
+`willReturn` no es posible porque el objeto aún no existe al momento de declarar el stub.
+La solución es `willAnswer`:
+
+```java
+given(saveUserPort.save(any(UserAggregate.class)))
+    .willAnswer(invocation -> invocation.getArgument(0));
+```
+
+`invocation.getArgument(0)` devuelve el **primer parámetro** recibido en la llamada real.
+
+Esto permite que el use case haga:
+
+```java
+UserAggregate savedUser = saveUserPort.save(user);
+```
+
+…y el test siga funcionando sin crear objetos falsos manualmente.
+
+#### Cuándo usar `willAnswer`
+
+| Caso | Ejemplo |
+|---|---|
+| El método devuelve el mismo objeto que recibe | `repository.save(entity)` |
+| El resultado depende del argumento de entrada | `hashPassword(rawPassword)` |
+| Necesitas lógica dinámica basada en el input | cálculos en base al argumento |
+
+No lo uses cuando basta con `willReturn(valorFijo)`.
+
+#### Tabla de decisión
+
+| Situación | Herramienta |
+|---|---|
+| Solo verificar que se llamó | `then(mock).should()` |
+| Verificar los valores del argumento | `ArgumentCaptor` |
+| Simular comportamiento dinámico | `willAnswer` |
+| Simular retorno simple y fijo | `willReturn` |
+
+#### Ejemplo completo (patrón recomendado)
+
+```java
+@Test
+void shouldCreateUser() {
+    // Given
+    given(loadUserPort.findByEmail(any(Email.class))).willReturn(Optional.empty());
+    given(saveUserPort.save(any(UserAggregate.class)))
+        .willAnswer(invocation -> invocation.getArgument(0));
+
+    // When
+    useCase.execute(command);
+
+    // Then
+    ArgumentCaptor<UserAggregate> captor = ArgumentCaptor.forClass(UserAggregate.class);
+    then(saveUserPort).should().save(captor.capture());
+    assertEquals("john", captor.getValue().getUsername().value());
+}
+```
+
+---
+
+## 8. Convenciones de nombres
 
 | Elemento | Convención | Ejemplo |
 |---|---|---|
@@ -352,7 +552,7 @@ void setUp() {
 
 ---
 
-## 8. Anti-patrones a evitar
+## 9. Anti-patrones a evitar
 
 ### ❌ Imports wildcard
 ```java
@@ -448,7 +648,7 @@ Usar **solo** la API BDDMockito en todo el archivo. No mezclar estilos.
 
 ---
 
-## 9. Referencia rápida de BDDMockito
+## 10. Referencia rápida de BDDMockito
 
 > Todos los métodos pertenecen a `org.mockito.BDDMockito`, incluido en `mockito-core`.
 
