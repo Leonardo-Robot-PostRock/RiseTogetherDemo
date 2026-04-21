@@ -2,6 +2,7 @@ package com.ITJobsBackend.jobs.application.usecases.searchjobs;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 
 public record JobResponse(
     String id,
@@ -15,4 +16,5 @@ public record JobResponse(
     String employmentType,
     String workModality,
     String status,
-    Instant createdAt) {}
+    Instant createdAt,
+    List<String> skills) {}

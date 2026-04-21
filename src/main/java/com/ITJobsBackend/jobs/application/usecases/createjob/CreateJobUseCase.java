@@ -72,6 +72,7 @@ public class CreateJobUseCase implements CreateJobPort {
         savedJob.getEmploymentType().name(),
         savedJob.getWorkModality().name(),
         savedJob.getStatus().name(),
-        savedJob.getCreatedAt().value());
+        savedJob.getCreatedAt().value(),
+        savedJob.getSkills());
   }
 }

@@ -43,6 +43,7 @@ public class SearchJobsUseCase implements SearchJobsPort {
         job.getEmploymentType().name(),
         job.getWorkModality().name(),
         job.getStatus().name(),
-        job.getCreatedAt().value());
+        job.getCreatedAt().value(),
+        job.getSkills());
   }
 }

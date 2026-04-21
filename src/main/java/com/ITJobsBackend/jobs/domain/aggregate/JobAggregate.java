@@ -293,7 +293,7 @@ public class JobAggregate extends AggregateRoot {
   }
 
   /**
-   * Links this job to an {@link EmployerAggregate} if not already linked.
+   * Links this job to an {@link com.ITJobsBackend.profiles.domain.aggregate.EmployerAggregate} if not already linked.
    *
    * <p>Silently ignored if the job already has an employer id assigned.
    *
