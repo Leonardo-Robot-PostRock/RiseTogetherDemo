@@ -15,7 +15,6 @@ import com.ITJobsBackend.authentication.domain.aggregate.UserAggregate;
 import com.ITJobsBackend.authentication.domain.event.UserRegisteredEvent;
 import com.ITJobsBackend.authentication.domain.valueobjects.VerificationToken;
 import com.ITJobsBackend.authentication.infrastructure.config.AuthProperties;
-import com.ITJobsBackend.shared.domain.valueobjects.Email;
 import com.ITJobsBackend.shared.domain.valueobjects.UserId;
 
 @Component
@@ -44,7 +43,7 @@ public class UserRegisteredEventListener {
         loadUserPort.findById(userId)
             .orElseThrow(() -> new IllegalStateException("User not found: " + userId));
 
-    Instant expiresAt = Instant.now().plusSeconds(authProperties.getUnverifiedUserExpirationHours() * 3600L);
+    Instant expiresAt = Instant.now().plusSeconds(authProperties.getVerificationTokenExpirationHours() * 3600L);
     VerificationToken verificationToken = VerificationToken.of(UUID.randomUUID().toString(), expiresAt);
 
     user.assignVerificationToken(verificationToken);
