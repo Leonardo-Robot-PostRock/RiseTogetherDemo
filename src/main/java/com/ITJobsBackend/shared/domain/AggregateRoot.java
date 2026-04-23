@@ -38,7 +38,7 @@ public abstract class AggregateRoot {
    * @return a snapshot of the events recorded since the last call to this method
    */
   public List<DomainEvent> pullDomainEvents() {
-    List<DomainEvent> events = new ArrayList<>(domainEvents);
+    List<DomainEvent> events = List.copyOf(domainEvents);
     domainEvents.clear();
     return events;
   }
