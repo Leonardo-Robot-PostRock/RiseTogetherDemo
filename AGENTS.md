@@ -451,7 +451,7 @@ The aggregate is the **sole creator** of events. Events accumulate in an interna
 `AggregateRoot` holds a private `List<DomainEvent>` and exposes:
 
 - `recordEvent(DomainEvent)` — protected, called only by aggregate methods
-- `pullDomainEvents()` — public, returns a snapshot and clears the internal list
+- `pullDomainEvents()` — public, returns an **unmodifiable** snapshot (`List.copyOf`) and clears the internal list
 
 ```java
 // AggregateRoot.java
@@ -462,7 +462,7 @@ protected void recordEvent(DomainEvent event) {
 }
 
 public List<DomainEvent> pullDomainEvents() {
-    List<DomainEvent> events = new ArrayList<>(domainEvents);
+    List<DomainEvent> events = List.copyOf(domainEvents);  // snapshot inmutable
     domainEvents.clear();
     return events;
 }
@@ -488,12 +488,13 @@ domain model:
 - ❌ The aggregate is no longer the single source of truth
 - ❌ Responsibilities get mixed (infrastructure modifying domain state)
 
-### Why `List<? extends DomainEvent>` (correct)?
+### Why `List.copyOf()` (correct)?
 
-Returning `List<? extends DomainEvent>` from `pullDomainEvents()` is correct because:
+Using `List.copyOf(domainEvents)` in `pullDomainEvents()` is correct because:
 
-- ✅ The list is **producer** (aggregate) and **consumer** (publisher reads only)
-- ✅ The publisher gets events to publish but cannot add its own
+- ✅ Returns an **unmodifiable** snapshot — callers cannot add, remove, or clear events
+- ✅ The internal `domainEvents` list is then safely cleared without affecting the returned snapshot
+- ✅ The publisher gets events to publish but physically cannot mutate the list
 - ✅ Encapsulation is preserved — events are generated inside the domain only
 
 ### Model in Plain Terms
@@ -502,7 +503,8 @@ Returning `List<? extends DomainEvent>` from `pullDomainEvents()` is correct bec
 |-----------------|------------|:---:|-----------------------------------|
 | `AggregateRoot` | 🎯 Creator |     ✅     | Calls `recordEvent()` in domain methods |
 | `List<DomainEvent>` | 📦 Container |   ❌   | Closed — only `add()` from aggregate |
-| `DomainEventPublisher` | 📡 Broadcaster |   ❌   | Reads via `pullDomainEvents()`, publishes |
+| `pullDomainEvents()` | 📸 Snapshot |   ❌   | Returns `List.copyOf(...)` — unmodifiable; clears internal list |
+| `DomainEventPublisher` | 📡 Broadcaster |   ❌   | Reads the snapshot, publishes each event |
 
 The publisher **does not create, does not modify, does not decide**. It only does:
 
