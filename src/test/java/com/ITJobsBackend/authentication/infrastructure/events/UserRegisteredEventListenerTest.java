@@ -66,7 +66,7 @@ class UserRegisteredEventListenerTest {
     // Given
     UserId userId = UserId.generate();
     UserAggregate user = buildUser(userId);
-    given(authProperties.getUnverifiedUserExpirationHours()).willReturn(12);
+    given(authProperties.getVerificationTokenExpirationHours()).willReturn(12);
     given(loadUserPort.findById(userId)).willReturn(Optional.of(user));
     given(saveUserPort.save(any())).willAnswer(invocation -> invocation.getArgument(0));
 
@@ -83,7 +83,7 @@ class UserRegisteredEventListenerTest {
     // Given
     UserId userId = UserId.generate();
     UserAggregate user = buildUser(userId);
-    given(authProperties.getUnverifiedUserExpirationHours()).willReturn(12);
+    given(authProperties.getVerificationTokenExpirationHours()).willReturn(12);
     given(loadUserPort.findById(userId)).willReturn(Optional.of(user));
     given(saveUserPort.save(any())).willAnswer(invocation -> invocation.getArgument(0));
 
@@ -104,7 +104,7 @@ class UserRegisteredEventListenerTest {
     // Given
     UserId userId = UserId.generate();
     UserAggregate user = buildUser(userId);
-    given(authProperties.getUnverifiedUserExpirationHours()).willReturn(1);
+    given(authProperties.getVerificationTokenExpirationHours()).willReturn(1);
     given(loadUserPort.findById(userId)).willReturn(Optional.of(user));
     given(saveUserPort.save(any())).willAnswer(invocation -> invocation.getArgument(0));
 
