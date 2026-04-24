@@ -1,5 +1,7 @@
 package com.ITJobsBackend.authentication.domain.repository;
 
+import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 import com.ITJobsBackend.authentication.domain.aggregate.UserAggregate;
@@ -31,4 +33,12 @@ public interface UserReaderRepository {
    * @return the matching aggregate, or {@link Optional#empty()} if not found
    */
   Optional<UserAggregate> findByUsername(Username username);
+
+  /**
+   * Finds all unverified users whose account was created before the given cutoff time.
+   *
+   * @param cutoff the instant before which the user must have been created
+   * @return list of unverified users created before the cutoff
+   */
+  List<UserAggregate> findUnverifiedUsersOlderThan(Instant cutoff);
 }
