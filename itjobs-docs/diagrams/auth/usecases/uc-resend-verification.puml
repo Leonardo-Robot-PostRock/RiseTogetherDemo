@@ -1,0 +1,48 @@
+@startuml UcResendVerification
+
+title Authentication — ResendVerificationUseCase
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam componentStyle rectangle
+skinparam linetype ortho
+
+' ── Ports OUT ─────────────────────────────────
+interface "LoadUserPort"    as LOAD  #A5D6A7
+interface "SaveUserPort"    as SAVE  #A5D6A7
+interface "EmailSenderPort" as EMAIL #A5D6A7
+
+component [UserAggregate]   as UA    #FFF9C4
+
+' ══ ResendVerificationUseCase ════════════════
+package "ResendVerificationUseCase" #E3F2FD {
+    interface "ResendVerificationPort" as P_RES
+    component [ResendVerificationUseCase] as UC_RES
+    P_RES ..|> UC_RES
+}
+
+UC_RES --> LOAD  : findById(userId)
+UC_RES --> UA    : regenera VerificationToken
+UC_RES --> SAVE  : save(user)
+UC_RES --> EMAIL : sendEmail(to, subject, body)
+
+note right of LOAD
+  CQRS — command side.
+  Devuelve UserAggregate para
+  poder regenerar el token de
+  verificación y persistirlo.
+end note
+
+note right of EMAIL
+  EmailSenderPort:
+  · SmtpEmailSenderAdapter si spring.mail.host está configurado
+  · NoOpEmailSenderAdapter como fallback (logs WARN)
+end note
+
+note right of UA
+  Si emailVerified = true →
+  EmailAlreadyVerifiedException
+end note
+
+@enduml
+

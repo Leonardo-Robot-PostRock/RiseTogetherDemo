@@ -1,0 +1,55 @@
+@startuml UcGoogleAuthProvision
+
+title GoogleAuthUseCase — Fase 2: Provisionar usuario
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam componentStyle rectangle
+skinparam linetype ortho
+
+interface "SaveUserPort"           as SAVE  #A5D6A7
+interface "LoadTermsDocumentPort"  as TERMS #A5D6A7
+interface "SaveTermsAcceptancePort" as ACC  #A5D6A7
+
+component [UserAggregate] as UA #FFF9C4
+
+package "GoogleAuthUseCase" #E3F2FD {
+    interface "GoogleAuthPort" as P_GOO
+    component [GoogleAuthUseCase] as UC_GOO
+    P_GOO ..|> UC_GOO
+}
+
+' ── Fase 2a: usuario nuevo ────────────────────
+UC_GOO --> UA   : UserAggregate.createGoogleUser()
+note on link
+  Fase 2a — usuario nuevo.
+  Crea agregado con active=true y emailVerified=true.
+  No requiere verificación de email posterior.
+end note
+
+UC_GOO --> SAVE : save(newUser)
+UC_GOO --> TERMS : findLatestByType(TERMS_OF_SERVICE)
+note on link
+  Obtiene el documento de términos
+  vigente para registrar la aceptación.
+end note
+
+UC_GOO --> ACC  : save(TermsAcceptance)
+note on link
+  Registra que el usuario aceptó los
+  términos al momento del registro.
+  Solo sucede en la creación (2a).
+end note
+
+' ── Fase 2b: vincular sub ────────────────────
+UC_GOO --> UA   : user.linkGoogleAccount(googleSub)
+note on link
+  Fase 2b — usuario existente sin googleSub.
+  Vincula el sub de Google al usuario ya registrado.
+  Dispara GoogleAccountLinkedEvent.
+end note
+
+UC_GOO --> SAVE : save(linkedUser)
+
+@enduml
+

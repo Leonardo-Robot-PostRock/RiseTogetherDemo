@@ -1,0 +1,42 @@
+@startuml UcRefreshToken
+
+title Authentication — RefreshTokenUseCase
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam componentStyle rectangle
+skinparam linetype ortho
+
+' ── Ports OUT ─────────────────────────────────
+interface "QueryUserPort"      as QUERY #A5D6A7
+interface "TokenGeneratorPort" as TOK   #A5D6A7
+
+component [UserView\n<<Read Model>>] as UV #FFF9C4
+
+' ══ RefreshTokenUseCase ═══════════════════════
+package "RefreshTokenUseCase" #E8F5E9 {
+    interface "RefreshTokenPort" as P_REF
+    component [RefreshTokenUseCase] as UC_REF
+    P_REF ..|> UC_REF
+}
+
+UC_REF --> TOK   : validateRefreshToken(token) → userId
+UC_REF --> QUERY : findById(userId)
+UC_REF --> UV    : verifica active
+UC_REF --> TOK   : generateAccessToken + generateRefreshToken
+
+note right of QUERY
+  CQRS — query side.
+  Solo necesita verificar que el usuario
+  sigue activo y obtener sus roles.
+  No instancia UserAggregate.
+end note
+
+note right of TOK
+  JwtTokenGeneratorAdapter:
+  · Valida la firma del refresh token
+  · Genera nuevo par (accessToken, refreshToken)
+end note
+
+@enduml
+

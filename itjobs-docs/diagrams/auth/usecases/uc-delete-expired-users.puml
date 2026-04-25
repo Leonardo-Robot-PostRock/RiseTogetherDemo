@@ -1,0 +1,47 @@
+@startuml UcDeleteExpiredUsers
+
+title Authentication — DeleteExpiredUnverifiedUsersUseCase
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam componentStyle rectangle
+skinparam linetype ortho
+
+' ── Ports OUT ─────────────────────────────────
+interface "QueryUserPort"  as QUERY  #A5D6A7
+interface "DeleteUserPort" as DELETE #A5D6A7
+
+' ══ DeleteExpiredUnverifiedUsersUseCase ══════
+package "DeleteExpiredUnverifiedUsersUseCase" #FCE4EC {
+    interface "DeleteExpiredUnverifiedUsersPort" as P_DEL
+    component [DeleteExpiredUnverifiedUsersUseCase] as UC_DEL
+    P_DEL ..|> UC_DEL
+}
+
+UC_DEL --> QUERY  : findUnverifiedUserIdsBefore(cutoffInstant)
+UC_DEL --> DELETE : delete(userId) [por cada ID encontrado]
+
+note right of QUERY
+  CQRS — query side.
+  Busca IDs de usuarios cuyo
+  verificationToken.expiresAt < ahora
+  y emailVerified = false.
+  Devuelve solo IDs, no agregados.
+end note
+
+note right of DELETE
+  SRP — puerto dedicado a borrado.
+  Separado de SaveUserPort para
+  seguir el principio de
+  responsabilidad única.
+end note
+
+note right of UC_DEL
+  Operación batch — típicamente
+  ejecutado por un scheduler.
+  No lanza excepción si no hay
+  usuarios expirados (vacío = ok).
+end note
+
+@enduml
+

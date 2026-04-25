@@ -1,0 +1,38 @@
+@startuml UcGoogleAuthTokens
+
+title GoogleAuthUseCase — Fase 3: Emitir tokens JWT
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam componentStyle rectangle
+skinparam linetype ortho
+
+interface "TokenGeneratorPort" as TOK #A5D6A7
+
+package "GoogleAuthUseCase" #E3F2FD {
+    interface "GoogleAuthPort" as P_GOO
+    component [GoogleAuthUseCase] as UC_GOO
+    P_GOO ..|> UC_GOO
+}
+
+UC_GOO --> TOK : generateAccessToken(userId, roles)
+note on link
+  Retorna JWT firmado. Expira en 15 min.
+  Se incluye en la respuesta al cliente.
+end note
+
+UC_GOO --> TOK : generateRefreshToken(userId)
+note on link
+  Retorna JWT firmado. Expira en 7 días.
+  Permite renovar el accessToken sin re-login.
+end note
+
+note bottom of UC_GOO
+  Esta fase se ejecuta siempre,
+  independientemente del camino tomado
+  en las fases 1 y 2 (login directo,
+  vinculación o registro nuevo).
+end note
+
+@enduml
+
