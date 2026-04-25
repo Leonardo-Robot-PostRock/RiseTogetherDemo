@@ -13,15 +13,14 @@ import com.ITJobsBackend.shared.domain.valueobjects.UserId;
 @Component
 public class UserViewMapper {
 
-    public UserView toView(UserEntity entity) {
-        return new UserView(
-            UserId.of(entity.getId()),
-            entity.getUsername(),
-            entity.getEmail(),
-            HashedPassword.fromHash(entity.getPassword()),
-            entity.isActive(),
-            entity.isEmailVerified(),
-            List.copyOf(entity.getRoles()));
-    }
+  public UserView toView(UserEntity entity) {
+    return new UserView(
+        UserId.of(entity.getId()),
+        entity.getUsername(),
+        entity.getEmail(),
+        HashedPassword.fromHash(entity.getPassword()),
+        entity.isActive(),
+        entity.isEmailVerified(),
+        List.copyOf(entity.getRoles()));
+  }
 }
-

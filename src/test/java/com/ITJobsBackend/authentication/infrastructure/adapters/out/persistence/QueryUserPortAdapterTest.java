@@ -20,8 +20,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.ITJobsBackend.authentication.application.query.UserView;
+import com.ITJobsBackend.authentication.domain.valueobjects.HashedPassword;
 import com.ITJobsBackend.authentication.infrastructure.adapters.out.persistence.jpa.SpringDataJpaUserRepository;
 import com.ITJobsBackend.authentication.infrastructure.adapters.out.persistence.jpa.entities.UserEntity;
+import com.ITJobsBackend.authentication.infrastructure.adapters.out.persistence.jpa.mappers.read.UserViewMapper;
 import com.ITJobsBackend.shared.domain.valueobjects.Email;
 import com.ITJobsBackend.shared.domain.valueobjects.UserId;
 
@@ -33,6 +35,7 @@ class QueryUserPortAdapterTest {
   private static final String PASSWORD = "$2a$10$hashedpassword";
 
   @Mock private SpringDataJpaUserRepository jpaRepository;
+  @Mock private UserViewMapper userViewMapper;
   @InjectMocks private QueryUserPortAdapter adapter;
 
   private UserEntity userEntity;
@@ -51,7 +54,11 @@ class QueryUserPortAdapterTest {
 
   @Test
   void shouldFindByEmailAndMapToView() {
+    UserView expectedView = new UserView(
+        UserId.of(USER_UUID), "johndoe", EMAIL,
+        HashedPassword.fromHash(PASSWORD), true, true, List.of("ROLE_USER"));
     when(jpaRepository.findByEmail(EMAIL)).thenReturn(Optional.of(userEntity));
+    when(userViewMapper.toView(userEntity)).thenReturn(expectedView);
 
     Optional<UserView> result = adapter.findByEmail(Email.of(EMAIL));
 
@@ -65,6 +72,7 @@ class QueryUserPortAdapterTest {
     assertTrue(view.emailVerified());
     assertEquals(List.of("ROLE_USER"), view.roles());
     verify(jpaRepository).findByEmail(EMAIL);
+    verify(userViewMapper).toView(userEntity);
   }
 
   @Test
@@ -76,12 +84,17 @@ class QueryUserPortAdapterTest {
 
   @Test
   void shouldFindByIdAndMapToView() {
+    UserView expectedView = new UserView(
+        UserId.of(USER_UUID), "johndoe", EMAIL,
+        HashedPassword.fromHash(PASSWORD), true, true, List.of("ROLE_USER"));
     when(jpaRepository.findById(USER_UUID)).thenReturn(Optional.of(userEntity));
+    when(userViewMapper.toView(userEntity)).thenReturn(expectedView);
 
     Optional<UserView> result = adapter.findById(UserId.of(USER_UUID));
 
     assertTrue(result.isPresent());
     assertEquals(EMAIL, result.get().email());
+    verify(userViewMapper).toView(userEntity);
   }
 
   @Test

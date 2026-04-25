@@ -8,16 +8,16 @@ import org.springframework.stereotype.Component;
 
 import com.ITJobsBackend.authentication.application.ports.out.QueryUserPort;
 import com.ITJobsBackend.authentication.application.query.UserView;
-import com.ITJobsBackend.authentication.domain.valueobjects.HashedPassword;
 import com.ITJobsBackend.authentication.infrastructure.adapters.out.persistence.jpa.SpringDataJpaUserRepository;
-import com.ITJobsBackend.authentication.infrastructure.adapters.out.persistence.jpa.entities.UserEntity;
+import com.ITJobsBackend.authentication.infrastructure.adapters.out.persistence.jpa.mappers.read.UserViewMapper;
 import com.ITJobsBackend.shared.domain.valueobjects.Email;
 import com.ITJobsBackend.shared.domain.valueobjects.UserId;
 
 /**
  * Read-side adapter that implements {@link QueryUserPort}.
  *
- * <p>Maps {@link UserEntity} directly to {@link UserView}, bypassing {@code UserAggregate}
+ * <p>Maps {@link com.ITJobsBackend.authentication.infrastructure.adapters.out.persistence.jpa.entities.UserEntity}
+ * directly to {@link UserView} via {@link UserViewMapper#toView}, bypassing {@code UserAggregate}
  * reconstitution: no invariant checks, no domain event list, no aggregate behaviour is created.
  *
  * <p>For the cleanup batch query only the {@code id} column is projected
@@ -27,21 +27,24 @@ import com.ITJobsBackend.shared.domain.valueobjects.UserId;
 public class QueryUserPortAdapter implements QueryUserPort {
 
     private final SpringDataJpaUserRepository jpaRepository;
+    private final UserViewMapper userViewMapper;
 
-    public QueryUserPortAdapter(SpringDataJpaUserRepository jpaRepository) {
+    public QueryUserPortAdapter(
+            SpringDataJpaUserRepository jpaRepository, UserViewMapper userViewMapper) {
         this.jpaRepository = jpaRepository;
+        this.userViewMapper = userViewMapper;
     }
 
     // ── Read-model queries ────────────────────────────────────────────────────
 
     @Override
     public Optional<UserView> findByEmail(Email email) {
-        return jpaRepository.findByEmail(email.value()).map(this::toView);
+        return jpaRepository.findByEmail(email.value()).map(userViewMapper::toView);
     }
 
     @Override
     public Optional<UserView> findById(UserId id) {
-        return jpaRepository.findById(id.value()).map(this::toView);
+        return jpaRepository.findById(id.value()).map(userViewMapper::toView);
     }
 
     /** Delegates to the database-level {@code EXISTS} query — no entity hydration. */
@@ -57,22 +60,4 @@ public class QueryUserPortAdapter implements QueryUserPort {
             .map(UserId::of)
             .toList();
     }
-
-    // ── Private mapping ───────────────────────────────────────────────────────
-
-    /**
-     * Maps a {@link UserEntity} to a {@link UserView} read model without instantiating
-     * the full {@code UserAggregate} write model.
-     */
-    private UserView toView(UserEntity entity) {
-        return new UserView(
-            UserId.of(entity.getId()),
-            entity.getUsername(),
-            entity.getEmail(),
-            HashedPassword.fromHash(entity.getPassword()),
-            entity.isActive(),
-            entity.isEmailVerified(),
-            List.copyOf(entity.getRoles()));
-    }
 }
-

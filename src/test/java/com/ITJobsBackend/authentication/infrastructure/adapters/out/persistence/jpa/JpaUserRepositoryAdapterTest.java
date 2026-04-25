@@ -18,7 +18,7 @@ import com.ITJobsBackend.authentication.domain.aggregate.UserAggregate;
 import com.ITJobsBackend.authentication.domain.valueobjects.HashedPassword;
 import com.ITJobsBackend.authentication.domain.valueobjects.Username;
 import com.ITJobsBackend.authentication.infrastructure.adapters.out.persistence.jpa.entities.UserEntity;
-import com.ITJobsBackend.authentication.infrastructure.adapters.out.persistence.jpa.mappers.UserMapper;
+import com.ITJobsBackend.authentication.infrastructure.adapters.out.persistence.jpa.mappers.write.UserMapper;
 import com.ITJobsBackend.shared.domain.valueobjects.Email;
 
 /**

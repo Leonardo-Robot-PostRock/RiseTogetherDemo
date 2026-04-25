@@ -11,8 +11,8 @@ import com.ITJobsBackend.authentication.domain.entity.TermsAcceptance;
 import com.ITJobsBackend.authentication.domain.valueobjects.TermsType;
 import com.ITJobsBackend.authentication.infrastructure.adapters.out.persistence.jpa.SpringDataJpaTermsAcceptanceRepository;
 import com.ITJobsBackend.authentication.infrastructure.adapters.out.persistence.jpa.SpringDataJpaTermsDocumentRepository;
-import com.ITJobsBackend.authentication.infrastructure.adapters.out.persistence.jpa.mappers.TermsAcceptanceMapper;
-import com.ITJobsBackend.authentication.infrastructure.adapters.out.persistence.jpa.mappers.TermsDocumentMapper;
+import com.ITJobsBackend.authentication.infrastructure.adapters.out.persistence.jpa.mappers.write.TermsAcceptanceMapper;
+import com.ITJobsBackend.authentication.infrastructure.adapters.out.persistence.jpa.mappers.write.TermsDocumentMapper;
 
 @Component
 public class JpaTermsRepositoryAdapter implements LoadTermsDocumentPort, SaveTermsAcceptancePort {

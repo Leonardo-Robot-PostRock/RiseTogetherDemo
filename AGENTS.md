@@ -114,11 +114,15 @@ src/main/java/com/ITJobsBackend/
 │       │   │                   QueryUserPortAdapter    (query side  → UserView),
 │       │   │                   SaveUserPortAdapter,
 │       │   │                   JpaUserRepositoryAdapter, SpringDataJpaUserRepository,
-│       │   │                   UserEntity, UserMapper,
+│       │   │                   UserEntity,
 │       │   │                   JpaTermsRepositoryAdapter,
 │       │   │                   SpringDataJpaTermsDocumentRepository,
 │       │   │                   SpringDataJpaTermsAcceptanceRepository,
 │       │   │                   TermsDocumentEntity, TermsAcceptanceEntity,
+│       │   │   ├── jpa/mappers/read/
+│       │   │   │               UserViewMapper          (UserEntity → UserView, CQRS query side)
+│       │   │   └── jpa/mappers/write/
+│       │   │                   UserMapper              (UserAggregate ↔ UserEntity),
 │       │   │                   TermsDocumentMapper, TermsAcceptanceMapper
 │       │   └── security/       BCryptPasswordEncoderAdapter, JwtTokenGeneratorAdapter,
 │       │                       JwtAuthenticationFilter, VerificationTokenValidatorAdapter

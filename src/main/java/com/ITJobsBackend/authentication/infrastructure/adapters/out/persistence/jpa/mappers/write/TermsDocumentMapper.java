@@ -1,4 +1,4 @@
-package com.ITJobsBackend.authentication.infrastructure.adapters.out.persistence.jpa.mappers;
+package com.ITJobsBackend.authentication.infrastructure.adapters.out.persistence.jpa.mappers.write;
 
 import org.springframework.stereotype.Component;
 
