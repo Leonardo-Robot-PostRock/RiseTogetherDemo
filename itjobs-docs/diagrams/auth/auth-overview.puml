@@ -18,11 +18,11 @@ package "REST Adapters  (Driving)" #E8EAF6 {
 }
 
 package "Ports IN — AuthController" #C8E6C9 {
-    rectangle "RegisterUserPort\nLoginPort\nGoogleAuthPort\nVerifyEmailPort\n(ForgotPasswordPort — pendiente)" as PORTS_AUTH
+    rectangle "RegisterUserPort\nLoginPort\nGoogleAuthPort\nVerifyEmailPort\nForgotPasswordPort\nResendVerificationPort\nRefreshTokenPort\nDeleteExpiredUnverifiedUsersPort" as PORTS_AUTH
 }
 
 package "Use Cases — AuthController" #DCEDC8 {
-    rectangle "RegisterUserUseCase\nLoginUseCase\nGoogleAuthUseCase\nVerifyEmailUseCase\nForgotPasswordUseCase" as UCS_AUTH
+    rectangle "RegisterUserUseCase\nLoginUseCase\nGoogleAuthUseCase\nVerifyEmailUseCase\nForgotPasswordUseCase\nResendVerificationUseCase\nRefreshTokenUseCase\nDeleteExpiredUnverifiedUsersUseCase" as UCS_AUTH
 }
 
 ' ── Fila AccountController ───────────────────────────────────────
@@ -34,38 +34,56 @@ package "Use Cases — AccountController" #DCEDC8 {
     rectangle "ChangePasswordUseCase" as UCS_ACC
 }
 
-' ── Capas compartidas ────────────────────────────────────────────
-package "Domain" #FFF3E0 {
-    rectangle "UserAggregate\nCredentialsVerifier" as DOM
+' ── Query Model (CQRS) ───────────────────────────────────────────
+package "Query Model" #FFF9C4 {
+    rectangle "UserView\n(projection — record)" as UV
 }
 
-package "Ports OUT" #A5D6A7 {
-    rectangle "LoadUserPort  SaveUserPort\nPasswordEncoderPort  TokenGeneratorPort\nDomainEventPublisher\nVerificationTokenValidatorPort" as PORTS_OUT
+' ── Capas compartidas ────────────────────────────────────────────
+package "Domain" #FFF3E0 {
+    rectangle "UserAggregate\nTermsDocument  TermsAcceptance\nCredentialsVerifier" as DOM
+}
+
+package "Ports OUT — command side" #A5D6A7 {
+    rectangle "LoadUserPort  → UserAggregate\nSaveUserPort  DeleteUserPort\nPasswordEncoderPort\nTokenGeneratorPort\nVerificationTokenValidatorPort\nLoadTermsDocumentPort\nSaveTermsAcceptancePort\nDomainEventPublisher" as PORTS_OUT_CMD
+}
+
+package "Ports OUT — query side" #B9F6CA {
+    rectangle "QueryUserPort  → UserView\n(leer sin instanciar UserAggregate)" as PORTS_OUT_QRY
 }
 
 package "Infrastructure Adapters  (Driven)" #F3E5F5 {
-    rectangle "LoadUserPortAdapter (JPA)  SaveUserPortAdapter (JPA)\nBCryptPasswordEncoderAdapter  JwtTokenGeneratorAdapter\nSpringDomainEventPublisher\nVerificationTokenValidatorAdapter" as ADAPTERS
+    rectangle "LoadUserPortAdapter (JPA)  QueryUserPortAdapter (JPA)\nSaveUserPortAdapter (JPA)  JpaTermsRepositoryAdapter\nBCryptPasswordEncoderAdapter  JwtTokenGeneratorAdapter\nVerificationTokenValidatorAdapter\nSpringDomainEventPublisher\nSmtpEmailSenderAdapter  NoOpEmailSenderAdapter" as ADAPTERS
 }
 
 ' ── Relaciones ───────────────────────────────────────────────────
-CTRL1      --> PORTS_AUTH : invoca
-CTRL2      --> PORTS_ACC  : invoca
+CTRL1      --> PORTS_AUTH      : invoca
+CTRL2      --> PORTS_ACC       : invoca
 
-PORTS_AUTH --> UCS_AUTH   : implementado por
-PORTS_ACC  --> UCS_ACC    : implementado por
+PORTS_AUTH --> UCS_AUTH        : implementado por
+PORTS_ACC  --> UCS_ACC         : implementado por
 
-UCS_AUTH   --> DOM        : usa
-UCS_ACC    --> DOM        : usa
+UCS_AUTH   --> DOM             : usa
+UCS_ACC    --> DOM             : usa
 
-UCS_AUTH   --> PORTS_OUT  : invoca
-UCS_ACC    --> PORTS_OUT  : invoca
+UCS_AUTH   --> PORTS_OUT_CMD   : invoca (write)
+UCS_AUTH   --> PORTS_OUT_QRY   : invoca (read-only)
+UCS_ACC    --> PORTS_OUT_CMD   : invoca (write)
 
-PORTS_OUT  --> ADAPTERS   : implementado por
+PORTS_OUT_QRY --> UV           : devuelve
+PORTS_OUT_CMD --> ADAPTERS     : implementado por
+PORTS_OUT_QRY --> ADAPTERS     : implementado por
 
 note bottom
-  auth-usecases-write.puml → Register, VerifyEmail, ChangePassword, ForgotPassword
-  auth-usecases-auth.puml  → Login, GoogleAuth
-  seq-*.puml               → flujos de secuencia completos
+  CQRS:
+    LoadUserPort (command) → UserAggregate (para mutaciones)
+    QueryUserPort (query)  → UserView (para lecturas)
+  Email:
+    SmtpEmailSenderAdapter  @ConditionalOnProperty(spring.mail.host)
+    NoOpEmailSenderAdapter  @ConditionalOnMissingBean(EmailSenderPort) — fallback
+  Diagramas de detalle:
+    uc-*.puml              → use cases individuales con sus puertos
+    seq-*.puml             → flujos de secuencia completos
 end note
 
 @enduml

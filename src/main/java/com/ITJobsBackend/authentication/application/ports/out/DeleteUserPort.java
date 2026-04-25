@@ -5,8 +5,8 @@ import com.ITJobsBackend.shared.domain.valueobjects.UserId;
 /**
  * Write-side port for deleting a {@code UserAggregate}.
  *
- * <p>Separated from {@link SaveUserPort} by SRP: creation/update and deletion are
- * distinct concerns that evolve independently.
+ * <p>Separated from {@link SaveUserPort} by SRP: creation/update and deletion are distinct concerns
+ * that evolve independently.
  */
 public interface DeleteUserPort {
 
@@ -17,4 +17,3 @@ public interface DeleteUserPort {
    */
   void delete(UserId id);
 }
-

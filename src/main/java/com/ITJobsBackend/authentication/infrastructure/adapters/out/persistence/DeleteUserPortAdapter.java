@@ -1,16 +1,27 @@
 package com.ITJobsBackend.authentication.infrastructure.adapters.out.persistence;
+
 import org.springframework.stereotype.Component;
+
 import com.ITJobsBackend.authentication.application.ports.out.DeleteUserPort;
-import com.ITJobsBackend.authentication.domain.repository.UserWriterRepository;
+import com.ITJobsBackend.authentication.infrastructure.adapters.out.persistence.jpa.SpringDataJpaUserRepository;
 import com.ITJobsBackend.shared.domain.valueobjects.UserId;
+
+/**
+ * Adapter that implements {@link DeleteUserPort} by delegating directly to
+ * {@link SpringDataJpaUserRepository#deleteById}. Deletion is a persistence operation —
+ * the domain model does not define a {@code delete} method on the aggregate — so this adapter
+ * correctly bypasses the domain repository layer.
+ */
 @Component
 public class DeleteUserPortAdapter implements DeleteUserPort {
-  private final UserWriterRepository userRepository;
-  public DeleteUserPortAdapter(UserWriterRepository userRepository) {
-    this.userRepository = userRepository;
-  }
-  @Override
-  public void delete(UserId id) {
-    userRepository.delete(id);
-  }
+    private final SpringDataJpaUserRepository jpaRepository;
+
+    public DeleteUserPortAdapter(SpringDataJpaUserRepository jpaRepository) {
+        this.jpaRepository = jpaRepository;
+    }
+
+    @Override
+    public void delete(UserId id) {
+        jpaRepository.deleteById(id.value());
+    }
 }

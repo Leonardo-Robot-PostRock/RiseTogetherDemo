@@ -1,7 +1,5 @@
 package com.ITJobsBackend.authentication.domain.repository;
 
-import java.time.Instant;
-import java.util.List;
 import java.util.Optional;
 
 import com.ITJobsBackend.authentication.domain.aggregate.UserAggregate;
@@ -11,6 +9,10 @@ import com.ITJobsBackend.shared.domain.valueobjects.UserId;
 
 /**
  * Read-side repository port for {@link UserAggregate}.
+ *
+ * <p>Exposes only the queries the domain needs to rehydrate aggregates by their natural keys.
+ * Application- or infrastructure-specific queries (e.g. existence checks, scheduled cleanup)
+ * belong in the application-layer ports ({@code LoadUserPort}) and their adapters.
  *
  * <p>Implementations live in the infrastructure layer (e.g. {@code JpaUserRepositoryAdapter}).
  */
@@ -33,12 +35,4 @@ public interface UserReaderRepository {
    * @return the matching aggregate, or {@link Optional#empty()} if not found
    */
   Optional<UserAggregate> findByUsername(Username username);
-
-  /**
-   * Finds all unverified users whose account was created before the given cutoff time.
-   *
-   * @param cutoff the instant before which the user must have been created
-   * @return list of unverified users created before the cutoff
-   */
-  List<UserAggregate> findUnverifiedUsersOlderThan(Instant cutoff);
 }

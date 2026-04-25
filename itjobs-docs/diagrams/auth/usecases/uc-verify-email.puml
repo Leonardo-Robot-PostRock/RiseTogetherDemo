@@ -2,42 +2,49 @@
 
 title Authentication — VerifyEmailUseCase
 
-left to right direction
-skinparam packageStyle rectangle
-skinparam componentStyle rectangle
-skinparam linetype ortho
+skinparam activityBackgroundColor #FAFAFA
+skinparam activityBorderColor #888888
+skinparam activityDiamondBackgroundColor #FFF9C4
+skinparam activityArrowColor #555555
+skinparam noteBackgroundColor #FFFDE7
+skinparam noteBorderColor #F9A825
 
-' ── Ports OUT ─────────────────────────────────
-interface "LoadUserPort"                    as LOAD #A5D6A7
-interface "SaveUserPort"                    as SAVE #A5D6A7
-interface "VerificationTokenValidatorPort"  as VAL  #A5D6A7
-interface "DomainEventPublisher"            as PUB  #A5D6A7
+start
 
-component [UserAggregate] as UA #FFF9C4
+:UserId.of(command.userId());
 
-' ══ VerifyEmailUseCase ═══════════════════════
-package "VerifyEmailUseCase" #E3F2FD {
-    interface "VerifyEmailPort" as P_VER
-    component [VerifyEmailUseCase] as UC_VER
-    P_VER ..|> UC_VER
-}
-
-UC_VER --> LOAD : findById(userId)
-UC_VER --> VAL  : validate(token, providedToken)
-UC_VER --> UA   : verifyEmail()
-UC_VER --> SAVE : save(user)
-UC_VER --> PUB  : EmailVerifiedEvent
-
-note right of VAL
-  VerificationTokenValidatorAdapter:
-  · comprueba token.matches(provided)
-  · comprueba !token.isExpired()
+:LoadUserPort.findById(userId);
+note right
+  CQRS — command side.
+  Devuelve Optional<UserAggregate>.
 end note
 
-note right of PUB
-  EmailVerifiedEvent puede
-  disparar activación de usuario
+if (¿usuario encontrado?) then (no)
+  #FF8A80:throw NotFoundException;
+  stop
+endif
+
+:VerificationTokenValidatorPort\n.validate(user.verificationToken, command.token());
+note right
+  Lanza excepción si:
+  · token no coincide
+  · token expirado (isExpired = true)
 end note
+
+:user.verifyEmail();
+note right
+  emailVerified = true.
+  Registra EmailVerifiedEvent.
+end note
+
+:SaveUserPort.save(user);
+
+:DomainEventPublisher\n.publish(EmailVerifiedEvent);
+note right
+  EmailVerifiedEventListener
+  puede activar al usuario.
+end note
+
+stop
 
 @enduml
-

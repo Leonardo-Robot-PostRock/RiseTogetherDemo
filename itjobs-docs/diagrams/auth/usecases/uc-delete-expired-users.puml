@@ -2,46 +2,39 @@
 
 title Authentication — DeleteExpiredUnverifiedUsersUseCase
 
-left to right direction
-skinparam packageStyle rectangle
-skinparam componentStyle rectangle
-skinparam linetype ortho
+skinparam activityBackgroundColor #FAFAFA
+skinparam activityBorderColor #888888
+skinparam activityDiamondBackgroundColor #FFF9C4
+skinparam activityArrowColor #555555
+skinparam noteBackgroundColor #FFFDE7
+skinparam noteBorderColor #F9A825
 
-' ── Ports OUT ─────────────────────────────────
-interface "QueryUserPort"  as QUERY  #A5D6A7
-interface "DeleteUserPort" as DELETE #A5D6A7
+start
 
-' ══ DeleteExpiredUnverifiedUsersUseCase ══════
-package "DeleteExpiredUnverifiedUsersUseCase" #FCE4EC {
-    interface "DeleteExpiredUnverifiedUsersPort" as P_DEL
-    component [DeleteExpiredUnverifiedUsersUseCase] as UC_DEL
-    P_DEL ..|> UC_DEL
-}
+:Calcular cutoffInstant = now();
 
-UC_DEL --> QUERY  : findUnverifiedUserIdsBefore(cutoffInstant)
-UC_DEL --> DELETE : delete(userId) [por cada ID encontrado]
-
-note right of QUERY
+:QueryUserPort\n.findUnverifiedUserIdsBefore(cutoffInstant);
+note right
   CQRS — query side.
-  Busca IDs de usuarios cuyo
-  verificationToken.expiresAt < ahora
-  y emailVerified = false.
-  Devuelve solo IDs, no agregados.
+  Busca usuarios con:
+  emailVerified = false
+  verificationToken.expiresAt < cutoffInstant
+  Devuelve solo List<UserId>.
 end note
 
-note right of DELETE
-  SRP — puerto dedicado a borrado.
-  Separado de SaveUserPort para
-  seguir el principio de
-  responsabilidad única.
-end note
+if (¿lista vacía?) then (sí)
+  :retornar — nada que eliminar;
+  stop
+endif
 
-note right of UC_DEL
-  Operación batch — típicamente
-  ejecutado por un scheduler.
-  No lanza excepción si no hay
-  usuarios expirados (vacío = ok).
-end note
+while (¿quedan IDs en la lista?) is (sí)
+  :DeleteUserPort.delete(userId);
+  note right
+    SRP — puerto dedicado a borrado.
+    Separado de SaveUserPort.
+  end note
+endwhile (no)
+
+stop
 
 @enduml
-

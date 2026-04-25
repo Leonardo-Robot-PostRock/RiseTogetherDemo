@@ -19,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.ITJobsBackend.authentication.application.ports.out.LoadTermsDocumentPort;
 import com.ITJobsBackend.authentication.application.ports.out.PasswordEncoderPort;
+import com.ITJobsBackend.authentication.application.ports.out.QueryUserPort;
 import com.ITJobsBackend.authentication.application.ports.out.SaveTermsAcceptancePort;
 import com.ITJobsBackend.authentication.application.ports.out.SaveUserPort;
 import com.ITJobsBackend.authentication.domain.aggregate.TermsDocument;
@@ -36,6 +37,7 @@ class RegisterUserUseCaseTest {
   private static final String PASSWORD = "SecureP@ss123";
 
   @Mock private SaveUserPort saveUserPort;
+  @Mock private QueryUserPort queryUserPort;
   @Mock private PasswordEncoderPort passwordEncoder;
   @Mock private DomainEventPublisher domainEventPublisher;
   @Mock private LoadTermsDocumentPort loadTermsDocumentPort;
@@ -46,7 +48,7 @@ class RegisterUserUseCaseTest {
   void shouldRegisterNewUser() {
     // Given
     TermsDocument tosDoc = TermsDocument.create(TermsType.TERMS_OF_SERVICE, "1", "ToS content");
-    given(saveUserPort.existsByEmail(any(Email.class))).willReturn(false);
+    given(queryUserPort.existsByEmail(any(Email.class))).willReturn(false);
     given(passwordEncoder.encode(any())).willReturn("$2a$10$hashed");
     given(saveUserPort.save(any())).willAnswer(i -> i.getArgument(0));
     given(loadTermsDocumentPort.findLatestByType(TermsType.TERMS_OF_SERVICE))
@@ -77,7 +79,7 @@ class RegisterUserUseCaseTest {
   @Test
   void shouldThrowExceptionWhenEmailAlreadyExists() {
     // Given
-    given(saveUserPort.existsByEmail(any(Email.class))).willReturn(true);
+    given(queryUserPort.existsByEmail(any(Email.class))).willReturn(true);
 
     // When & Then
     assertThrows(

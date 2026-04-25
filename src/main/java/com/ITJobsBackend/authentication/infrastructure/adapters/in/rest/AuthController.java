@@ -14,6 +14,7 @@ import com.ITJobsBackend.authentication.application.ports.in.GoogleAuthPort;
 import com.ITJobsBackend.authentication.application.ports.in.LoginPort;
 import com.ITJobsBackend.authentication.application.ports.in.RefreshTokenPort;
 import com.ITJobsBackend.authentication.application.ports.in.RegisterUserPort;
+import com.ITJobsBackend.authentication.application.ports.in.ResendVerificationPort;
 import com.ITJobsBackend.authentication.application.ports.in.VerifyEmailPort;
 import com.ITJobsBackend.authentication.infrastructure.adapters.in.rest.dto.AuthResponse;
 import com.ITJobsBackend.authentication.infrastructure.adapters.in.rest.dto.ForgotPasswordRequest;
@@ -21,7 +22,10 @@ import com.ITJobsBackend.authentication.infrastructure.adapters.in.rest.dto.Goog
 import com.ITJobsBackend.authentication.infrastructure.adapters.in.rest.dto.LoginRequest;
 import com.ITJobsBackend.authentication.infrastructure.adapters.in.rest.dto.RefreshTokenRequest;
 import com.ITJobsBackend.authentication.infrastructure.adapters.in.rest.dto.RegisterRequest;
+import com.ITJobsBackend.authentication.infrastructure.adapters.in.rest.dto.ResendVerificationRequest;
 import com.ITJobsBackend.authentication.infrastructure.adapters.in.rest.dto.RegisterResponse;
+import com.ITJobsBackend.authentication.infrastructure.adapters.in.rest.dto.ResendVerificationRequest;
+import com.ITJobsBackend.authentication.application.usecases.resendverification.ResendVerificationCommand;
 import com.ITJobsBackend.authentication.infrastructure.adapters.in.rest.dto.VerifyEmailRequest;
 import com.ITJobsBackend.authentication.infrastructure.adapters.in.rest.mappers.AuthRestMapper;
 
@@ -34,6 +38,7 @@ public class AuthController {
     private final VerifyEmailPort verifyEmailPort;
     private final RefreshTokenPort refreshTokenPort;
     private final ForgotPasswordPort forgotPasswordPort;
+    private final ResendVerificationPort resendVerificationPort;
     private final AuthRestMapper authRestMapper;
 
     public AuthController(
@@ -43,6 +48,7 @@ public class AuthController {
             VerifyEmailPort verifyEmailPort,
             RefreshTokenPort refreshTokenPort,
             ForgotPasswordPort forgotPasswordPort,
+            ResendVerificationPort resendVerificationPort,
             AuthRestMapper authRestMapper) {
         this.registerUserPort = registerUserPort;
         this.loginPort = loginPort;
@@ -50,6 +56,7 @@ public class AuthController {
         this.verifyEmailPort = verifyEmailPort;
         this.refreshTokenPort = refreshTokenPort;
         this.forgotPasswordPort = forgotPasswordPort;
+        this.resendVerificationPort = resendVerificationPort;
         this.authRestMapper = authRestMapper;
     }
 
@@ -88,6 +95,12 @@ public class AuthController {
     @PostMapping("/forgot-password")
     public ResponseEntity<Void> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
         forgotPasswordPort.execute(authRestMapper.toCommand(request));
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/resend-verification")
+    public ResponseEntity<Void> resendVerification(@Valid @RequestBody ResendVerificationRequest request) {
+        resendVerificationPort.execute(new ResendVerificationCommand(request.email()));
         return ResponseEntity.ok().build();
     }
 }

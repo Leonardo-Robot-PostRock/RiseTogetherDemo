@@ -2,41 +2,52 @@
 
 title Authentication — RefreshTokenUseCase
 
-left to right direction
-skinparam packageStyle rectangle
-skinparam componentStyle rectangle
-skinparam linetype ortho
+skinparam activityBackgroundColor #FAFAFA
+skinparam activityBorderColor #888888
+skinparam activityDiamondBackgroundColor #FFF9C4
+skinparam activityArrowColor #555555
+skinparam noteBackgroundColor #FFFDE7
+skinparam noteBorderColor #F9A825
 
-' ── Ports OUT ─────────────────────────────────
-interface "QueryUserPort"      as QUERY #A5D6A7
-interface "TokenGeneratorPort" as TOK   #A5D6A7
+start
 
-component [UserView\n<<Read Model>>] as UV #FFF9C4
+:TokenGeneratorPort\n.validateRefreshToken(command.refreshToken());
+note right
+  Verifica firma y expiración del JWT.
+  Extrae userId del payload.
+  Lanza InvalidCredentialsException
+  si el token es inválido o expirado.
+end note
 
-' ══ RefreshTokenUseCase ═══════════════════════
-package "RefreshTokenUseCase" #E8F5E9 {
-    interface "RefreshTokenPort" as P_REF
-    component [RefreshTokenUseCase] as UC_REF
-    P_REF ..|> UC_REF
-}
-
-UC_REF --> TOK   : validateRefreshToken(token) → userId
-UC_REF --> QUERY : findById(userId)
-UC_REF --> UV    : verifica active
-UC_REF --> TOK   : generateAccessToken + generateRefreshToken
-
-note right of QUERY
+:QueryUserPort.findById(userId);
+note right
   CQRS — query side.
-  Solo necesita verificar que el usuario
-  sigue activo y obtener sus roles.
+  Devuelve Optional<UserView>.
   No instancia UserAggregate.
 end note
 
-note right of TOK
-  JwtTokenGeneratorAdapter:
-  · Valida la firma del refresh token
-  · Genera nuevo par (accessToken, refreshToken)
+if (¿usuario encontrado?) then (no)
+  #FF8A80:throw NotFoundException;
+  stop
+endif
+
+if (¿active = true?) then (no)
+  #FF8A80:throw InvalidCredentialsException;
+  stop
+endif
+
+:TokenGeneratorPort\n.generateAccessToken(userId, roles);
+note right
+  Nuevo JWT firmado. Expira en 15 min.
 end note
 
-@enduml
+:TokenGeneratorPort\n.generateRefreshToken(userId);
+note right
+  Nuevo JWT firmado. Expira en 7 días.
+end note
 
+:Retornar AuthTokenResponse;
+
+stop
+
+@enduml

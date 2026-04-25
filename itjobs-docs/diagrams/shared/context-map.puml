@@ -27,7 +27,7 @@ rectangle "Shared Kernel\n──────────────────
 ' ══════════════════════════════════════════════
 '  BOUNDED CONTEXTS  ✅ implementado | 🔲 pendiente
 ' ══════════════════════════════════════════════
-rectangle "Authentication ✅\n──────────────────\nUserAggregate\nRegister · Login · Google\nVerifyEmail · ChangePassword\nForgotPassword" as AUTH #E8F5E9
+rectangle "Authentication ✅\n──────────────────\nUserAggregate · TermsDocument\nRegister · Login · Google\nVerifyEmail · ChangePassword\nForgotPassword · RefreshToken\nResendVerification\nDeleteExpiredUnverified" as AUTH #E8F5E9
 
 rectangle "Jobs ✅\n──────────────────\nJobAggregate\nCreateJob · SearchJobs" as JOBS #E3F2FD
 

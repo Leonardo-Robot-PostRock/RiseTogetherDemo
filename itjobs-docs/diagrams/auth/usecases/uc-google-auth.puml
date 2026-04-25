@@ -1,44 +1,29 @@
 @startuml UcGoogleAuth
 
-title Authentication — GoogleAuthUseCase
+title Authentication — GoogleAuthUseCase (visión general)
 
-left to right direction
-skinparam packageStyle rectangle
-skinparam componentStyle rectangle
-skinparam linetype ortho
+skinparam activityBackgroundColor #FAFAFA
+skinparam activityBorderColor #888888
+skinparam activityDiamondBackgroundColor #FFF9C4
+skinparam activityArrowColor #555555
+skinparam noteBackgroundColor #FFFDE7
+skinparam noteBorderColor #F9A825
 
-' ── Ports OUT ─────────────────────────────────
-interface "LoadUserPort"       as LOAD #A5D6A7
-interface "SaveUserPort"       as SAVE #A5D6A7
-interface "TokenGeneratorPort" as TOK  #A5D6A7
+start
 
-component [UserAggregate] as UA #FFF9C4
+:Recibir GoogleAuthCommand\n(email, googleSub, username);
 
-' ══ GoogleAuthUseCase ════════════════════════
-package "GoogleAuthUseCase" #E3F2FD {
-    interface "GoogleAuthPort" as P_GOO
-    component [GoogleAuthUseCase] as UC_GOO
-    P_GOO ..|> UC_GOO
-}
+-> Fase 1;
+:uc-google-auth-identify.puml\n**Identificar usuario** (LoadUserPort);
 
-UC_GOO --> LOAD : findByEmail(email)
-UC_GOO --> UA   : createGoogleUser() / linkGoogleAccount()
-UC_GOO --> SAVE : save(user) [solo si es nuevo]
-UC_GOO --> TOK  : generateAccessToken + generateRefreshToken
+-> Fase 2 (si aplica);
+:uc-google-auth-provision.puml\n**Provisionar usuario** (crear / vincular + ToS);
 
-note right of UC_GOO
-  Flujo:
-  · Email existe + googleSub coincide → login directo
-  · Email existe + googleSub null → vincula sub y loguea
-  · Email existe + googleSub distinto → InvalidCredentialsException
-  · Email no existe → crea usuario Google (active + emailVerified = true)
-end note
+-> Fase 3;
+:uc-google-auth-tokens.puml\n**Emitir tokens JWT** (TokenGeneratorPort);
 
-note right of TOK
-  JwtTokenGeneratorAdapter:
-  · accessToken  (15 min)
-  · refreshToken (7 días)
-end note
+:Retornar AuthTokenResponse\n(accessToken, refreshToken);
+
+stop
 
 @enduml
-

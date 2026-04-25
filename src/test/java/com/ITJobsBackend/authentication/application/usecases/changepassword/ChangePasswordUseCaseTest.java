@@ -92,7 +92,7 @@ class ChangePasswordUseCaseTest {
     useCase.execute(command);
 
     // Then
-    then(credentialsVerifier).should().verifyCredentials(user, OLD_PASSWORD, passwordEncoder);
+    then(credentialsVerifier).should().verifyCredentials(HashedPassword.fromHash(HASHED_PASSWORD), OLD_PASSWORD, passwordEncoder);
     then(saveUserPort).should().save(user);
     then(domainEventPublisher).should().publishAll(any());
   }

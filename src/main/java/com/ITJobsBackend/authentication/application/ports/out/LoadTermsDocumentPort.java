@@ -7,6 +7,5 @@ import com.ITJobsBackend.authentication.domain.valueobjects.TermsType;
 
 public interface LoadTermsDocumentPort {
 
-    Optional<TermsDocument> findLatestByType(TermsType type);
+  Optional<TermsDocument> findLatestByType(TermsType type);
 }
-

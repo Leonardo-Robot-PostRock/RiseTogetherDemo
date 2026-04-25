@@ -2,47 +2,45 @@
 
 title Authentication — ResendVerificationUseCase
 
-left to right direction
-skinparam packageStyle rectangle
-skinparam componentStyle rectangle
-skinparam linetype ortho
+skinparam activityBackgroundColor #FAFAFA
+skinparam activityBorderColor #888888
+skinparam activityDiamondBackgroundColor #FFF9C4
+skinparam activityArrowColor #555555
+skinparam noteBackgroundColor #FFFDE7
+skinparam noteBorderColor #F9A825
 
-' ── Ports OUT ─────────────────────────────────
-interface "LoadUserPort"    as LOAD  #A5D6A7
-interface "SaveUserPort"    as SAVE  #A5D6A7
-interface "EmailSenderPort" as EMAIL #A5D6A7
+start
 
-component [UserAggregate]   as UA    #FFF9C4
+:UserId.of(command.userId());
 
-' ══ ResendVerificationUseCase ════════════════
-package "ResendVerificationUseCase" #E3F2FD {
-    interface "ResendVerificationPort" as P_RES
-    component [ResendVerificationUseCase] as UC_RES
-    P_RES ..|> UC_RES
-}
-
-UC_RES --> LOAD  : findById(userId)
-UC_RES --> UA    : regenera VerificationToken
-UC_RES --> SAVE  : save(user)
-UC_RES --> EMAIL : sendEmail(to, subject, body)
-
-note right of LOAD
+:LoadUserPort.findById(userId);
+note right
   CQRS — command side.
-  Devuelve UserAggregate para
-  poder regenerar el token de
-  verificación y persistirlo.
+  Devuelve Optional<UserAggregate>.
 end note
 
-note right of EMAIL
-  EmailSenderPort:
-  · SmtpEmailSenderAdapter si spring.mail.host está configurado
-  · NoOpEmailSenderAdapter como fallback (logs WARN)
+if (¿usuario encontrado?) then (no)
+  #FF8A80:throw NotFoundException;
+  stop
+endif
+
+if (¿emailVerified = true?) then (sí)
+  #FF8A80:throw EmailAlreadyVerifiedException;
+  stop
+endif
+
+:Generar nuevo VerificationToken\n(uuid, expiresAt = now + 24h);
+
+:SaveUserPort.save(user);
+
+:EmailSenderPort\n.sendEmail(email, subject, body);
+note right
+  SmtpEmailSenderAdapter si
+  spring.mail.host está configurado.
+  NoOpEmailSenderAdapter como fallback
+  (logs WARN, no lanza excepción).
 end note
 
-note right of UA
-  Si emailVerified = true →
-  EmailAlreadyVerifiedException
-end note
+stop
 
 @enduml
-

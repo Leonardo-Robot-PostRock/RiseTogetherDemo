@@ -33,6 +33,30 @@ package "domain.aggregate" #E8F5E9 {
         + addRole(role)
         + pullDomainEvents() : List<DomainEvent>
     }
+
+    class TermsDocument <<Aggregate>> {
+        - id : TermsDocumentId
+        - type : TermsType
+        - version : String
+        - content : String
+        - publishedAt : Instant
+        --
+        + {static} create() : TermsDocument
+        + {static} reconstitute() : TermsDocument
+    }
+}
+
+' ─── Entity ──────────────────────────────────
+package "domain.entity" #E8F5E9 {
+    class TermsAcceptance <<Entity>> {
+        - id : TermsAcceptanceId
+        - userId : UserId
+        - documentId : TermsDocumentId
+        - acceptedAt : Instant
+        --
+        + {static} create() : TermsAcceptance
+        + {static} reconstitute() : TermsAcceptance
+    }
 }
 
 ' ─── Value Objects ───────────────────────────
@@ -56,11 +80,34 @@ package "domain.valueobjects" #DCEDC8 {
         + matches(token) : boolean
         + isExpired() : boolean
     }
+    class PasswordResetToken <<ValueObject>> {
+        - token : String
+        + generate() : PasswordResetToken
+        + value() : String
+    }
+    class UserStatus <<ValueObject>> {
+        ACTIVE
+        INACTIVE
+    }
+}
+
+' ─── Query Model (CQRS) ──────────────────────
+package "application.query" #FFF9C4 {
+    class UserView <<Record>> {
+        id : UserId
+        username : String
+        email : String
+        hashedPassword : HashedPassword
+        active : boolean
+        emailVerified : boolean
+        roles : List<String>
+    }
 }
 
 ' ─── Domain Events ───────────────────────────
 package "domain.event" #FFF3E0 {
     class UserRegisteredEvent <<Event>> {
+        - userId : String
         - email : String
     }
     class UserActivatedEvent <<Event>> {
@@ -70,11 +117,23 @@ package "domain.event" #FFF3E0 {
         - email : String
     }
     class EmailVerifiedEvent <<Event>> {
+        - userId : String
         - email : String
     }
     class PasswordResetRequestedEvent <<Event>> {
         - email : String
         - resetToken : String
+    }
+    class EmailChangedEvent <<Event>> {
+        - userId : String
+        - newEmail : String
+    }
+    class GoogleAccountLinkedEvent <<Event>> {
+        - userId : String
+        - googleSub : String
+    }
+    class PasswordChangedEvent <<Event>> {
+        - userId : String
     }
 }
 
@@ -85,7 +144,7 @@ package "domain.service" #FFF9C4 {
     }
 }
 
-' ─── Ports (Application Layer) ───────────────
+' ─── Ports IN (Application Layer) ───────────
 package "application.ports.in" #C8E6C9 {
     interface RegisterUserPort
     interface LoginPort
@@ -93,16 +152,30 @@ package "application.ports.in" #C8E6C9 {
     interface VerifyEmailPort
     interface ChangePasswordPort
     interface ForgotPasswordPort
+    interface ResendVerificationPort
+    interface RefreshTokenPort
+    interface DeleteExpiredUnverifiedUsersPort
 }
 
+' ─── Ports OUT (Application Layer) ──────────
 package "application.ports.out" #A5D6A7 {
     interface LoadUserPort {
+        ' command side — returns UserAggregate
         + findByEmail(email) : Optional<UserAggregate>
         + findById(id) : Optional<UserAggregate>
+    }
+    interface QueryUserPort {
+        ' query side — returns UserView (projection)
+        + findByEmail(email) : Optional<UserView>
+        + findById(id) : Optional<UserView>
         + existsByEmail(email) : boolean
+        + findUnverifiedUserIdsBefore(instant) : List<UserId>
     }
     interface SaveUserPort {
         + save(user) : UserAggregate
+    }
+    interface DeleteUserPort {
+        + delete(id) : void
     }
     interface PasswordEncoderPort {
         + encode(raw) : String
@@ -113,22 +186,61 @@ package "application.ports.out" #A5D6A7 {
         + generateRefreshToken(userId) : String
     }
     interface VerificationTokenValidatorPort {
-        + validate(token: VerificationToken, providedToken: String)
+        + validate(token, providedToken)
+    }
+    interface EmailSenderPort {
+        + sendEmail(to, subject, body) : void
+    }
+    interface LoadTermsDocumentPort {
+        + findLatestByType(type) : Optional<TermsDocument>
+    }
+    interface SaveTermsAcceptancePort {
+        + save(acceptance) : void
     }
 }
 
-' ─── Relations ───────────────────────────────
+' ─── Relations — Aggregate ───────────────────
 UserAggregate *-- Username
 UserAggregate *-- HashedPassword
 UserAggregate *-- GoogleSub
 UserAggregate *-- VerificationToken
 
-UserAggregate ..> UserRegisteredEvent : records
-UserAggregate ..> UserActivatedEvent  : records
-UserAggregate ..> UserDeactivatedEvent : records
-UserAggregate ..> EmailVerifiedEvent  : records
+UserAggregate ..> UserRegisteredEvent   : records
+UserAggregate ..> UserActivatedEvent    : records
+UserAggregate ..> UserDeactivatedEvent  : records
+UserAggregate ..> EmailVerifiedEvent    : records
+UserAggregate ..> EmailChangedEvent     : records
+UserAggregate ..> GoogleAccountLinkedEvent : records
+UserAggregate ..> PasswordChangedEvent  : records
 
 CredentialsVerifier --> PasswordEncoderPort
+
+' ─── CQRS note ───────────────────────────────
+note top of QueryUserPort
+  CQRS — query side
+  Devuelve UserView (projection).
+  No instancia UserAggregate.
+  Usado por use cases de solo lectura:
+  Login, ForgotPassword, RefreshToken,
+  DeleteExpiredUnverified (find phase).
+end note
+
+note top of LoadUserPort
+  CQRS — command side
+  Devuelve UserAggregate completo.
+  Usado por use cases que mutan estado:
+  ChangePassword, VerifyEmail,
+  GoogleAuth, ResendVerification.
+end note
+
+' ─── Email adapters note ─────────────────────
+note right of EmailSenderPort
+  SmtpEmailSenderAdapter
+    @ConditionalOnProperty(spring.mail.host)
+  NoOpEmailSenderAdapter
+    @ConditionalOnMissingBean(EmailSenderPort)
+    → logs WARN, descarta el envío
+end note
 
 @enduml
 

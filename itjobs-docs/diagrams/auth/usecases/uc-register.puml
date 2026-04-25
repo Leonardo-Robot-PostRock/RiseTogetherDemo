@@ -2,35 +2,55 @@
 
 title Authentication — RegisterUserUseCase
 
-left to right direction
-skinparam packageStyle rectangle
-skinparam componentStyle rectangle
-skinparam linetype ortho
+skinparam activityBackgroundColor #FAFAFA
+skinparam activityBorderColor #888888
+skinparam activityDiamondBackgroundColor #FFF9C4
+skinparam activityArrowColor #555555
+skinparam noteBackgroundColor #FFFDE7
+skinparam noteBorderColor #F9A825
 
-' ── Ports OUT ─────────────────────────────────
-interface "SaveUserPort"       as SAVE #A5D6A7
-interface "PasswordEncoderPort" as ENC  #A5D6A7
-interface "DomainEventPublisher" as PUB #A5D6A7
+start
 
-component [UserAggregate] as UA #FFF9C4
+:Email.of(command.email())\nUsername.of(command.username());
 
-' ══ RegisterUserUseCase ══════════════════════
-package "RegisterUserUseCase" #E8F5E9 {
-    interface "RegisterUserPort" as P_REG
-    component [RegisterUserUseCase] as UC_REG
-    P_REG ..|> UC_REG
-}
-
-UC_REG --> UA   : create()
-UC_REG --> ENC  : encode(rawPassword)
-UC_REG --> SAVE : save(user)
-UC_REG --> PUB  : UserRegisteredEvent
-
-note right of PUB
-  UserRegisteredEventListener:
-  · envía email de verificación
-  · asigna token de verificación
+:QueryUserPort.existsByEmail(email);
+note right
+  CQRS — query side.
+  Solo verifica duplicado.
+  No instancia UserAggregate.
 end note
 
-@enduml
+if (¿email ya existe?) then (sí)
+  #FF8A80:throw UserAlreadyExistsException;
+  stop
+endif
 
+:PasswordEncoderPort.encode(rawPassword);
+
+:UserAggregate.create(\n  username, email, hashedPassword);
+note right
+  Asigna ROLE_USER.
+  Genera VerificationToken.
+  Registra UserRegisteredEvent.
+end note
+
+:SaveUserPort.save(user);
+
+:LoadTermsDocumentPort\n.findLatestByType(TERMS_OF_SERVICE);
+
+:TermsAcceptance.create(userId, documentId);
+
+:SaveTermsAcceptancePort.save(acceptance);
+
+:DomainEventPublisher\n.publish(UserRegisteredEvent);
+note right
+  UserRegisteredEventListener:
+  envía email de verificación
+  con el token generado.
+end note
+
+:Retornar RegisterUserResponse\n(userId, username, email);
+
+stop
+
+@enduml

@@ -12,6 +12,7 @@
 8. [Convenciones de nombres](#8-convenciones-de-nombres)
 9. [Anti-patrones a evitar](#9-anti-patrones-a-evitar)
 10. [Referencia rápida de BDDMockito](#10-referencia-rápida-de-bddmockito)
+11. [CQRS — Cómo testear use cases con el split command/query](#11-cqrs--cómo-testear-use-cases-con-el-split-commandquery)
 
 ---
 
@@ -44,6 +45,25 @@ y los casos de uso se pueden testear de forma aislada gracias a la Arquitectura 
 ### Tests de integración
 - Ubicados en `src/test/resources/application.properties` con H2 en memoria
 - `spring.jpa.hibernate.ddl-auto=create-drop`
+
+### Tests de context load (`@SpringBootTest`)
+
+- Ubicado en `com.ITJobsBackend.tests.ITJobsBackendApplicationTests`
+- Verifica que el contexto de Spring arranca correctamente con todas las dependencias
+- **No requiere** mocks ni configuraciones extra: los beans condicionales se resuelven solos
+  (e.g. `NoOpEmailSenderAdapter` se activa al no existir `spring.mail.host` en el test profile)
+- Si un adaptador de infraestructura falla al arrancar el contexto, la solución correcta
+  es hacerlo condicional (`@ConditionalOnProperty` / `@ConditionalOnMissingBean`),
+  **no** agregar `@MockBean`, `@Import` ni clases de configuración extra en el test
+
+```java
+// ✅ — limpio, sin workarounds
+@SpringBootTest
+class ITJobsBackendApplicationTests {
+    @Test
+    void contextLoads() {}
+}
+```
 
 ---
 
@@ -251,8 +271,7 @@ como objeto real y lo inyecte junto con los `@Mock`:
 
 // ── Subject under test ────────────────────────────────────────────────────
 @InjectMocks private LoginUseCase loginUseCase;
-// Mockito inyecta: loadUserPort (@Mock) + passwordEncoder (@Mock)
-//                + tokenGenerator (@Mock) + credentialsVerifier (@Spy)
+// Mockito inyecta: loadUserPort (@Mock) + passwordEncoder (@Mock) + tokenGenerator (@Mock) + credentialsVerifier (@Spy)
 ```
 
 > **Regla:** `@Spy` es para clases de dominio sin estado o con lógica pura que
@@ -447,7 +466,7 @@ then(eventPublisher).should().publish(argThat(e -> e instanceof UserRegisteredEv
 | Necesitas varios `assertEquals` sobre el mismo objeto | `ArgumentCaptor` es más claro y fácil de depurar |
 
 ```java
-// ❌ — múltiples condiciones en argThat
+// ❌ Difícil de leer
 then(saveUserPort).should().save(argThat(u ->
     u.getEmail().value().equals(EMAIL) &&
     u.getUsername().value().equals("john") &&
@@ -693,4 +712,147 @@ then(mock).should(times(2)).method(arg);
 // No hubo más interacciones después de las verificadas
 then(mock).shouldHaveNoMoreInteractions();
 ```
+
+---
+
+## 11. CQRS — Cómo testear use cases con el split command/query
+
+### Regla: mockear el puerto correcto
+
+Cada use case inyecta **uno solo** de los dos puertos de usuario. Mockear el que no
+corresponde hace que el test pase por razones equivocadas o no compile.
+
+| Use case | Puerto a mockear | Tipo de retorno |
+|---|---|---|
+| `LoginUseCase` | `@Mock QueryUserPort queryUserPort` | `Optional<UserView>` |
+| `RefreshTokenUseCase` | `@Mock QueryUserPort queryUserPort` | `Optional<UserView>` |
+| `ForgotPasswordUseCase` | `@Mock QueryUserPort queryUserPort` | `Optional<UserView>` |
+| `RegisterUserUseCase` | `@Mock QueryUserPort queryUserPort` | `boolean` (existsByEmail) |
+| `DeleteExpiredUnverifiedUsersUseCase` | `@Mock QueryUserPort queryUserPort` + `@Mock DeleteUserPort` | `List<UserId>` |
+| `VerifyEmailUseCase` | `@Mock LoadUserPort loadUserPort` | `Optional<UserAggregate>` |
+| `ChangePasswordUseCase` | `@Mock LoadUserPort loadUserPort` | `Optional<UserAggregate>` |
+| `GoogleAuthUseCase` | `@Mock LoadUserPort loadUserPort` | `Optional<UserAggregate>` |
+| `ResendVerificationUseCase` | `@Mock LoadUserPort loadUserPort` | `Optional<UserAggregate>` |
+
+### Cómo construir un `UserView` en el stub
+
+`UserView` es un `record` — se instancia directamente con todos sus campos:
+
+```java
+private static final String USER_ID         = "550e8400-e29b-41d4-a716-446655440000";
+private static final String EMAIL           = "john@example.com";
+private static final String HASHED_PASSWORD = "$2a$10$hashed";
+
+private UserView buildUserView() {
+    return new UserView(
+        UserId.of(UUID.fromString(USER_ID)),
+        "johndoe",
+        EMAIL,
+        HashedPassword.fromHash(HASHED_PASSWORD),
+        true,           // active
+        true,           // emailVerified
+        List.of("ROLE_USER"));
+}
+```
+
+Nunca uses `@Mock UserView` — es un `record` de datos, no un colaborador.
+
+### Patrón completo — use case de lectura (`LoginUseCase`)
+
+```java
+@ExtendWith(MockitoExtension.class)
+class LoginUseCaseTest {
+
+    private static final String EMAIL           = "john@example.com";
+    private static final String HASHED_PASSWORD = "$2a$10$hashed";
+
+    // ── Mocks ─────────────────────────────────────────────────────────────────
+    @Mock private QueryUserPort      queryUserPort;     // ← query side (read)
+    @Mock private PasswordEncoderPort passwordEncoder;
+    @Mock private TokenGeneratorPort  tokenGenerator;
+
+    // ── Domain service ────────────────────────────────────────────────────────
+    @Spy private CredentialsVerifier credentialsVerifier;
+
+    // ── Subject under test ────────────────────────────────────────────────────
+    @InjectMocks private LoginUseCase loginUseCase;
+
+    private UserView buildUserView() {
+        return new UserView(
+            UserId.of(UUID.fromString("11111111-1111-1111-1111-111111111111")),
+            "johndoe", EMAIL, HashedPassword.fromHash(HASHED_PASSWORD),
+            true, true, List.of("ROLE_USER"));
+    }
+
+    @Test
+    void shouldLoginSuccessfully() {
+        // Given
+        given(queryUserPort.findByEmail(any(Email.class))).willReturn(Optional.of(buildUserView()));
+        given(passwordEncoder.matches("pass123", HASHED_PASSWORD)).willReturn(true);
+        given(tokenGenerator.generateAccessToken(any(), any())).willReturn("access");
+        given(tokenGenerator.generateRefreshToken(any())).willReturn("refresh");
+
+        // When
+        AuthTokenResponse response = loginUseCase.execute(new LoginCommand(EMAIL, "pass123"));
+
+        // Then
+        assertNotNull(response.accessToken());
+        then(queryUserPort).should().findByEmail(any(Email.class));
+    }
+}
+```
+
+### Patrón completo — use case de escritura (`VerifyEmailUseCase`)
+
+```java
+@ExtendWith(MockitoExtension.class)
+class VerifyEmailUseCaseTest {
+
+    // ── Mocks ─────────────────────────────────────────────────────────────────
+    @Mock private LoadUserPort        loadUserPort;     // ← command side (write)
+    @Mock private SaveUserPort        saveUserPort;
+    @Mock private DomainEventPublisher eventPublisher;
+
+    // ── Subject under test ────────────────────────────────────────────────────
+    @InjectMocks private VerifyEmailUseCase verifyEmailUseCase;
+
+    private UserAggregate buildUnverifiedUser() {
+        return UserAggregate.create(
+            Username.of("johndoe"),
+            Email.of("john@example.com"),
+            HashedPassword.fromHash("$2a$10$hashed"));
+    }
+
+    @Test
+    void shouldVerifyEmail() {
+        // Given
+        given(loadUserPort.findById(any(UserId.class))).willReturn(Optional.of(buildUnverifiedUser()));
+        given(saveUserPort.save(any(UserAggregate.class)))
+            .willAnswer(invocation -> invocation.getArgument(0));
+
+        // When
+        verifyEmailUseCase.execute(new VerifyEmailCommand(TEST_USER_ID, "token"));
+
+        // Then
+        ArgumentCaptor<UserAggregate> captor = ArgumentCaptor.forClass(UserAggregate.class);
+        then(saveUserPort).should().save(captor.capture());
+        assertTrue(captor.getValue().isEmailVerified());
+    }
+}
+```
+
+### Anti-patrón: mockear el puerto equivocado
+
+```java
+// ❌ — LoginUseCase no inyecta LoadUserPort; Mockito no lo inyectará
+@Mock private LoadUserPort loadUserPort;
+@InjectMocks private LoginUseCase loginUseCase;  // solo recibe QueryUserPort
+
+// ❌ — VerifyEmailUseCase no inyecta QueryUserPort
+@Mock private QueryUserPort queryUserPort;
+@InjectMocks private VerifyEmailUseCase verifyEmailUseCase;  // solo recibe LoadUserPort
+```
+
+Si tienes dudas sobre qué puerto inyecta cada use case, revisa la tabla en
+[`AGENTS.md`](../AGENTS.md) — sección *Use Cases*.
 

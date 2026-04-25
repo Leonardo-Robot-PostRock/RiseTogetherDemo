@@ -2,14 +2,15 @@ package com.ITJobsBackend.authentication.application.usecases.login;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.ITJobsBackend.authentication.application.ports.in.LoginPort;
-import com.ITJobsBackend.authentication.application.ports.out.LoadUserPort;
 import com.ITJobsBackend.authentication.application.ports.out.PasswordEncoderPort;
+import com.ITJobsBackend.authentication.application.ports.out.QueryUserPort;
 import com.ITJobsBackend.authentication.application.ports.out.TokenGeneratorPort;
-import com.ITJobsBackend.authentication.domain.aggregate.UserAggregate;
+import com.ITJobsBackend.authentication.application.query.UserView;
 import com.ITJobsBackend.authentication.domain.exceptions.InvalidCredentialsException;
 import com.ITJobsBackend.authentication.domain.service.CredentialsVerifier;
 import com.ITJobsBackend.shared.domain.valueobjects.Email;
@@ -19,17 +20,17 @@ import com.ITJobsBackend.shared.domain.valueobjects.Email;
 public class LoginUseCase implements LoginPort {
   private static final Logger log = LoggerFactory.getLogger(LoginUseCase.class);
 
-  private final LoadUserPort loadUserPort;
+  private final QueryUserPort queryUserPort;
   private final PasswordEncoderPort passwordEncoder;
   private final TokenGeneratorPort tokenGenerator;
   private final CredentialsVerifier credentialsVerifier;
 
   public LoginUseCase(
-      LoadUserPort loadUserPort,
+      QueryUserPort queryUserPort,
       PasswordEncoderPort passwordEncoder,
       TokenGeneratorPort tokenGenerator,
       CredentialsVerifier credentialsVerifier) {
-    this.loadUserPort = loadUserPort;
+    this.queryUserPort = queryUserPort;
     this.passwordEncoder = passwordEncoder;
     this.tokenGenerator = tokenGenerator;
     this.credentialsVerifier = credentialsVerifier;
@@ -41,22 +42,18 @@ public class LoginUseCase implements LoginPort {
 
     Email email = Email.of(command.email());
 
-    UserAggregate user =
-        loadUserPort.findByEmail(email).orElseThrow(InvalidCredentialsException::new);
+    UserView user = queryUserPort.findByEmail(email).orElseThrow(InvalidCredentialsException::new);
 
-    credentialsVerifier.verifyCredentials(user, command.password(), passwordEncoder);
+    credentialsVerifier.verifyCredentials(
+        user.hashedPassword(), command.password(), passwordEncoder);
 
     String accessToken =
-        tokenGenerator.generateAccessToken(user.getId().value().toString(), user.getRoles());
-    String refreshToken = tokenGenerator.generateRefreshToken(user.getId().value().toString());
+        tokenGenerator.generateAccessToken(user.id().value().toString(), user.roles());
+    String refreshToken = tokenGenerator.generateRefreshToken(user.id().value().toString());
 
-    log.info("User logged in successfully: {}", user.getId());
+    log.info("User logged in successfully: {}", user.id());
 
     return new AuthTokenResponse(
-        user.getId().value().toString(),
-        user.getUsername().value(),
-        user.getEmail().value(),
-        accessToken,
-        refreshToken);
+        user.id().value().toString(), user.username(), user.email(), accessToken, refreshToken);
   }
 }

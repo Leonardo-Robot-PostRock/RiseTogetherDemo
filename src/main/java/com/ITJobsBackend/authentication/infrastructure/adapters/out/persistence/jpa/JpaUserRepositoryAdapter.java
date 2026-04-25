@@ -44,9 +44,4 @@ public class JpaUserRepositoryAdapter implements UserRepository {
   public Optional<UserAggregate> findByUsername(Username username) {
     return jpaRepository.findByUsername(username.value()).map(mapper::toDomain);
   }
-
-  @Override
-  public boolean existsByEmail(Email email) {
-    return jpaRepository.existsByEmail(email.value());
-  }
 }

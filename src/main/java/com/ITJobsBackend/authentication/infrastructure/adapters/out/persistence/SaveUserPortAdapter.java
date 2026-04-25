@@ -5,7 +5,6 @@ import org.springframework.stereotype.Component;
 import com.ITJobsBackend.authentication.application.ports.out.SaveUserPort;
 import com.ITJobsBackend.authentication.domain.aggregate.UserAggregate;
 import com.ITJobsBackend.authentication.domain.repository.UserWriterRepository;
-import com.ITJobsBackend.shared.domain.valueobjects.Email;
 
 @Component
 public class SaveUserPortAdapter implements SaveUserPort {
@@ -18,10 +17,5 @@ public class SaveUserPortAdapter implements SaveUserPort {
   @Override
   public UserAggregate save(UserAggregate user) {
     return userRepository.save(user);
-  }
-
-  @Override
-  public boolean existsByEmail(Email email) {
-    return userRepository.existsByEmail(email);
   }
 }

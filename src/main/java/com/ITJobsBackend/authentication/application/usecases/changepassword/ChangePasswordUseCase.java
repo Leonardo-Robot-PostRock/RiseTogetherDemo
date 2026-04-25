@@ -53,7 +53,7 @@ public class ChangePasswordUseCase implements ChangePasswordPort {
         userOpt.orElseThrow(
             () -> new IllegalArgumentException("User not found: " + command.userId()));
 
-    credentialsVerifier.verifyCredentials(user, command.oldPassword(), passwordEncoder);
+    credentialsVerifier.verifyCredentials(user.getPassword(), command.oldPassword(), passwordEncoder);
 
     String newHashedPassword = passwordEncoder.encode(command.newPassword());
     user.changePassword(HashedPassword.fromHash(newHashedPassword));

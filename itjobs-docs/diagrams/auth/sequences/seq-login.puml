@@ -5,7 +5,7 @@ skinparam sequenceMessageAlign center
 actor "Usuario" as U
 participant "AuthController\n<<REST>>" as CTRL
 participant "LoginUseCase\n<<Use Case>>" as UC
-participant "LoadUserPort\n<<Out Port>>" as LOAD
+participant "QueryUserPort\n<<Out Port>>" as QUERY
 participant "CredentialsVerifier\n<<Domain Service>>" as VER
 participant "PasswordEncoderPort\n<<Out Port>>" as ENC
 participant "TokenGeneratorPort\n<<Out Port>>" as TOKEN
@@ -18,17 +18,24 @@ CTRL -> CTRL : Map DTO → LoginCommand
 CTRL -> UC : execute(command)
 activate UC
 
-' Cargar usuario
-UC -> LOAD : findByEmail(email)
-activate LOAD
-LOAD --> UC : UserAggregate
-deactivate LOAD
+' Cargar usuario (query side — no instancia UserAggregate)
+UC -> QUERY : findByEmail(email)
+activate QUERY
+QUERY --> UC : UserView (projection)
+deactivate QUERY
+
+note right of QUERY
+  CQRS — query side.
+  Devuelve UserView (no UserAggregate).
+  QueryUserPortAdapter mapea UserEntity → UserView
+  sin pasar por UserAggregate.reconstitute().
+end note
 
 ' Verificar credenciales
-UC -> VER : verifyCredentials(user, rawPassword, encoder)
+UC -> VER : verifyCredentials(view, rawPassword, encoder)
 activate VER
 
-VER -> ENC : matches(rawPassword, user.password.value())
+VER -> ENC : matches(rawPassword, view.hashedPassword().value())
 activate ENC
 ENC --> VER : true
 deactivate ENC

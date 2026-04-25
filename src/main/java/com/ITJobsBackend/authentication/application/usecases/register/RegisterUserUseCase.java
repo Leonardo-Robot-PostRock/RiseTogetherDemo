@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.ITJobsBackend.authentication.application.ports.in.RegisterUserPort;
 import com.ITJobsBackend.authentication.application.ports.out.LoadTermsDocumentPort;
 import com.ITJobsBackend.authentication.application.ports.out.PasswordEncoderPort;
+import com.ITJobsBackend.authentication.application.ports.out.QueryUserPort;
 import com.ITJobsBackend.authentication.application.ports.out.SaveTermsAcceptancePort;
 import com.ITJobsBackend.authentication.application.ports.out.SaveUserPort;
 import com.ITJobsBackend.authentication.domain.aggregate.UserAggregate;
@@ -29,6 +30,7 @@ public class RegisterUserUseCase implements RegisterUserPort {
   private static final Logger log = LoggerFactory.getLogger(RegisterUserUseCase.class);
 
   private final SaveUserPort saveUserPort;
+  private final QueryUserPort queryUserPort;
   private final PasswordEncoderPort passwordEncoder;
   private final DomainEventPublisher domainEventPublisher;
   private final LoadTermsDocumentPort loadTermsDocumentPort;
@@ -36,11 +38,13 @@ public class RegisterUserUseCase implements RegisterUserPort {
 
   public RegisterUserUseCase(
       SaveUserPort saveUserPort,
+      QueryUserPort queryUserPort,
       PasswordEncoderPort passwordEncoder,
       DomainEventPublisher domainEventPublisher,
       LoadTermsDocumentPort loadTermsDocumentPort,
       SaveTermsAcceptancePort saveTermsAcceptancePort) {
     this.saveUserPort = saveUserPort;
+    this.queryUserPort = queryUserPort;
     this.passwordEncoder = passwordEncoder;
     this.domainEventPublisher = domainEventPublisher;
     this.loadTermsDocumentPort = loadTermsDocumentPort;
@@ -59,7 +63,7 @@ public class RegisterUserUseCase implements RegisterUserPort {
     Username username = Username.of(command.username());
     Password rawPassword = Password.of(command.password());
 
-    if (saveUserPort.existsByEmail(email)) {
+    if (queryUserPort.existsByEmail(email)) {
       throw new UserAlreadyExistsException(email.value());
     }
 

@@ -1,5 +1,6 @@
 package com.ITJobsBackend.authentication.application.usecases.login;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -17,15 +18,15 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.ITJobsBackend.authentication.application.ports.out.LoadUserPort;
 import com.ITJobsBackend.authentication.application.ports.out.PasswordEncoderPort;
+import com.ITJobsBackend.authentication.application.ports.out.QueryUserPort;
 import com.ITJobsBackend.authentication.application.ports.out.TokenGeneratorPort;
-import com.ITJobsBackend.authentication.domain.aggregate.UserAggregate;
+import com.ITJobsBackend.authentication.application.query.UserView;
 import com.ITJobsBackend.authentication.domain.exceptions.InvalidCredentialsException;
 import com.ITJobsBackend.authentication.domain.service.CredentialsVerifier;
 import com.ITJobsBackend.authentication.domain.valueobjects.HashedPassword;
-import com.ITJobsBackend.authentication.domain.valueobjects.Username;
 import com.ITJobsBackend.shared.domain.valueobjects.Email;
+import com.ITJobsBackend.shared.domain.valueobjects.UserId;
 
 @ExtendWith(MockitoExtension.class)
 class LoginUseCaseTest {
@@ -35,7 +36,7 @@ class LoginUseCaseTest {
   private static final String HASHED_PASSWORD = "$2a$10$hashed";
 
   // ── Mocks (puertos de salida) ──────────────────────────────────────────────
-  @Mock private LoadUserPort loadUserPort;
+  @Mock private QueryUserPort queryUserPort;
   @Mock private PasswordEncoderPort passwordEncoder;
   @Mock private TokenGeneratorPort tokenGenerator;
 
@@ -46,9 +47,15 @@ class LoginUseCaseTest {
   @InjectMocks private LoginUseCase loginUseCase;
 
   // ── Helpers ───────────────────────────────────────────────────────────────
-  private UserAggregate buildUser() {
-    return UserAggregate.create(
-        Username.of("johndoe"), Email.of(EMAIL), HashedPassword.fromHash(HASHED_PASSWORD));
+  private UserView buildUserView() {
+    return new UserView(
+        UserId.generate(),
+        "johndoe",
+        EMAIL,
+        HashedPassword.fromHash(HASHED_PASSWORD),
+        true,
+        true,
+        List.of("ROLE_USER"));
   }
 
   private void givenTokensAreStubbed() {
@@ -60,7 +67,7 @@ class LoginUseCaseTest {
   @Test
   void shouldLoginSuccessfully() {
     // Given
-    given(loadUserPort.findByEmail(any(Email.class))).willReturn(Optional.of(buildUser()));
+    given(queryUserPort.findByEmail(any(Email.class))).willReturn(Optional.of(buildUserView()));
     given(passwordEncoder.matches("password123", HASHED_PASSWORD)).willReturn(true);
     givenTokensAreStubbed();
 
@@ -70,13 +77,13 @@ class LoginUseCaseTest {
     // Then
     assertNotNull(response.accessToken());
     assertNotNull(response.refreshToken());
-    then(loadUserPort).should().findByEmail(any(Email.class));
+    then(queryUserPort).should().findByEmail(any(Email.class));
   }
 
   @Test
   void shouldThrowWhenUserNotFound() {
     // Given
-    given(loadUserPort.findByEmail(any(Email.class))).willReturn(Optional.empty());
+    given(queryUserPort.findByEmail(any(Email.class))).willReturn(Optional.empty());
 
     // When & Then
     assertThrows(
@@ -87,7 +94,7 @@ class LoginUseCaseTest {
   @Test
   void shouldThrowWhenPasswordIsIncorrect() {
     // Given
-    given(loadUserPort.findByEmail(any(Email.class))).willReturn(Optional.of(buildUser()));
+    given(queryUserPort.findByEmail(any(Email.class))).willReturn(Optional.of(buildUserView()));
     given(passwordEncoder.matches("wrongPass", HASHED_PASSWORD)).willReturn(false);
 
     // When & Then
@@ -100,7 +107,7 @@ class LoginUseCaseTest {
   @Test
   void shouldPassRawPasswordWithoutValidation() {
     // Given
-    given(loadUserPort.findByEmail(any(Email.class))).willReturn(Optional.of(buildUser()));
+    given(queryUserPort.findByEmail(any(Email.class))).willReturn(Optional.of(buildUserView()));
     given(passwordEncoder.matches("short", HASHED_PASSWORD)).willReturn(true);
     givenTokensAreStubbed();
 

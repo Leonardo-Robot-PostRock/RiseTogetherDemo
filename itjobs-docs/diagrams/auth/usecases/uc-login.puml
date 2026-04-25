@@ -2,36 +2,52 @@
 
 title Authentication — LoginUseCase
 
-left to right direction
-skinparam packageStyle rectangle
-skinparam componentStyle rectangle
-skinparam linetype ortho
+skinparam activityBackgroundColor #FAFAFA
+skinparam activityBorderColor #888888
+skinparam activityDiamondBackgroundColor #FFF9C4
+skinparam activityArrowColor #555555
+skinparam noteBackgroundColor #FFFDE7
+skinparam noteBorderColor #F9A825
 
-' ── Ports OUT ─────────────────────────────────
-interface "LoadUserPort"        as LOAD #A5D6A7
-interface "PasswordEncoderPort" as ENC  #A5D6A7
-interface "TokenGeneratorPort"  as TOK  #A5D6A7
+start
 
-component [UserAggregate]       as UA   #FFF9C4
-component [CredentialsVerifier] as CV   #FFF9C4
+:Email.of(command.email());
 
-' ══ LoginUseCase ══════════════════════════════
-package "LoginUseCase" #E8F5E9 {
-    interface "LoginPort"   as P_LOG
-    component [LoginUseCase] as UC_LOG
-    P_LOG ..|> UC_LOG
-}
-
-UC_LOG --> LOAD : findByEmail(email)
-UC_LOG --> CV   : verifyCredentials(user, rawPwd, encoder)
-UC_LOG --> ENC  : matches(rawPwd, hash)
-UC_LOG --> TOK  : generateAccessToken + generateRefreshToken
-
-note right of TOK
-  JwtTokenGeneratorAdapter:
-  · accessToken  (15 min)
-  · refreshToken (7 días)
+:QueryUserPort.findByEmail(email);
+note right
+  CQRS — query side.
+  Devuelve Optional<UserView>.
+  No instancia UserAggregate.
 end note
 
-@enduml
+if (¿usuario encontrado?) then (no)
+  #FF8A80:throw InvalidCredentialsException;
+  stop
+endif
 
+if (¿active = true?) then (no)
+  #FF8A80:throw InvalidCredentialsException;
+  stop
+endif
+
+if (¿emailVerified = true?) then (no)
+  #FF8A80:throw InvalidCredentialsException;
+  stop
+endif
+
+:CredentialsVerifier.verifyCredentials(\n  view, rawPassword, passwordEncoder);
+note right
+  Delega en PasswordEncoderPort.matches().
+  Lanza InvalidCredentialsException
+  si la contraseña no coincide.
+end note
+
+:TokenGeneratorPort\n.generateAccessToken(userId, roles);
+
+:TokenGeneratorPort\n.generateRefreshToken(userId);
+
+:Retornar AuthTokenResponse;
+
+stop
+
+@enduml

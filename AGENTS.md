@@ -55,25 +55,36 @@ src/main/java/com/ITJobsBackend/
 │   ├── application/
 │   │   ├── ports/in/
 │   │   │   ├── ChangePasswordPort.java
+│   │   │   ├── DeleteExpiredUnverifiedUsersPort.java
 │   │   │   ├── ForgotPasswordPort.java
 │   │   │   ├── GoogleAuthPort.java
 │   │   │   ├── LoginPort.java
+│   │   │   ├── RefreshTokenPort.java
 │   │   │   ├── RegisterUserPort.java
+│   │   │   ├── ResendVerificationPort.java
 │   │   │   └── VerifyEmailPort.java
 │   │   ├── ports/out/
+│   │   │   ├── DeleteUserPort.java
+│   │   │   ├── EmailSenderPort.java
 │   │   │   ├── LoadTermsDocumentPort.java
-│   │   │   ├── LoadUserPort.java
+│   │   │   ├── LoadUserPort.java          ← command side: returns UserAggregate
 │   │   │   ├── PasswordEncoderPort.java
+│   │   │   ├── QueryUserPort.java         ← query side:   returns UserView (projection)
 │   │   │   ├── SaveTermsAcceptancePort.java
 │   │   │   ├── SaveUserPort.java
 │   │   │   ├── TokenGeneratorPort.java
 │   │   │   └── VerificationTokenValidatorPort.java
+│   │   ├── query/
+│   │   │   └── UserView.java              ← read model (projection), record
 │   │   └── usecases/
 │   │       ├── changepassword/ ChangePasswordCommand, ChangePasswordUseCase
+│   │       ├── deleteexpiredunverifiedusers/ DeleteExpiredUnverifiedUsersCommand, DeleteExpiredUnverifiedUsersUseCase
 │   │       ├── forgot/     ForgotPasswordCommand, ForgotPasswordUseCase
 │   │       ├── google/     GoogleAuthCommand, GoogleAuthUseCase
 │   │       ├── login/      LoginCommand, LoginUseCase, AuthTokenResponse
+│   │       ├── refresh/    RefreshTokenUseCase
 │   │       ├── register/   RegisterUserCommand, RegisterUserUseCase, RegisterUserResponse
+│   │       ├── resendverification/ ResendVerificationCommand, ResendVerificationUseCase
 │   │       └── verify/     VerifyEmailCommand, VerifyEmailUseCase
 │   ├── domain/
 │   │   ├── aggregate/      UserAggregate, TermsDocument
@@ -97,7 +108,11 @@ src/main/java/com/ITJobsBackend/
 │       │   └── dto/            RegisterRequest, RegisterResponse, LoginRequest, AuthResponse,
 │       │                       GoogleLoginRequest, VerifyEmailRequest, ChangePasswordRequest
 │       ├── adapters/out/
-│       │   ├── persistence/    LoadUserPortAdapter, SaveUserPortAdapter,
+│       │   ├── email/          SmtpEmailSenderAdapter (@ConditionalOnProperty spring.mail.host),
+│       │   │                   NoOpEmailSenderAdapter (fallback — @ConditionalOnMissingBean, WARN y descarta)
+│       │   ├── persistence/    LoadUserPortAdapter     (command side → UserAggregate),
+│       │   │                   QueryUserPortAdapter    (query side  → UserView),
+│       │   │                   SaveUserPortAdapter,
 │       │   │                   JpaUserRepositoryAdapter, SpringDataJpaUserRepository,
 │       │   │                   UserEntity, UserMapper,
 │       │   │                   JpaTermsRepositoryAdapter,
@@ -156,16 +171,19 @@ src/test/java/com/ITJobsBackend/
 │   ├── application/
 │   │   └── usecases/
 │   │       ├── changepassword/ ChangePasswordUseCaseTest
+│   │       ├── deleteexpiredunverifiedusers/ DeleteExpiredUnverifiedUsersUseCaseTest
 │   │       ├── forgot/         ForgotPasswordUseCaseTest
 │   │       ├── google/         GoogleAuthUseCaseTest
 │   │       ├── login/          LoginUseCaseTest
 │   │       ├── refresh/        RefreshTokenUseCaseTest
 │   │       ├── register/       RegisterUserUseCaseTest
+│   │       ├── resendverification/ ResendVerificationUseCaseTest
 │   │       └── verify/         VerifyEmailUseCaseTest
 │   ├── domain/
 │   │   ├── aggregate/          UserAggregateTest
 │   │   └── valueobjects/       VerificationTokenTest
 │   └── infrastructure/
+│       ├── adapters/out/persistence/  LoadUserPortAdapterTest, QueryUserPortAdapterTest
 │       └── events/             UserRegisteredEventListenerTest
 ├── jobs/
 │   ├── application/
@@ -190,22 +208,31 @@ All diagrams are written in **PlantUML** and live in [`itjobs-docs/diagrams/`](i
 ```
 itjobs-docs/diagrams/
 ├── auth/
-│   ├── auth-overview.puml          Component  Authentication: capas hexagonales (visión global)
-│   ├── class-diagram-auth.puml     Class      UserAggregate, VOs, eventos, ports
+│   ├── auth-overview.puml               Component  Authentication: capas hexagonales + CQRS + email adapters
+│   ├── class-diagram-auth.puml          Class      UserAggregate, TermsDocument, VOs, eventos, CQRS ports
 │   ├── usecases/
-│   │   ├── uc-register.puml        Component  RegisterUserUseCase con sus ports
-│   │   ├── uc-login.puml           Component  LoginUseCase con sus ports
-│   │   ├── uc-google-auth.puml     Component  GoogleAuthUseCase con sus ports
-│   │   ├── uc-verify-email.puml    Component  VerifyEmailUseCase con sus ports
-│   │   ├── uc-change-password.puml Component  ChangePasswordUseCase con sus ports
-│   │   └── uc-forgot-password.puml Component  ForgotPasswordUseCase con sus ports
+│   │   ├── uc-register.puml             Component  RegisterUserUseCase con sus ports (QueryUserPort + ToS)
+│   │   ├── uc-login.puml                Component  LoginUseCase con QueryUserPort (CQRS query side)
+│   │   ├── uc-google-auth.puml             Component  GoogleAuthUseCase — visión general (todos los ports)
+│   │   ├── uc-google-auth-identify.puml    Component  Fase 1 — buscar e identificar al usuario (LoadUserPort)
+│   │   ├── uc-google-auth-provision.puml   Component  Fase 2 — crear/vincular usuario + aceptación de términos
+│   │   ├── uc-google-auth-tokens.puml      Component  Fase 3 — emitir tokens JWT (TokenGeneratorPort)
+│   │   ├── uc-verify-email.puml         Component  VerifyEmailUseCase con sus ports
+│   │   ├── uc-change-password.puml      Component  ChangePasswordUseCase con sus ports
+│   │   ├── uc-forgot-password.puml      Component  ForgotPasswordUseCase con QueryUserPort (CQRS query)
+│   │   ├── uc-resend-verification.puml  Component  ResendVerificationUseCase con EmailSenderPort
+│   │   ├── uc-refresh-token.puml        Component  RefreshTokenUseCase con QueryUserPort (CQRS query)
+│   │   └── uc-delete-expired-users.puml Component  DeleteExpiredUnverifiedUsersUseCase con DeleteUserPort
 │   └── sequences/
-│       ├── seq-register.puml       Sequence   Registration flow
-│       ├── seq-login.puml          Sequence   Login flow
-│       ├── seq-google-auth.puml    Sequence   Google OAuth login / register flow
-│       ├── seq-verify-email.puml   Sequence   Email verification flow
-│       ├── seq-change-password.puml Sequence  Change password flow (authenticated)
-│       └── seq-forgot-password.puml Sequence  Forgot password / reset token flow
+│       ├── seq-register.puml            Sequence   Registration flow (con ToS acceptance)
+│       ├── seq-login.puml               Sequence   Login flow (CQRS — QueryUserPort → UserView)
+│       ├── seq-google-auth.puml         Sequence   Google OAuth login / register flow
+│       ├── seq-verify-email.puml        Sequence   Email verification flow
+│       ├── seq-change-password.puml     Sequence   Change password flow (authenticated)
+│       ├── seq-forgot-password.puml     Sequence   Forgot password flow (CQRS — QueryUserPort)
+│       ├── seq-resend-verification.puml Sequence   Resend verification email flow (EmailSenderPort)
+│       ├── seq-refresh-token.puml       Sequence   Refresh token flow (CQRS — QueryUserPort)
+│       └── seq-delete-expired-users.puml Sequence  Batch delete expired unverified users
 ├── jobs/
 │   ├── class-diagram-jobs.puml     Class      JobAggregate, VOs, eventos, specs, ports
 │   ├── seq-apply.puml              Sequence   Job application flow
@@ -277,14 +304,21 @@ itjobs-docs/diagrams/
 
 ### Use Cases
 
-| Use Case               | Port (in)             | Description                                              |
-|------------------------|-----------------------|----------------------------------------------------------|
-| `RegisterUserUseCase`  | `RegisterUserPort`    | Hash password → save → record ToS acceptance → publish `UserRegisteredEvent` |
-| `LoginUseCase`         | `LoginPort`           | Verify credentials → generate JWT tokens                 |
-| `ChangePasswordUseCase`| `ChangePasswordPort`  | Verifies old password → hashes & saves new password      |
-| `ForgotPasswordUseCase`| `ForgotPasswordPort`  | Lookup by email → publish `PasswordResetRequestedEvent`  |
-| `GoogleAuthUseCase`    | `GoogleAuthPort`      | Find or create user via Google sub → generate JWT tokens; records ToS acceptance for new users |
-| `VerifyEmailUseCase`   | `VerifyEmailPort`     | Lookup by id → `verifyEmail()` → publish `EmailVerifiedEvent` |
+| Use Case               | Port (in)             | Side  | Ports (out)                        | Description                                              |
+|------------------------|-----------------------|-------|------------------------------------|----------------------------------------------------------|
+| `RegisterUserUseCase`  | `RegisterUserPort`    | Write | `QueryUserPort`, `SaveUserPort`    | Hash password → save → record ToS acceptance → publish `UserRegisteredEvent` |
+| `LoginUseCase`         | `LoginPort`           | Read  | `QueryUserPort`                    | Verify credentials → generate JWT tokens                 |
+| `RefreshTokenUseCase`  | `RefreshTokenPort`    | Read  | `QueryUserPort`, `TokenGeneratorPort` | Validate refresh token → generate new token pair      |
+| `ChangePasswordUseCase`| `ChangePasswordPort`  | Write | `LoadUserPort`, `SaveUserPort`     | Verifies old password → hashes & saves new password      |
+| `ForgotPasswordUseCase`| `ForgotPasswordPort`  | Read  | `QueryUserPort`                    | Lookup by email → publish `PasswordResetRequestedEvent`  |
+| `GoogleAuthUseCase`    | `GoogleAuthPort`      | Write | `LoadUserPort`, `SaveUserPort`     | Find or create user via Google sub → generate JWT tokens; records ToS acceptance for new users |
+| `VerifyEmailUseCase`   | `VerifyEmailPort`     | Write | `LoadUserPort`, `SaveUserPort`     | Lookup by id → `verifyEmail()` → publish `EmailVerifiedEvent` |
+| `ResendVerificationUseCase` | `ResendVerificationPort` | Write | `LoadUserPort`, `SaveUserPort`, `EmailSenderPort` | Regenerate verification token → send email |
+| `DeleteExpiredUnverifiedUsersUseCase` | `DeleteExpiredUnverifiedUsersPort` | Write | `QueryUserPort`, `DeleteUserPort` | Batch: find expired unverified user IDs → delete each |
+
+> **CQRS split**: use cases que solo leen datos usan `QueryUserPort` (devuelve `UserView`).
+> Use cases que mutan el agregado usan `LoadUserPort` (devuelve `UserAggregate`).
+> Ver [`itjobs-docs/architecture.md`](itjobs-docs/architecture.md) — sección *CQRS en el bounded context authentication*.
 
 ### Domain Events
 
@@ -427,6 +461,7 @@ itjobs-docs/diagrams/
 - Stateless JWT authentication (no sessions)
 - Security endpoints `/api/v1/auth/**` and `/api/v1/jobs/**` are public
 - Java 17, Spring Boot 3.5.x
+- Email: `SmtpEmailSenderAdapter` activo solo con `spring.mail.host`; sin esa propiedad se usa `NoOpEmailSenderAdapter` (logs WARN, no crashea)
 
 ---
 

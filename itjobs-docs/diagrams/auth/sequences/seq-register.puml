@@ -7,9 +7,12 @@ actor "Candidato" as U
 participant "AuthController\n<<REST>>" as CTRL
 participant "RegisterUserUseCase\n<<Use Case>>" as UC
 participant "Email\n<<Value Object>>" as EMAIL
+participant "QueryUserPort\n<<Out Port>>" as QUERY
 participant "PasswordEncoderPort\n<<Out Port>>" as ENC
 participant "UserAggregate\n<<Aggregate>>" as AGG
 participant "SaveUserPort\n<<Out Port>>" as SAVE
+participant "LoadTermsDocumentPort\n<<Out Port>>" as TERMS
+participant "SaveTermsAcceptancePort\n<<Out Port>>" as ACC
 participant "DomainEventPublisher\n<<Out Port>>" as PUB
 
 U -> CTRL : POST /api/v1/auth/register\n{username, email, password}
@@ -28,11 +31,17 @@ deactivate EMAIL
 
 UC -> UC : Username.of(command.username())
 
-' Verificar email duplicado
-UC -> SAVE : existsByEmail(email)
-activate SAVE
-SAVE --> UC : false
-deactivate SAVE
+' Verificar email duplicado (query side)
+UC -> QUERY : existsByEmail(email)
+activate QUERY
+QUERY --> UC : false
+deactivate QUERY
+
+note right of QUERY
+  CQRS — query side.
+  Solo verifica duplicado de email.
+  No instancia UserAggregate.
+end note
 
 ' Hash de password
 UC -> ENC : encode(rawPassword)
@@ -53,6 +62,19 @@ UC -> SAVE : save(user)
 activate SAVE
 SAVE --> UC : savedUser
 deactivate SAVE
+
+' Registrar aceptación de términos
+UC -> TERMS : findLatestByType(TERMS_OF_SERVICE)
+activate TERMS
+TERMS --> UC : TermsDocument
+deactivate TERMS
+
+UC -> UC : TermsAcceptance.create(userId, documentId)
+
+UC -> ACC : save(acceptance)
+activate ACC
+ACC --> UC : void
+deactivate ACC
 
 ' Publicar eventos
 UC -> PUB : publishAll(savedUser.pullDomainEvents())
