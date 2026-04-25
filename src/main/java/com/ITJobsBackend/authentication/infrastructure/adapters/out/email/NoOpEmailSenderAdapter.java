@@ -12,15 +12,14 @@ import com.ITJobsBackend.authentication.application.ports.out.EmailSenderPort;
 @ConditionalOnMissingBean(EmailSenderPort.class)
 public class NoOpEmailSenderAdapter implements EmailSenderPort {
 
-    private static final Logger log = LoggerFactory.getLogger(NoOpEmailSenderAdapter.class);
+  private static final Logger log = LoggerFactory.getLogger(NoOpEmailSenderAdapter.class);
 
-    @Override
-    public void sendEmail(String to, String subject, String body) {
-        log.warn(
-                "Email sending is disabled (spring.mail.host not configured). "
-                        + "Dropping email to: {} | subject: {}",
-                to,
-                subject);
-    }
+  @Override
+  public void sendEmail(String to, String subject, String body) {
+    log.warn(
+        "Email sending is disabled (spring.mail.host not configured). "
+            + "Dropping email to: {} | subject: {}",
+        to,
+        subject);
+  }
 }
-
