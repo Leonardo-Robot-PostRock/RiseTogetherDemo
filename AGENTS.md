@@ -20,19 +20,18 @@
 
 ```
 
-> **Code style**: See [`itjobs-docs/code-style.md`](itjobs-docs/code-style.md) for Google Java Format setup
+> **Code style**: See [`itjobs-docs/shared/code-style.md`](itjobs-docs/shared/code-style.md) for Google Java Format setup
 > and IntelliJ configuration (JRE exports requeridos).
 
----
+> **Architecture guide**: Full hexagonal architecture onboarding at [`itjobs-docs/shared/hexagonal-onboarding.md`](itjobs-docs/shared/hexagonal-onboarding.md)
 
-## Architecture
+> **Testing guide**: [`itjobs-docs/shared/testing.md`](itjobs-docs/shared/testing.md)
 
-This project follows **Hexagonal Architecture (Ports and Adapters)** with **Domain-Driven Design (DDD) tactical patterns**:
+> **Database schema**: [`itjobs-docs/shared/database.md`](itjobs-docs/shared/database.md)
 
-- **Hexagonal Architecture**: defines where things live (ports, adapters, bounded contexts)
-- **DDD Tactical Patterns**: defines what things are (aggregates, value objects, domain events, etc.)
+> **Architecture & config**: [`itjobs-docs/shared/architecture.md`](itjobs-docs/shared/architecture.md) — profiles, Docker, CQRS, email adapters
 
-> 📖 **Onboarding**: Para una guía completa de arquitectura hexagonal con ejemplos del proyecto, ver [`itjobs-docs/hexagonal-onboarding.md`](itjobs-docs/hexagonal-onboarding.md)
+> **Full requirements**: [`itjobs-docs/requirements/requirements-v2.md`](itjobs-docs/requirements/requirements-v2.md)
 
 ### Bounded Contexts
 
@@ -207,11 +206,11 @@ src/test/java/com/ITJobsBackend/
 
 ## Diagrams
 
-All diagrams are written in **PlantUML** and live in [`itjobs-docs/diagrams/`](itjobs-docs/diagrams/), organized by bounded context.
+All diagrams are written in **PlantUML** and live in [`itjobs-docs/`](itjobs-docs/), organized by bounded context.
 
 ```
-itjobs-docs/diagrams/
-├── auth/
+itjobs-docs/
+├── auth/diagrams/
 │   ├── auth-overview.puml               Component  Authentication: capas hexagonales + CQRS + email adapters
 │   ├── class-diagram-auth.puml          Class      UserAggregate, TermsDocument, VOs, eventos, CQRS ports
 │   ├── usecases/
@@ -237,13 +236,27 @@ itjobs-docs/diagrams/
 │       ├── seq-resend-verification.puml Sequence   Resend verification email flow (EmailSenderPort)
 │       ├── seq-refresh-token.puml       Sequence   Refresh token flow (CQRS — QueryUserPort)
 │       └── seq-delete-expired-users.puml Sequence  Batch delete expired unverified users
-├── jobs/
+├── jobs/diagrams/
 │   ├── class-diagram-jobs.puml     Class      JobAggregate, VOs, eventos, specs, ports
 │   ├── seq-apply.puml              Sequence   Job application flow
 │   ├── act-job-management.puml     Activity   Job management activity flow
 │   ├── state-job.puml              State      Job lifecycle (OPEN → CLOSED / INACTIVE)
 │   └── state-application.puml      State      Application lifecycle (PENDING → ACCEPTED / REJECTED)
-└── shared/
+├── profiles/diagrams/
+│   └── class-diagram-profiles.puml Class    (planned)
+├── applications/diagrams/
+│   └── class-diagram-applications.puml
+├── matching/diagrams/
+│   └── class-diagram-matching.puml
+├── moderation/diagrams/
+│   └── class-diagram-moderation.puml
+├── billing/diagrams/
+│   └── class-diagram-billing.puml
+├── analytics/diagrams/
+│   └── class-diagram-analytics.puml
+├── administration/diagrams/
+│   └── class-diagram-administration.puml
+└── shared/diagrams/
     ├── class-diagram-shared.puml   Class      Shared Kernel: value objects, DomainEvent, excepciones
     ├── use-cases.puml              Use case   Actors and use cases across all bounded contexts
     ├── er-diagram.puml             ER         All database tables and relationships (mirrors Flyway)
@@ -322,7 +335,7 @@ itjobs-docs/diagrams/
 
 > **CQRS split**: use cases que solo leen datos usan `QueryUserPort` (devuelve `UserView`).
 > Use cases que mutan el agregado usan `LoadUserPort` (devuelve `UserAggregate`).
-> Ver [`itjobs-docs/architecture.md`](itjobs-docs/architecture.md) — sección *CQRS en el bounded context authentication*.
+> Ver [`itjobs-docs/shared/architecture.md`](itjobs-docs/shared/architecture.md) — sección *CQRS en el bounded context authentication*.
 
 ### Domain Events
 
