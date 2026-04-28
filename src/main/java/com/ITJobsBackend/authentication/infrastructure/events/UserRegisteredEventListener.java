@@ -11,10 +11,10 @@ import org.springframework.stereotype.Component;
 
 import com.ITJobsBackend.authentication.application.ports.out.LoadUserPort;
 import com.ITJobsBackend.authentication.application.ports.out.SaveUserPort;
+import com.ITJobsBackend.authentication.application.ports.out.VerificationTokenExpirationPort;
 import com.ITJobsBackend.authentication.domain.aggregate.UserAggregate;
 import com.ITJobsBackend.authentication.domain.event.UserRegisteredEvent;
 import com.ITJobsBackend.authentication.domain.valueobjects.VerificationToken;
-import com.ITJobsBackend.authentication.infrastructure.config.AuthProperties;
 import com.ITJobsBackend.shared.domain.valueobjects.UserId;
 
 @Component
@@ -23,15 +23,15 @@ public class UserRegisteredEventListener {
 
   private final LoadUserPort loadUserPort;
   private final SaveUserPort saveUserPort;
-  private final AuthProperties authProperties;
+  private final VerificationTokenExpirationPort verificationTokenExpirationPort;
 
   public UserRegisteredEventListener(
       LoadUserPort loadUserPort,
       SaveUserPort saveUserPort,
-      AuthProperties authProperties) {
+      VerificationTokenExpirationPort verificationTokenExpirationPort) {
     this.loadUserPort = loadUserPort;
     this.saveUserPort = saveUserPort;
-    this.authProperties = authProperties;
+    this.verificationTokenExpirationPort = verificationTokenExpirationPort;
   }
 
   @EventListener
@@ -43,7 +43,7 @@ public class UserRegisteredEventListener {
         loadUserPort.findById(userId)
             .orElseThrow(() -> new IllegalStateException("User not found: " + userId));
 
-    Instant expiresAt = Instant.now().plusSeconds(authProperties.getVerificationTokenExpirationHours() * 3600L);
+    Instant expiresAt = Instant.now().plusSeconds(verificationTokenExpirationPort.getVerificationTokenExpirationHours() * 3600L);
     VerificationToken verificationToken = VerificationToken.of(UUID.randomUUID().toString(), expiresAt);
 
     user.assignVerificationToken(verificationToken);

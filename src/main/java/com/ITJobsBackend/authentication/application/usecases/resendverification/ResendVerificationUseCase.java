@@ -12,9 +12,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.ITJobsBackend.authentication.application.ports.in.ResendVerificationPort;
 import com.ITJobsBackend.authentication.application.ports.out.LoadUserPort;
 import com.ITJobsBackend.authentication.application.ports.out.SaveUserPort;
+import com.ITJobsBackend.authentication.application.ports.out.VerificationTokenExpirationPort;
 import com.ITJobsBackend.authentication.domain.aggregate.UserAggregate;
 import com.ITJobsBackend.authentication.domain.valueobjects.VerificationToken;
-import com.ITJobsBackend.authentication.infrastructure.config.AuthProperties;
 import com.ITJobsBackend.shared.domain.valueobjects.Email;
 
 @Service
@@ -24,15 +24,15 @@ public class ResendVerificationUseCase implements ResendVerificationPort {
 
     private final LoadUserPort loadUserPort;
     private final SaveUserPort saveUserPort;
-    private final AuthProperties authProperties;
+    private final VerificationTokenExpirationPort verificationTokenExpirationPort;
 
     public ResendVerificationUseCase(
             LoadUserPort loadUserPort,
             SaveUserPort saveUserPort,
-            AuthProperties authProperties) {
+            VerificationTokenExpirationPort verificationTokenExpirationPort) {
         this.loadUserPort = loadUserPort;
         this.saveUserPort = saveUserPort;
-        this.authProperties = authProperties;
+        this.verificationTokenExpirationPort = verificationTokenExpirationPort;
     }
 
     @Override
@@ -47,7 +47,7 @@ public class ResendVerificationUseCase implements ResendVerificationPort {
             throw new IllegalStateException("Email already verified for user: " + user.getId());
         }
 
-        Instant expiresAt = Instant.now().plusSeconds(authProperties.getVerificationTokenExpirationHours() * 3600L);
+        Instant expiresAt = Instant.now().plusSeconds(verificationTokenExpirationPort.getVerificationTokenExpirationHours() * 3600L);
         VerificationToken verificationToken = VerificationToken.of(UUID.randomUUID().toString(), expiresAt);
         user.assignVerificationToken(verificationToken);
         saveUserPort.save(user);

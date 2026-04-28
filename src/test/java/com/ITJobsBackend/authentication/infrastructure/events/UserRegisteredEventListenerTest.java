@@ -19,11 +19,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.ITJobsBackend.authentication.application.ports.out.LoadUserPort;
 import com.ITJobsBackend.authentication.application.ports.out.SaveUserPort;
+import com.ITJobsBackend.authentication.application.ports.out.VerificationTokenExpirationPort;
 import com.ITJobsBackend.authentication.domain.aggregate.UserAggregate;
 import com.ITJobsBackend.authentication.domain.event.UserRegisteredEvent;
 import com.ITJobsBackend.authentication.domain.valueobjects.HashedPassword;
 import com.ITJobsBackend.authentication.domain.valueobjects.Username;
-import com.ITJobsBackend.authentication.infrastructure.config.AuthProperties;
 import com.ITJobsBackend.shared.domain.valueobjects.Email;
 import com.ITJobsBackend.shared.domain.valueobjects.Timestamp;
 import com.ITJobsBackend.shared.domain.valueobjects.UserId;
@@ -39,7 +39,7 @@ class UserRegisteredEventListenerTest {
   // ── Mocks (solo puertos de salida) ────────────────────────────────────────
   @Mock private LoadUserPort loadUserPort;
   @Mock private SaveUserPort saveUserPort;
-  @Mock private AuthProperties authProperties;
+  @Mock private VerificationTokenExpirationPort verificationTokenExpirationPort;
 
   // ── Subject under test ────────────────────────────────────────────────────
   @InjectMocks private UserRegisteredEventListener listener;
@@ -66,7 +66,7 @@ class UserRegisteredEventListenerTest {
     // Given
     UserId userId = UserId.generate();
     UserAggregate user = buildUser(userId);
-    given(authProperties.getVerificationTokenExpirationHours()).willReturn(12);
+    given(verificationTokenExpirationPort.getVerificationTokenExpirationHours()).willReturn(12);
     given(loadUserPort.findById(userId)).willReturn(Optional.of(user));
     given(saveUserPort.save(any())).willAnswer(invocation -> invocation.getArgument(0));
 
@@ -83,7 +83,7 @@ class UserRegisteredEventListenerTest {
     // Given
     UserId userId = UserId.generate();
     UserAggregate user = buildUser(userId);
-    given(authProperties.getVerificationTokenExpirationHours()).willReturn(12);
+    given(verificationTokenExpirationPort.getVerificationTokenExpirationHours()).willReturn(12);
     given(loadUserPort.findById(userId)).willReturn(Optional.of(user));
     given(saveUserPort.save(any())).willAnswer(invocation -> invocation.getArgument(0));
 
@@ -104,7 +104,7 @@ class UserRegisteredEventListenerTest {
     // Given
     UserId userId = UserId.generate();
     UserAggregate user = buildUser(userId);
-    given(authProperties.getVerificationTokenExpirationHours()).willReturn(1);
+    given(verificationTokenExpirationPort.getVerificationTokenExpirationHours()).willReturn(1);
     given(loadUserPort.findById(userId)).willReturn(Optional.of(user));
     given(saveUserPort.save(any())).willAnswer(invocation -> invocation.getArgument(0));
 
