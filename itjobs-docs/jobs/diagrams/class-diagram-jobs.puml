@@ -1,0 +1,114 @@
+@startuml ClassDiagramJobs
+
+title Jobs — Aggregate, Value Objects, Events y Ports
+
+skinparam classBackgroundColor #FAFAFA
+skinparam classBorderColor #888888
+
+' ─── Aggregate ───────────────────────────────
+package "domain.aggregate" #E3F2FD {
+    class JobAggregate <<Aggregate>> {
+        - id : JobId
+        - title : String
+        - description : String
+        - company : String
+        - location : String
+        - salary : Salary
+        - employmentType : EmploymentType
+        - status : JobStatus
+        - skills : List<String>
+        - createdAt : Timestamp
+        - updatedAt : Timestamp
+        --
+        + {static} create() : JobAggregate
+        + {static} reconstitute() : JobAggregate
+        --
+        + close()
+        + deactivate()
+        + addSkill(skill)
+        + pullDomainEvents() : List<DomainEvent>
+    }
+}
+
+' ─── Value Objects ───────────────────────────
+package "domain.valueobjects" #BBDEFB {
+    class Salary <<ValueObject>> {
+        - min : BigDecimal
+        - max : BigDecimal
+        - currency : String
+        + of(min, max, currency) : Salary
+    }
+    enum EmploymentType {
+        FULL_TIME
+        PART_TIME
+        CONTRACT
+        FREELANCE
+        INTERNSHIP
+    }
+    enum JobStatus {
+        OPEN
+        CLOSED
+        DRAFT
+        EXPIRED
+        INACTIVE
+    }
+}
+
+' ─── Domain Events ───────────────────────────
+package "domain.event" #FFF3E0 {
+    class JobCreatedEvent <<Event>> {
+        - jobTitle : String
+        - company : String
+    }
+    class JobClosedEvent <<Event>> {
+        - jobTitle : String
+        - company : String
+    }
+    class JobDeactivatedEvent <<Event>> {
+        - jobTitle : String
+    }
+}
+
+' ─── Specifications ──────────────────────────
+package "domain.specification" #FFF9C4 {
+    interface JobSpecification {
+        + isSatisfiedBy(job) : boolean
+    }
+    class TitleContainsSpecification
+    class CompanySpecification
+    class LocationSpecification
+    class JobStatusSpecification
+
+    JobSpecification <|.. TitleContainsSpecification
+    JobSpecification <|.. CompanySpecification
+    JobSpecification <|.. LocationSpecification
+    JobSpecification <|.. JobStatusSpecification
+}
+
+' ─── Ports (Application Layer) ───────────────
+package "application.ports.in" #C8E6C9 {
+    interface CreateJobPort
+    interface SearchJobsPort
+}
+
+package "application.ports.out" #A5D6A7 {
+    interface JobReaderRepository {
+        + findAll(spec) : List<JobAggregate>
+        + findById(id) : Optional<JobAggregate>
+    }
+    interface JobWriterRepository {
+        + save(job) : JobAggregate
+    }
+}
+
+' ─── Relations ───────────────────────────────
+JobAggregate *-- Salary
+JobAggregate *-- EmploymentType
+JobAggregate *-- JobStatus
+
+JobAggregate ..> JobCreatedEvent   : records
+JobAggregate ..> JobClosedEvent    : records
+JobAggregate ..> JobDeactivatedEvent : records
+
+@enduml
+

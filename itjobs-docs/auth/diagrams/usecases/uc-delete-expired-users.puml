@@ -1,0 +1,40 @@
+@startuml UcDeleteExpiredUsers
+
+title Authentication — DeleteExpiredUnverifiedUsersUseCase
+
+skinparam activityBackgroundColor #FAFAFA
+skinparam activityBorderColor #888888
+skinparam activityDiamondBackgroundColor #FFF9C4
+skinparam activityArrowColor #555555
+skinparam noteBackgroundColor #FFFDE7
+skinparam noteBorderColor #F9A825
+
+start
+
+:Calcular cutoffInstant = now();
+
+:QueryUserPort\n.findUnverifiedUserIdsBefore(cutoffInstant);
+note right
+  CQRS — query side.
+  Busca usuarios con:
+  emailVerified = false
+  verificationToken.expiresAt < cutoffInstant
+  Devuelve solo List<UserId>.
+end note
+
+if (¿lista vacía?) then (sí)
+  :retornar — nada que eliminar;
+  stop
+endif
+
+while (¿quedan IDs en la lista?) is (sí)
+  :DeleteUserPort.delete(userId);
+  note right
+    SRP — puerto dedicado a borrado.
+    Separado de SaveUserPort.
+  end note
+endwhile (no)
+
+stop
+
+@enduml
