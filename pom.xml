@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.13</version>
+        <version>4.0.5</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.personalmanagement</groupId>
@@ -17,10 +17,7 @@
     <description>ITJobs project with Spring Boot</description>
 
     <properties>
-        <maven.compiler.release>17</maven.compiler.release>
-        <tomcat.version>10.1.54</tomcat.version>
-        <!-- Spring Framework override — fixes CVE-2026-22740 & CVE-2026-22741 (spring-web/spring-webmvc 6.2.17) -->
-        <spring-framework.version>6.2.18</spring-framework.version>
+        <maven.compiler.release>21</maven.compiler.release>
 
         <!-- JWT -->
         <jjwt.version>0.12.6</jjwt.version>
@@ -177,6 +174,7 @@
                         </exclude>
                     </excludes>
                 </configuration>
+
             </plugin>
         </plugins>
     </build>

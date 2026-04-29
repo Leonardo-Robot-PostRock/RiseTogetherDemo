@@ -1,19 +1,14 @@
 package com.ITJobsBackend.shared.infrastructure.config;
 
-import org.flywaydb.core.Flyway;
-import org.springframework.boot.autoconfigure.flyway.FlywayMigrationStrategy;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * Flyway configuration removed in Spring Boot 4.
+ * FlywayMigrationStrategy was deprecated and removed.
+ * Use spring.flyway.clean-disabled and other properties instead.
+ */
 @Configuration
 public class FlywayConfig {
-
-    @Bean
-    public FlywayMigrationStrategy repairThenMigrate() {
-        return (Flyway flyway) -> {
-            flyway.repair();
-            flyway.migrate();
-        };
-    }
+    // Flyway auto-configuration handles migration automatically
+    // Custom strategy no longer supported in Spring Boot 4
 }
-

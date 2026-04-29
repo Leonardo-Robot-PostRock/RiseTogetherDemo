@@ -1,0 +1,4 @@
+#!/bin/bash
+# ITJobsBackend Maven Wrapper con JDK 21
+export JAVA_HOME=/opt/homebrew/Cellar/openjdk@21/21.0.11/libexec/openjdk.jdk/Contents/Home
+exec ./mvnw "$@"
