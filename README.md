@@ -1,8 +1,11 @@
 # Rise Together
 
+> ⚠️ **Rama `demo`** — Esta rama es una versión de demostración pública del proyecto original.
+> El código fuente completo, la documentación interna, los skills de AI y la configuración de agentes
+> se encuentran en el repositorio privado.
+
 > API REST para búsqueda de empleos en todos los sectores — Construcción / Testing / Deployment
 
-> **Nota**: La documentación detallada, skills de AI, y configuración de agentes está en un repositorio privado separado por razones de seguridad. Solicita acceso si la necesitas.
 
 ## 🚀 Quick Start
 
