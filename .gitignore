@@ -34,3 +34,8 @@ build/
 .metadata
 
 .env
+
+# Documentation (staged locally, not in repo)
+rise-together-docs/
+.atl/
+AGENTS.md
