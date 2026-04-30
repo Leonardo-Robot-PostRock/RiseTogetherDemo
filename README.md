@@ -1,6 +1,6 @@
 # ITJobs Backend
 
-> API REST para búsqueda de empleos en IT — Construcción / Testing /部署
+> API REST para búsqueda de empleos en IT — Construcción / Testing / Deployment
 
 > **Nota**: La documentación detallada, skills de AI, y configuración de agentes está en un repositorio privado separado por razones de seguridad. Solicita acceso si la necesitas.
 
