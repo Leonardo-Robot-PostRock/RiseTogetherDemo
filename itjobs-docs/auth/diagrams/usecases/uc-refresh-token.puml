@@ -1,0 +1,53 @@
+@startuml UcRefreshToken
+
+title Authentication — RefreshTokenUseCase
+
+skinparam activityBackgroundColor #FAFAFA
+skinparam activityBorderColor #888888
+skinparam activityDiamondBackgroundColor #FFF9C4
+skinparam activityArrowColor #555555
+skinparam noteBackgroundColor #FFFDE7
+skinparam noteBorderColor #F9A825
+
+start
+
+:TokenGeneratorPort\n.validateRefreshToken(command.refreshToken());
+note right
+  Verifica firma y expiración del JWT.
+  Extrae userId del payload.
+  Lanza InvalidCredentialsException
+  si el token es inválido o expirado.
+end note
+
+:QueryUserPort.findById(userId);
+note right
+  CQRS — query side.
+  Devuelve Optional<UserView>.
+  No instancia UserAggregate.
+end note
+
+if (¿usuario encontrado?) then (no)
+  #FF8A80:throw NotFoundException;
+  stop
+endif
+
+if (¿active = true?) then (no)
+  #FF8A80:throw InvalidCredentialsException;
+  stop
+endif
+
+:TokenGeneratorPort\n.generateAccessToken(userId, roles);
+note right
+  Nuevo JWT firmado. Expira en 15 min.
+end note
+
+:TokenGeneratorPort\n.generateRefreshToken(userId);
+note right
+  Nuevo JWT firmado. Expira en 7 días.
+end note
+
+:Retornar AuthTokenResponse;
+
+stop
+
+@enduml

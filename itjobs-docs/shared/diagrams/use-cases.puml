@@ -1,0 +1,105 @@
+@startuml ITJobsUseCases
+
+title ITJobs - Casos de Uso
+
+left to right direction
+
+skinparam actorStyle awesome
+skinparam usecaseBorderColor transparent
+skinparam usecaseBackgroundColor #FEFECE
+skinparam padding 12
+skinparam rectangleSpacing 40
+skinparam actorPadding 20
+skinparam linetype ortho
+skinparam arrowAngle 20
+
+actor "Candidato" as CAND #FF6B6B
+actor "Empleador" as EMP #1E8449
+actor "Admin" as ADM #6C5CE7
+actor "Moderador" as MOD #9B59B6
+actor "Reclutador" as REC #8B4513
+
+rectangle "Autenticacion" {
+    (Registrarse) as UC01
+    (Iniciar sesion) as UC02
+    (Verificar email) as UC03
+    (Activar/Desactivar usuario) as UC04
+    (Recuperar contrasea) as UC23
+    (Cambiar contrasea) as UC25
+    (Autenticacion con Google) as UC24
+}
+
+rectangle "Gestion Perfil" {
+    (Gestionar perfil candidato) as UC05
+    (Gestionar perfil empleador) as UC06
+    (Registrar reclutador) as UC07
+}
+
+rectangle "Ofertas" {
+    (Crear oferta de empleo) as UC08
+    (Buscar ofertas) as UC09
+    (Cerrar oferta) as UC10
+    (Desactivar oferta) as UC11
+    (Asignar skills a oferta) as UC12
+    (Asignar categorias) as UC13
+}
+
+rectangle "Postulaciones" {
+    (Postularse a oferta) as UC14
+    (Ver mis postulaciones) as UC15
+    (Cambiar estado postulacion) as UC16
+    (Guardar oferta favorita) as UC17
+    (Eliminar favorito) as UC18
+}
+
+rectangle "Administracion" {
+    (Gestionar categorias) as UC19
+    (Gestionar usuarios) as UC20
+    (Moderar contenido) as UC21
+    (Gestionar roles) as UC22
+}
+
+CAND -[#FF6B6B]-> UC01
+CAND -[#FF6B6B]-> UC02
+CAND -[#FF6B6B]-> UC23
+CAND -[#FF6B6B]-> UC24
+CAND -[#FF6B6B]-> UC25
+CAND -[#FF6B6B]-> UC05
+CAND -[#FF6B6B]-> UC09
+CAND -[#FF6B6B]-> UC14
+CAND -[#FF6B6B]-> UC15
+CAND -[#FF6B6B]-> UC17
+CAND -[#FF6B6B]-> UC18
+
+EMP -[#1E8449]-> UC02
+EMP -[#1E8449]-> UC23
+EMP -[#1E8449]-> UC24
+EMP -[#1E8449]-> UC25
+EMP -[#1E8449]-> UC06
+EMP -[#1E8449]-> UC07
+EMP -[#1E8449]-> UC08
+EMP -[#1E8449]-> UC10
+EMP -[#1E8449]-> UC11
+EMP -[#1E8449]-> UC12
+EMP -[#1E8449]-> UC13
+EMP -[#1E8449]-> UC16
+
+REC -[#8B4513]-> UC02
+REC -[#8B4513]-> UC08
+REC -[#8B4513]-> UC10
+REC -[#8B4513]-> UC12
+REC -[#8B4513]-> UC13
+REC -[#8B4513]-> UC16
+
+MOD -[#9B59B6]-> UC02
+MOD -[#9B59B6]-> UC21
+
+ADM -[#6C5CE7]-> UC04
+ADM -[#6C5CE7]-> UC19
+ADM -[#6C5CE7]-> UC20
+ADM -[#6C5CE7]-> UC22
+
+hide stereotype
+hide empty description
+
+@enduml

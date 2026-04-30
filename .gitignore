@@ -33,7 +33,4 @@ build/
 .vscode/
 .metadata
 
-AGENTS.md
 .env
-.atl/
-itjobs-docs/

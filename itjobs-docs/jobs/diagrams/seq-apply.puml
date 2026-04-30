@@ -1,0 +1,70 @@
+@startuml ITJobs - Secuencia: Postulación a Oferta
+
+skinparam sequenceMessageAlign center
+
+actor "Candidato" as U
+participant "ApplicationController\n<<REST>>" as CTRL
+participant "ApplyToJobUseCase\n<<Use Case>>" as UC
+participant "LoadJobPort\n<<Out Port>>" as LOADJOB
+participant "LoadCandidatePort\n<<Out Port>>" as LOADCAND
+participant "ApplicationAggregate\n<<Aggregate>>" as AGG
+participant "SaveApplicationPort\n<<Out Port>>" as SAVE
+participant "DomainEventPublisher\n<<Out Port>>" as PUB
+
+U -> CTRL : POST /api/v1/applications\nAuthorization: Bearer <token>\n{jobId, resume, coverLetter}
+activate CTRL
+
+CTRL -> CTRL : Extract userId from JWT
+CTRL -> CTRL : Map DTO → ApplyToJobCommand
+
+CTRL -> UC : execute(command, userId)
+activate UC
+
+' Validar que el job existe y está abierto
+UC -> LOADJOB : findById(jobId)
+activate LOADJOB
+LOADJOB --> UC : JobAggregate
+deactivate LOADJOB
+
+UC -> AGG : job.getStatus() != OPEN?
+note right : Si no está OPEN,\nlanza ValidationException
+
+' Validar que el candidato existe
+UC -> LOADCAND : findById(candidateId)
+activate LOADCAND
+LOADCAND --> UC : CandidateAggregate
+deactivate LOADCAND
+
+' Verificar que no se postuló antes
+UC -> SAVE : existsByJobAndCandidate(jobId, candidateId)
+activate SAVE
+SAVE --> UC : false
+deactivate SAVE
+
+' Crear postulación
+UC -> AGG : ApplicationAggregate.create(jobId, candidateId, resume, coverLetter)
+activate AGG
+AGG -> AGG : status = PENDING
+AGG -> AGG : recordEvent(ApplicationSubmittedEvent)
+AGG --> UC : ApplicationAggregate
+deactivate AGG
+
+' Persistir
+UC -> SAVE : save(application)
+activate SAVE
+SAVE --> UC : savedApplication
+deactivate SAVE
+
+' Publicar evento
+UC -> PUB : publishAll(savedApplication.pullDomainEvents())
+activate PUB
+PUB --> UC : void
+deactivate PUB
+
+UC --> CTRL : ApplicationResponse
+deactivate UC
+
+CTRL --> U : 201 Created\n{applicationId, jobId, status: PENDING}
+deactivate CTRL
+
+@enduml

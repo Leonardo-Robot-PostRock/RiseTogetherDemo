@@ -1,0 +1,54 @@
+@startuml ITJobs - Secuencia: Eliminar Usuarios No Verificados Expirados
+
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+
+participant "Scheduler\n<<@Scheduled>>" as SCH
+participant "DeleteExpiredUnverifiedUsersUseCase\n<<Use Case>>" as UC
+participant "QueryUserPort\n<<Out Port>>" as QUERY
+participant "DeleteUserPort\n<<Out Port>>" as DELETE
+
+note over SCH
+  Ejecutado automáticamente
+  por un scheduler periódico
+  (e.g., @Scheduled(cron = "0 0 * * * *"))
+end note
+
+SCH -> UC : execute(DeleteExpiredUnverifiedUsersCommand\n  cutoffInstant = now())
+activate UC
+
+' Buscar IDs de usuarios expirados (query side)
+UC -> QUERY : findUnverifiedUserIdsBefore(cutoffInstant)
+activate QUERY
+QUERY --> UC : List<UserId> (puede ser vacía)
+deactivate QUERY
+
+note right of QUERY
+  CQRS — query side.
+  Busca usuarios con:
+    emailVerified = false
+    verificationToken.expiresAt < cutoffInstant
+  Devuelve solo IDs (no agregados).
+end note
+
+alt Lista vacía
+    note over UC
+      No hay usuarios expirados.
+      Se retorna sin error.
+    end note
+    UC --> SCH : void
+else Lista no vacía
+    loop por cada UserId
+        UC -> DELETE : delete(userId)
+        activate DELETE
+        DELETE --> UC : void
+        deactivate DELETE
+    end
+
+    UC --> SCH : void
+end
+
+deactivate UC
+
+@enduml
+

@@ -1,0 +1,66 @@
+@startuml
+skinparam linetype ortho
+
+title Moderation Bounded Context
+
+package "domain" {
+  class ReportAggregate {
+    +create()
+    +submitForReview()
+  }
+
+  class ModerationDecisionAggregate {
+    +create()
+    +approve()
+    +reject()
+    +escalate()
+  }
+
+  class AppealAggregate {
+    +create()
+    +accept()
+    +reject()
+  }
+
+  class UserModeration {
+    +warn()
+    +banTemporarily()
+    +banPermanently()
+  }
+}
+
+package "valueobjects" {
+  class ReportId
+  class ReportReason <<enumeration>>
+  class ReportStatus <<enumeration>>
+  class DecisionId
+  class ModerationDecision <<enumeration>>
+  class ModerationAction <<enumeration>>
+  class AppealId
+  class AppealStatus <<enumeration>>
+  class BanPeriod
+}
+
+package "events" {
+  class ContentReportedEvent
+  class ModerationDecisionMadeEvent
+  class AppealSubmittedEvent
+  class UserBannedEvent
+}
+
+ReportAggregate --> ReportId
+ReportAggregate --> ReportReason
+ReportAggregate --> ReportStatus
+ModerationDecisionAggregate --> DecisionId
+ModerationDecisionAggregate --> ModerationDecision
+ModerationDecisionAggregate --> ModerationAction
+AppealAggregate --> AppealId
+AppealAggregate --> AppealStatus
+UserModeration --> BanPeriod
+
+ReportAggregate ..> ContentReportedEvent : records
+ModerationDecisionAggregate ..> ModerationDecisionMadeEvent : records
+AppealAggregate ..> AppealSubmittedEvent : records
+UserModeration ..> UserBannedEvent : records
+
+@enduml

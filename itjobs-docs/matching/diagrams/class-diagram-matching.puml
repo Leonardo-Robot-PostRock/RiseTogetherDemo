@@ -1,0 +1,59 @@
+@startuml
+skinparam linetype ortho
+
+title Matching Bounded Context
+
+package "domain" {
+  class SkillCatalog {
+    +addSkill()
+    +addSynonym()
+    +addRelationship()
+    +findByName()
+    +getRelatedSkills()
+  }
+
+  class Skill {
+    +create()
+    +addSynonym()
+    +addRelationship()
+  }
+
+  class MatchEngine {
+    +calculateScore()
+    +classifyMatch()
+    +generateExplanation()
+  }
+
+  class MatchResult {
+    +calculate()
+  }
+}
+
+package "valueobjects" {
+  class SkillId
+  class SkillCategory <<enumeration>>
+  class RelationshipType <<enumeration>>
+  class MatchCategory <<enumeration>>
+  class MatchExplanation
+  class ProficiencyLevel <<enumeration>>
+  class RequirementLevel <<enumeration>>
+}
+
+package "events" {
+  class SkillAddedEvent
+  class MatchCalculatedEvent
+}
+
+SkillCatalog --> Skill
+SkillCatalog --> SkillId
+SkillCatalog --> SkillCategory
+SkillCatalog --> RelationshipType
+MatchEngine --> Skill
+MatchEngine --> MatchResult
+MatchResult --> MatchCategory
+MatchResult --> MatchExplanation
+
+Skill ..> SkillAddedEvent : records
+MatchEngine ..> MatchCalculatedEvent : records
+
+@enduml

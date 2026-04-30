@@ -1,0 +1,54 @@
+@startuml UcGoogleAuthIdentify
+
+title GoogleAuthUseCase — Fase 1: Identificar usuario
+
+skinparam activityBackgroundColor #FAFAFA
+skinparam activityBorderColor #888888
+skinparam activityDiamondBackgroundColor #FFF9C4
+skinparam activityArrowColor #555555
+skinparam noteBackgroundColor #FFFDE7
+skinparam noteBorderColor #F9A825
+
+start
+
+:Email.of(command.email())\nGoogleSub.of(command.googleSub());
+
+:LoadUserPort.findByEmail(email);
+note right
+  CQRS — command side.
+  Devuelve Optional<UserAggregate>.
+end note
+
+if (¿email existe en BD?) then (no)
+
+    -> usuario nuevo;
+    :→ Fase 2a: createGoogleUser();
+
+else (sí)
+
+    if (¿googleSub coincide?) then (sí)
+
+        -> login directo;
+        :→ Fase 3: emitir tokens;
+
+    elseif (¿googleSub es null?) then (sí)
+
+        -> vincular cuenta;
+        :→ Fase 2b: linkGoogleAccount();
+
+    else (googleSub distinto)
+
+        #FF8A80:throw InvalidCredentialsException;
+        note right
+          Alguien intenta tomar control
+          de una cuenta con otro sub de Google.
+        end note
+        stop
+
+    endif
+
+endif
+
+stop
+
+@enduml

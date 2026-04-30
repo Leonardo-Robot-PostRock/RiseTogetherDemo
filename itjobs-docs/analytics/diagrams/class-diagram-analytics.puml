@@ -1,0 +1,54 @@
+@startuml
+skinparam linetype ortho
+
+title Analytics Bounded Context
+
+package "domain" {
+  class JobMetricsAggregate {
+    +recordView()
+    +getViewCount()
+    +getConversionRate()
+  }
+
+  class EmployerDashboardAggregate {
+    +getOverview()
+    +getJobPerformance()
+    +getPipelineSummary()
+  }
+
+  class ConversionTracker {
+    +track()
+    +calculate()
+  }
+}
+
+package "valueobjects" {
+  class MetricsId
+  class ViewEvent
+  class ApplicationEvent
+  class ConversionMetrics
+  class PipelineMetrics
+  class TimeRange
+}
+
+package "events" {
+  class JobViewedEvent
+  class ApplicationSubmittedEvent
+  class PipelineStageChangedEvent
+}
+
+note "Read model — consume eventos de otros BCs" as N1
+JobMetricsAggregate .. N1
+EmployerDashboardAggregate .. N1
+
+JobMetricsAggregate --> MetricsId
+EmployerDashboardAggregate --> ConversionMetrics
+EmployerDashboardAggregate --> PipelineMetrics
+ConversionTracker --> ViewEvent
+ConversionTracker --> ApplicationEvent
+
+JobViewedEvent --> MetricsId
+ApplicationSubmittedEvent --> MetricsId
+PipelineStageChangedEvent --> MetricsId
+
+@enduml

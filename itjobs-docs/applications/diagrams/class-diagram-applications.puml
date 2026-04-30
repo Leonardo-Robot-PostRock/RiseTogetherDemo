@@ -1,0 +1,49 @@
+@startuml
+skinparam linetype ortho
+
+title Applications Bounded Context
+
+package "domain" {
+  class ApplicationAggregate {
+    +create()
+    +moveToStage()
+    +addNote()
+    +withdraw()
+    +recordMatchScore()
+  }
+
+  class SavedJobAggregate {
+    +create()
+    +remove()
+  }
+}
+
+package "valueobjects" {
+  class ApplicationId
+  class ApplicationStatus <<enumeration>>
+  class MatchScore
+  class MatchCategory <<enumeration>>
+  class NoteId
+}
+
+package "events" {
+  class ApplicationCreatedEvent
+  class ApplicationStageChangedEvent
+  class ApplicationNoteAddedEvent
+  class ApplicationWithdrawnEvent
+  class JobSavedEvent
+}
+
+ApplicationAggregate --> ApplicationId
+ApplicationAggregate --> ApplicationStatus
+ApplicationAggregate --> MatchScore
+ApplicationAggregate --> MatchCategory
+SavedJobAggregate --> ApplicationId
+
+ApplicationAggregate ..> ApplicationCreatedEvent : records
+ApplicationAggregate ..> ApplicationStageChangedEvent : records
+ApplicationAggregate ..> ApplicationNoteAddedEvent : records
+ApplicationAggregate ..> ApplicationWithdrawnEvent : records
+SavedJobAggregate ..> JobSavedEvent : records
+
+@enduml

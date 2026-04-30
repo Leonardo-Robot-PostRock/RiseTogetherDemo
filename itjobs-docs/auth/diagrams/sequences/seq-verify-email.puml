@@ -1,0 +1,82 @@
+@startuml ITJobs - Secuencia: Verificación de Email
+
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+
+actor "Usuario" as U
+participant "AuthController\n<<REST>>" as CTRL
+participant "VerifyEmailUseCase\n<<Use Case>>" as UC
+participant "UserId\n<<Value Object>>" as UID
+participant "LoadUserPort\n<<Out Port>>" as LOAD
+participant "VerificationTokenValidatorPort\n<<Out Port>>" as VAL
+participant "UserAggregate\n<<Aggregate>>" as AGG
+participant "SaveUserPort\n<<Out Port>>" as SAVE
+participant "DomainEventPublisher\n<<Out Port>>" as PUB
+
+note over U
+  El usuario recibe un enlace por email
+  con su userId y un token de verificación
+  (generados en el registro)
+end note
+
+U -> CTRL : POST /api/v1/auth/verify-email\n{userId, token}
+activate CTRL
+
+CTRL -> CTRL : Map DTO → VerifyEmailCommand
+
+CTRL -> UC : execute(command)
+activate UC
+
+' Validar UserId
+UC -> UID : UserId.of(command.userId())
+activate UID
+UID --> UC : UserId
+deactivate UID
+
+' Cargar usuario
+UC -> LOAD : findById(userId)
+activate LOAD
+LOAD --> UC : Optional<UserAggregate>
+deactivate LOAD
+
+UC -> UC : orElseThrow()\nUsuario no encontrado → 400
+
+' Validar token a través del puerto
+UC -> VAL : validate(user.getVerificationToken(), command.token())
+activate VAL
+VAL --> UC : void (throws if invalid/expired)
+deactivate VAL
+
+' Verificar token en el agregado
+UC -> AGG : user.verifyEmail()
+activate AGG
+AGG -> AGG : emailVerified = true
+AGG -> AGG : recordEvent(EmailVerifiedEvent)
+AGG --> UC : void
+deactivate AGG
+
+' Persistir
+UC -> SAVE : save(user)
+activate SAVE
+SAVE --> UC : void
+deactivate SAVE
+
+' Publicar evento
+UC -> PUB : publishAll(user.pullDomainEvents())
+activate PUB
+note right of PUB
+  EmailVerifiedEvent
+  → puede disparar listener
+  para activar usuario
+end note
+PUB --> UC : void
+deactivate PUB
+
+UC --> CTRL : void
+deactivate UC
+
+CTRL --> U : 200 OK
+deactivate CTRL
+
+@enduml
+

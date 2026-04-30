@@ -1,0 +1,29 @@
+@startuml UcGoogleAuth
+
+title Authentication — GoogleAuthUseCase (visión general)
+
+skinparam activityBackgroundColor #FAFAFA
+skinparam activityBorderColor #888888
+skinparam activityDiamondBackgroundColor #FFF9C4
+skinparam activityArrowColor #555555
+skinparam noteBackgroundColor #FFFDE7
+skinparam noteBorderColor #F9A825
+
+start
+
+:Recibir GoogleAuthCommand\n(email, googleSub, username);
+
+-> Fase 1;
+:uc-google-auth-identify.puml\n**Identificar usuario** (LoadUserPort);
+
+-> Fase 2 (si aplica);
+:uc-google-auth-provision.puml\n**Provisionar usuario** (crear / vincular + ToS);
+
+-> Fase 3;
+:uc-google-auth-tokens.puml\n**Emitir tokens JWT** (TokenGeneratorPort);
+
+:Retornar AuthTokenResponse\n(accessToken, refreshToken);
+
+stop
+
+@enduml
