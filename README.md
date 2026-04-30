@@ -1,6 +1,6 @@
 # Rise Together
 
-> API REST para búsqueda de empleos en IT — Construcción / Testing / Deployment
+> API REST para búsqueda de empleos en todos los sectores — Construcción / Testing / Deployment
 
 > **Nota**: La documentación detallada, skills de AI, y configuración de agentes está en un repositorio privado separado por razones de seguridad. Solicita acceso si la necesitas.
 

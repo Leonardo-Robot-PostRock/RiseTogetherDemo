@@ -20,18 +20,18 @@
 
 ```
 
-> **Code style**: See [`itjobs-docs/shared/code-style.md`](itjobs-docs/shared/code-style.md) for Google Java Format setup
+> **Code style**: See [`itjobs-docs/shared/code-style.md`](rise-together-docs/shared/code-style.md) for Google Java Format setup
 > and IntelliJ configuration (JRE exports requeridos).
 
-> **Architecture guide**: Full hexagonal architecture onboarding at [`itjobs-docs/shared/hexagonal-onboarding.md`](itjobs-docs/shared/hexagonal-onboarding.md)
+> **Architecture guide**: Full hexagonal architecture onboarding at [`itjobs-docs/shared/hexagonal-onboarding.md`](rise-together-docs/shared/hexagonal-onboarding.md)
 
-> **Testing guide**: [`itjobs-docs/shared/testing.md`](itjobs-docs/shared/testing.md)
+> **Testing guide**: [`itjobs-docs/shared/testing.md`](rise-together-docs/shared/testing.md)
 
-> **Database schema**: [`itjobs-docs/shared/database.md`](itjobs-docs/shared/database.md)
+> **Database schema**: [`itjobs-docs/shared/database.md`](rise-together-docs/shared/database.md)
 
-> **Architecture & config**: [`itjobs-docs/shared/architecture.md`](itjobs-docs/shared/architecture.md) — profiles, Docker, CQRS, email adapters
+> **Architecture & config**: [`itjobs-docs/shared/architecture.md`](rise-together-docs/shared/architecture.md) — profiles, Docker, CQRS, email adapters
 
-> **Full requirements**: [`itjobs-docs/requirements/requirements-v2.md`](itjobs-docs/requirements/requirements-v2.md)
+> **Full requirements**: [`itjobs-docs/requirements/requirements-v2.md`](rise-together-docs/requirements/requirements-v2.md)
 
 ### Bounded Contexts
 
@@ -206,7 +206,7 @@ src/test/java/com/Rise Together/
 
 ## Diagrams
 
-All diagrams are written in **PlantUML** and live in [`itjobs-docs/`](itjobs-docs/), organized by bounded context.
+All diagrams are written in **PlantUML** and live in [`itjobs-docs/`](rise-together-docs/), organized by bounded context.
 
 ```
 itjobs-docs/
@@ -335,7 +335,7 @@ itjobs-docs/
 
 > **CQRS split**: use cases que solo leen datos usan `QueryUserPort` (devuelve `UserView`).
 > Use cases que mutan el agregado usan `LoadUserPort` (devuelve `UserAggregate`).
-> Ver [`itjobs-docs/shared/architecture.md`](itjobs-docs/shared/architecture.md) — sección *CQRS en el bounded context authentication*.
+> Ver [`itjobs-docs/shared/architecture.md`](rise-together-docs/shared/architecture.md) — sección *CQRS en el bounded context authentication*.
 
 ### Domain Events
 
