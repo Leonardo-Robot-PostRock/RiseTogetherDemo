@@ -1,4 +1,4 @@
-# Applications — ITJobs Backend
+# Applications — Rise Together
 
 > **Estado**: Pendiente — DB creada (V4), sin implementación
 

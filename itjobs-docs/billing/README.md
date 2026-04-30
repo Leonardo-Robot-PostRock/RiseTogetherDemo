@@ -1,4 +1,4 @@
-# Billing — ITJobs Backend
+# Billing — Rise Together
 
 > **Estado**: Planificado — Sin código
 

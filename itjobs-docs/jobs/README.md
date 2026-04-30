@@ -1,4 +1,4 @@
-# Jobs — ITJobs Backend
+# Jobs — Rise Together
 
 > **Estado**: Implementado (parcialmente)
 

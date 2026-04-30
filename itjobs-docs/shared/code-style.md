@@ -1,4 +1,4 @@
-# Estilo de Código — ITJobs Backend
+# Estilo de Código — Rise Together
 
 > **TL;DR:** Instala el plugin **Google Java Format** en IntelliJ, configúralo en AOSP (4 espacios),
 > y usa **⌘⌥L** para formatear. Eso es todo.
@@ -85,7 +85,7 @@ ij_java_imports_layout = *,|,java.**,|,javax.**,|,$*,|,org.junit.**,|,jakarta.**
 | —     | *(línea vacía)*|                                                       |
 | 10    | `org.**`       | `org.springframework.*` y otros `org`                 |
 | —     | *(línea vacía)*|                                                       |
-| 11    | `com.**`       | `com.ITJobsBackend.*`                                 |
+| 11    | `com.**`       | `com.Rise Together.*`                                 |
 
 ---
 

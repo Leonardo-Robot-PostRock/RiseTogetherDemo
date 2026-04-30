@@ -1,4 +1,4 @@
-# AGENTS.md - ITJobsBackend
+# AGENTS.md - Rise Together
 
 ## Build & Test Commands
 
@@ -49,7 +49,7 @@
 ### Project Tree
 
 ```
-src/main/java/com/ITJobsBackend/
+src/main/java/com/Rise Together/
 ├── authentication/
 │   ├── application/
 │   │   ├── ports/in/
@@ -169,7 +169,7 @@ src/main/java/com/ITJobsBackend/
 ### Test Tree
 
 ```
-src/test/java/com/ITJobsBackend/
+src/test/java/com/Rise Together/
 ├── authentication/
 │   ├── application/
 │   │   └── usecases/
@@ -199,7 +199,7 @@ src/test/java/com/ITJobsBackend/
 │   └── domain/
 │       └── valueobjects/       EmailTest, PasswordTest
 └── tests/
-    └── ITJobsBackendApplicationTests
+    └── Rise TogetherApplicationTests
 ```
 
 ---
@@ -414,7 +414,7 @@ itjobs-docs/
 
 ### Naming Conventions
 
-- **Packages**: lowercase, e.g. `com.ITJobsBackend.authentication.domain.aggregate`
+- **Packages**: lowercase, e.g. `com.risetogether.authentication.domain.aggregate`
 - **Use Cases**: `RegisterUserUseCase`, `SearchJobsUseCase` — verb + noun + "UseCase"
 - **Commands/Queries**: `RegisterUserCommand`, `SearchJobsQuery` — immutable records
 - **Ports**: `RegisterUserPort`, `SaveUserPort` — interfaces ending in "Port"

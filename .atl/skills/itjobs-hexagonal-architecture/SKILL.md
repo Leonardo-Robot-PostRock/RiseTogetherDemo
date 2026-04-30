@@ -1,4 +1,4 @@
-# ITJobs Backend — Hexagonal Architecture
+# Rise Together — Hexagonal Architecture
 
 > Guía para implementar nuevas features siguiendo Arquitectura Hexagonal.
 

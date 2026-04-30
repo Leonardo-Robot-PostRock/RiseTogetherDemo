@@ -1,4 +1,4 @@
-# Profiles — ITJobs Backend
+# Profiles — Rise Together
 
 > **Estado**: Pendiente — DB creada (V3, V19, V20), sin implementación
 

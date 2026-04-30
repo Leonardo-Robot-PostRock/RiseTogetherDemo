@@ -1,4 +1,4 @@
-# Analytics — ITJobs Backend
+# Analytics — Rise Together
 
 > **Estado**: Planificado — Sin código
 

@@ -1,4 +1,4 @@
-# ITJobs Backend — Documentation
+# Rise Together — Documentation
 
 Documentación organizada por **bounded context** siguiendo Arquitectura Hexagonal.
 

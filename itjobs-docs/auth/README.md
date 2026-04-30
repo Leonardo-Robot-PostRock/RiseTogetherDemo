@@ -1,4 +1,4 @@
-# Authentication — ITJobs Backend
+# Authentication — Rise Together
 
 > **Estado**: Implementado (parcialmente)
 

@@ -1,4 +1,4 @@
-# ITJobs Backend — CQRS Pattern
+# Rise Together — CQRS Pattern
 
 > Implementación de CQRS en el bounded context `authentication`.
 

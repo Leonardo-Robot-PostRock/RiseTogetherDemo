@@ -1,0 +1,27 @@
+package com.risetogether.authentication.domain.event;
+
+import com.risetogether.shared.domain.event.DomainEvent;
+import com.risetogether.shared.domain.valueobjects.Email;
+import com.risetogether.shared.domain.valueobjects.UserId;
+
+public class UserRegisteredEvent extends DomainEvent {
+  private final Email email;
+
+  public UserRegisteredEvent(UserId userId, Email email) {
+    super(userId, "UserAggregate", UserEventTypes.USER_REGISTERED);
+    this.email = email;
+  }
+
+  public Email getEmail() {
+    return email;
+  }
+
+  public UserId getUserId() {
+    return UserId.of(getAggregateId());
+  }
+
+  @Override
+  public String toString() {
+    return "UserRegisteredEvent{" + baseFields() + ", email='" + email.mask() + "'}";
+  }
+}

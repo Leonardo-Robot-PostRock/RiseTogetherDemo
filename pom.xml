@@ -10,11 +10,11 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.personalmanagement</groupId>
-    <artifactId>ITJobsBackend</artifactId>
+    <artifactId>rise-together</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
-    <name>ITJobsBackend</name>
-    <description>ITJobs project with Spring Boot</description>
+    <name>Rise Together</name>
+    <description>Rise Together - Job Portal Backend</description>
 
     <properties>
         <maven.compiler.release>21</maven.compiler.release>

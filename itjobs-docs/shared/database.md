@@ -564,5 +564,5 @@ CREATE INDEX idx_job_work_modality ON jobs(work_modality);
 
 > **Nota:** `remote_allowed` (V17) queda en la BD por compatibilidad retroactiva pero la fuente de verdad
 > para la modalidad es `work_modality`. Los valores válidos son gestionados por el enum `WorkModality`
-> en el dominio (`com.ITJobsBackend.jobs.domain.valueobjects.WorkModality`).
+> en el dominio (`com.Rise Together.jobs.domain.valueobjects.WorkModality`).
 

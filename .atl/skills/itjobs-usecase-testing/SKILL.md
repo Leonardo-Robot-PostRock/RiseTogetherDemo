@@ -1,4 +1,4 @@
-# ITJobs Backend — Use Case Testing
+# Rise Together — Use Case Testing
 
 > Patrón para tests de Use Cases con Mockito BDD (Given / When / Then).
 

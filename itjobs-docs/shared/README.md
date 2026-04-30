@@ -1,4 +1,4 @@
-# Shared — ITJobs Backend
+# Shared — Rise Together
 
 Kernel compartido entre todos los bounded contexts.
 

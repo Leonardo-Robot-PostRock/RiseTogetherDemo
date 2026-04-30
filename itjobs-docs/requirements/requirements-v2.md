@@ -1,4 +1,4 @@
-# Requisitos v2 — ITJobs Backend
+# Requisitos v2 — Rise Together
 
 > **Fecha**: 2026-04-16  
 > **Versión**: 2.0  
@@ -9,7 +9,7 @@
 
 ## Resumen Ejecutivo
 
-ITJobs Backend tiene una base sólida: arquitectura hexagonal, DDD táctico, JWT stateless, Flyway, bounded contexts claros y tablas para los actores principales. Sin embargo, el producto actual es un CRUD de ofertas con autenticación. Para competir, necesita:
+Rise Together tiene una base sólida: arquitectura hexagonal, DDD táctico, JWT stateless, Flyway, bounded contexts claros y tablas para los actores principales. Sin embargo, el producto actual es un CRUD de ofertas con autenticación. Para competir, necesita:
 
 1. **Matching explicable** entre candidatos y ofertas (no solo keywords).
 2. **Transparencia**: salarios obligatorios, explicación del match, moderación de contenido.
@@ -68,7 +68,7 @@ Todo se diseña para implementar incrementalmente sin romper lo existente.
 | RF-39 | Generar explicación textual del match visible para candidato y reclutador | 🔴 | Matching | JSON estructurado almacenado en `applications.match_explanation`. |
 | RF-40 | Clasificar candidatos por tipo de match: Exact, Transferable Skills, Partial, Emergent | 🔴 | Matching | Derivado del score y las reglas. |
 | RF-41 | Mostrar candidatos valiosos aunque no cumplan el 100% de keywords | 🔴 | Matching | El algoritmo no descarta por falta de keyword exacta. |
-| RF-42 | Sugerir ofertas al candidato basado en su perfil (reverse matching) | 🟡 | Matching | Reutiliza el motor de matching. |
+| RF-42 | Sugerir ofertas al candidato basado en su perfil (reverse matching) | 🟡 | Matching | Reutiliza el Fair Match. |
 
 #### Bounded Context: Applications (refinado)
 
@@ -173,16 +173,16 @@ Todo se diseña para implementar incrementalmente sin romper lo existente.
 
 | Bounded Context | Estado | Paquete | Justificación |
 |----------------|--------|---------|---------------|
-| **Authentication** | Implementado (parcial) | `com.ITJobsBackend.authentication` | Sin cambios. |
-| **Jobs** | Implementado (parcial) | `com.ITJobsBackend.jobs` | Se extiende con `employer_id`, featured, expires_at, linter. |
-| **Shared** | Implementado | `com.ITJobsBackend.shared` | Se extiende con SkillId VO y audit infrastructure. |
-| **Applications** | Pendiente (DB creada) | `com.ITJobsBackend.applications` | Se extiende con pipeline, notas, match score, historial. |
-| **Profiles** | Pendiente (DB creada) | `com.ITJobsBackend.profiles` | Se extiende con campos para matching. |
-| **Administration** | Pendiente | `com.ITJobsBackend.administration` | Se extiende con gestión de skills, planes, audit log. |
-| **Matching** ⭐ NEW | Pendiente | `com.ITJobsBackend.matching` | **Motor de matching explicable**. Catálogo de skills, sinónimos, relaciones, algoritmo de scoring. Justificación: la lógica de matching es compleja, tiene su propio lenguaje ubicuo (exact match, transferable, partial, emergent) y no pertenece a Jobs ni Applications. |
-| **Moderation** ⭐ EXTENDED | Pendiente | `com.ITJobsBackend.moderation` | Se extiende significativamente con reportes, decisiones, apelaciones. Ya estaba previsto. |
-| **Billing** ⭐ NEW | Pendiente | `com.ITJobsBackend.billing` | **Monetización B2B**. Planes, suscripciones, pagos, límites. Justificación: tiene su propio ciclo de vida y invariantes (no puedes publicar si excedes tu plan). |
-| **Analytics** ⭐ NEW | Pendiente | `com.ITJobsBackend.analytics` | **Read-model para métricas**. Vistas de ofertas, conversiones, dashboards. Justificación: es un contexto de lectura puro que consume eventos de otros BCs. |
+| **Authentication** | Implementado (parcial) | `com.Rise Together.authentication` | Sin cambios. |
+| **Jobs** | Implementado (parcial) | `com.Rise Together.jobs` | Se extiende con `employer_id`, featured, expires_at, linter. |
+| **Shared** | Implementado | `com.Rise Together.shared` | Se extiende con SkillId VO y audit infrastructure. |
+| **Applications** | Pendiente (DB creada) | `com.Rise Together.applications` | Se extiende con pipeline, notas, match score, historial. |
+| **Profiles** | Pendiente (DB creada) | `com.Rise Together.profiles` | Se extiende con campos para matching. |
+| **Administration** | Pendiente | `com.Rise Together.administration` | Se extiende con gestión de skills, planes, audit log. |
+| **Matching** ⭐ NEW | Pendiente | `com.Rise Together.matching` | **Fair Match explicable**. Catálogo de skills, sinónimos, relaciones, algoritmo de scoring. Justificación: la lógica de matching es compleja, tiene su propio lenguaje ubicuo (exact match, transferable, partial, emergent) y no pertenece a Jobs ni Applications. |
+| **Moderation** ⭐ EXTENDED | Pendiente | `com.Rise Together.moderation` | Se extiende significativamente con reportes, decisiones, apelaciones. Ya estaba previsto. |
+| **Billing** ⭐ NEW | Pendiente | `com.Rise Together.billing` | **Monetización B2B**. Planes, suscripciones, pagos, límites. Justificación: tiene su propio ciclo de vida y invariantes (no puedes publicar si excedes tu plan). |
+| **Analytics** ⭐ NEW | Pendiente | `com.Rise Together.analytics` | **Read-model para métricas**. Vistas de ofertas, conversiones, dashboards. Justificación: es un contexto de lectura puro que consume eventos de otros BCs. |
 | **Onboarding** | NO se crea como BC | — | Demasiado simple para un BC propio. Se implementa como módulo dentro de **Administration** (configuración) y **Shared** (progreso del usuario). |
 | **Help Center** | NO se crea como BC | — | Demasiado simple. Se implementa como módulo dentro de **Administration**. |
 

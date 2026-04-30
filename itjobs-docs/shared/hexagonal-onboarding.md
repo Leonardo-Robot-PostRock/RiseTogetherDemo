@@ -1,6 +1,6 @@
 # Arquitectura Hexagonal — Guía de Onboarding
 
-> **Propósito**: Este documento explica la arquitectura hexagonal desde los conceptos abstractos hasta su implementación concreta en ITJobsBackend, para facilitar la incorporación de nuevos desarrolladores al proyecto.
+> **Propósito**: Este documento explica la arquitectura hexagonal desde los conceptos abstractos hasta su implementación concreta en Rise Together, para facilitar la incorporación de nuevos desarrolladores al proyecto.
 
 ---
 
@@ -51,7 +51,7 @@ El dominio es el centro. Todo lo demás (HTTP, JPA, JWT, etc.) son detalles que 
 
 Los **puertos** son **interfaces** que definen los contratos de comunicación entre el núcleo y el exterior.
 
-| Tipo de Puerto | Dirección | Propósito | Ejemplo ITJobsBackend |
+| Tipo de Puerto | Dirección | Propósito | Ejemplo Rise Together |
 |----------------|-----------|-----------|----------------------|
 | **Driving Port** (Puerto de entrada) | Exterior → Núcleo | Define qué puede hacer la aplicación | `RegisterUserPort` |
 | **Driven Port** (Puerto de salida) | Núcleo → Exterior | Define qué necesita la aplicación del exterior | `SaveUserPort` |
@@ -60,7 +60,7 @@ Los **puertos** son **interfaces** que definen los contratos de comunicación en
 
 Los **adaptadores** son **implementaciones concretas** que conectan los puertos con tecnologías específicas.
 
-| Tipo de Adaptador | Implementa | Tecnología | Ejemplo ITJobsBackend |
+| Tipo de Adaptador | Implementa | Tecnología | Ejemplo Rise Together |
 |-------------------|------------|------------|----------------------|
 | **Driving Adapter** | Puerto de entrada | REST, CLI, GraphQL | `AuthController` |
 | **Driven Adapter** | Puerto de salida | JPA, Redis, API externa | `SaveUserPortAdapter` |
@@ -73,7 +73,7 @@ El núcleo contiene:
 
 ---
 
-## 3. Estructura de Capas en ITJobsBackend
+## 3. Estructura de Capas en Rise Together
 
 ```
 authentication/
@@ -150,7 +150,7 @@ Veamos cómo fluye una petición de registro a través de las capas:
 
 ---
 
-## 5. Ejemplos Concretos de ITJobsBackend
+## 5. Ejemplos Concretos de Rise Together
 
 ### 5.1 Puerto de Entrada (Driving Port)
 
@@ -407,7 +407,7 @@ public class UserAggregate extends AggregateRoot {
 
 ## 7. Beneficios de esta Arquitectura
 
-| Beneficio | Descripción | Ejemplo en ITJobsBackend |
+| Beneficio | Descripción | Ejemplo en Rise Together |
 |-----------|-------------|-------------------------|
 | **Testeable** | El dominio se puede testear sin Spring, sin DB | `UserAggregateTest` no usa mocks de JPA |
 | **Desacoplado** | Cambiar MySQL por MongoDB solo afecta adaptadores | `JpaUserRepositoryAdapter` → `MongoUserRepositoryAdapter` |
@@ -457,7 +457,7 @@ Cuando agregues una nueva funcionalidad:
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────┐
-│                         ITJobsBackend                                    │
+│                         Rise Together                                    │
 │                                                                          │
 │   ┌──────────────────────────────────────────────────────────────────┐   │ 
 │   │  INFRASTRUCTURE (adapters/in, adapters/out, config)              │   │

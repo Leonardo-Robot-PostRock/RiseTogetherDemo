@@ -1,10 +1,10 @@
-# Matching — ITJobs Backend
+# Matching — Rise Together
 
 > **Estado**: Planificado — Sin código
 
 ## Descripción
 
-Motor de matching explicable entre candidatos y ofertas. Es la **ventaja competitiva** del producto.
+Fair Match explicable entre candidatos y ofertas. Es la **ventaja competitiva** del producto.
 
 ## Dominio (Planeado)
 

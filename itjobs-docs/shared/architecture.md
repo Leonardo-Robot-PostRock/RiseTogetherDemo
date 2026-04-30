@@ -1,4 +1,4 @@
-# Arquitectura — ITJobs Backend
+# Arquitectura — Rise Together
 
 ## Profiles de Spring Boot
 

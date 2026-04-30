@@ -1,4 +1,4 @@
-# Testing Guide — ITJobsBackend
+# Testing Guide — Rise Together
 
 ## Índice
 
@@ -48,7 +48,7 @@ y los casos de uso se pueden testear de forma aislada gracias a la Arquitectura 
 
 ### Tests de context load (`@SpringBootTest`)
 
-- Ubicado en `com.ITJobsBackend.tests.ITJobsBackendApplicationTests`
+- Ubicado en `com.Rise Together.tests.Rise TogetherApplicationTests`
 - Verifica que el contexto de Spring arranca correctamente con todas las dependencias
 - **No requiere** mocks ni configuraciones extra: los beans condicionales se resuelven solos
   (e.g. `NoOpEmailSenderAdapter` se activa al no existir `spring.mail.host` en el test profile)
@@ -59,7 +59,7 @@ y los casos de uso se pueden testear de forma aislada gracias a la Arquitectura 
 ```java
 // ✅ — limpio, sin workarounds
 @SpringBootTest
-class ITJobsBackendApplicationTests {
+class Rise TogetherApplicationTests {
     @Test
     void contextLoads() {}
 }

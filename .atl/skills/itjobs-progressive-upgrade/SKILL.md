@@ -1,4 +1,4 @@
-# ITJobs Backend — Progressive JDK & Spring Boot Upgrade
+# Rise Together — Progressive JDK & Spring Boot Upgrade
 
 > Guía para actualizar JDK y Spring Boot de forma incremental sin romper el proyecto.
 

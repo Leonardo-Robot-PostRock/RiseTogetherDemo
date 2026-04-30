@@ -1,4 +1,4 @@
-# Skill Registry — ITJobsBackend
+# Skill Registry — Rise Together
 
 **For orchestrator use only.** Sub-agents receive compact rules pre-resolved in their launch prompts. Read individual SKILL.md files only when creating this registry.
 

@@ -1,4 +1,4 @@
-# ITJobs Backend
+# Rise Together
 
 > API REST para búsqueda de empleos en IT — Construcción / Testing / Deployment
 
@@ -47,7 +47,7 @@
 El proyecto sigue **Arquitectura Hexagonal**:
 
 ```
-src/main/java/com/ITJobsBackend/
+src/main/java/com/Rise Together/
 ├── authentication/     # Bounded Context: Auth
 │   ├── application/   # Use Cases + Ports
 │   ├── domain/        # Aggregates, Value Objects, Events

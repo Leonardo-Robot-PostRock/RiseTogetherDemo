@@ -1,4 +1,4 @@
-# Moderation — ITJobs Backend
+# Moderation — Rise Together
 
 > **Estado**: Planificado — Sin código
 

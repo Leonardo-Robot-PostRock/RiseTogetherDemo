@@ -1,4 +1,4 @@
-# Administration — ITJobs Backend
+# Administration — Rise Together
 
 > **Estado**: Planificado — Sin código
 

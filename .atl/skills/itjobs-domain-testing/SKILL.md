@@ -1,4 +1,4 @@
-# ITJobs Backend — Domain Testing
+# Rise Together — Domain Testing
 
 > Patrón para tests de dominio (Value Objects, Aggregates) sin Spring.
 
@@ -86,4 +86,4 @@ class UserAggregateTest {
 ## Referencia
 
 - `itjobs-docs/shared/testing.md` — sección 4
-- `src/test/java/com/ITJobsBackend/authentication/domain/aggregate/UserAggregateTest.java`
+- `src/test/java/com/Rise Together/authentication/domain/aggregate/UserAggregateTest.java`

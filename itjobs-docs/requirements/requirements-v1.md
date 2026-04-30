@@ -1,4 +1,4 @@
-# Requisitos — ITJobs Backend
+# Requisitos — Rise Together
 
 > ⚠️ **Versión extendida disponible**: Ver [`requirements-v2.md`](requirements-v2.md) para la documentación completa con matching explicable, moderación, monetización B2B, onboarding, analítica y nuevos bounded contexts.
 
@@ -6,12 +6,12 @@
 
 | Bounded Context    | Estado                 | Paquete                            |
 |--------------------|------------------------|------------------------------------|
-| **Authentication** | Implementado (parcial) | `com.ITJobsBackend.authentication` |
-| **Jobs**           | Implementado (parcial) | `com.ITJobsBackend.jobs`           |
-| **Shared**         | Implementado           | `com.ITJobsBackend.shared`         |
-| **Applications**   | Pendiente (DB creada)  | `com.ITJobsBackend.applications`   |
-| **Profiles**       | Pendiente (DB creada)  | `com.ITJobsBackend.profiles`       |
-| **Administration** | Pendiente              | `com.ITJobsBackend.administration` |
+| **Authentication** | Implementado (parcial) | `com.Rise Together.authentication` |
+| **Jobs**           | Implementado (parcial) | `com.Rise Together.jobs`           |
+| **Shared**         | Implementado           | `com.Rise Together.shared`         |
+| **Applications**   | Pendiente (DB creada)  | `com.Rise Together.applications`   |
+| **Profiles**       | Pendiente (DB creada)  | `com.Rise Together.profiles`       |
+| **Administration** | Pendiente              | `com.Rise Together.administration` |
 
 ### Estado por contexto
 
