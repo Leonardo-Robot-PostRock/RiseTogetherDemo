@@ -32,6 +32,33 @@
 set -euf
 [ "${MVNW_VERBOSE-}" != debug ] || set -x
 
+# Auto-detect newest available JDK (25 > 21 > system)
+find_newest_jdk() {
+  # macOS: Temurin / OpenJDK
+  for v in 25 21; do
+    for prefix in temurin openjdk; do
+      if [ -d "/Library/Java/JavaVirtualMachines/${prefix}-${v}.jdk" ]; then
+        echo "/Library/Java/JavaVirtualMachines/${prefix}-${v}.jdk/Contents/Home"
+        return 0
+      fi
+    done
+  done
+  # Homebrew
+  for v in 25 21; do
+    if [ -d "/opt/homebrew/Cellar/openjdk@${v}" ]; then
+      echo "/opt/homebrew/Cellar/openjdk@${v}/${v}.0.11/libexec/openjdk.jdk/Contents/Home"
+      return 0
+    fi
+  done
+  return 1
+}
+
+# Use newest JDK if available (overrides existing JAVA_HOME for consistency)
+NEW_JAVA=$(find_newest_jdk)
+if [ -n "$NEW_JAVA" ]; then
+  export JAVA_HOME="$NEW_JAVA"
+fi
+
 # OS specific support.
 native_path() { printf %s\\n "$1"; }
 case "$(uname)" in
