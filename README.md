@@ -86,6 +86,17 @@ docker compose up --build
 docker compose up db
 ```
 
+## ⚠️ Nota sobre esta demo
+
+> Esta rama contiene una versión resumida del proyecto original. Por razones de privacidad y seguridad, ciertas implementaciones fueron simplificadas o ajustadas — no reflejan la versión completa del código.
+
+Algunas diferencias incluyen:
+- DTOs con mapeos hardcodeados en algunos casos
+- Endpoints con menos validaciones de seguridad
+- Features de observabilidad (logging, rate limiting) no incluidos
+
+Esta demo no recibe actualizaciones activas. El código completo reside en el repositorio privado.
+
 ## 📚 Documentación (repositorio privado)
 
 La documentación detallada, skills de AI, y configuración de agentes está en un repositorio privado separado. Solicita acceso si la necesitas.
