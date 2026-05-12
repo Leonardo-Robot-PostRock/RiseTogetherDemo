@@ -91,6 +91,7 @@ docker compose up db
 > Esta rama contiene una versión resumida del proyecto original. Por razones de privacidad y seguridad, ciertas implementaciones fueron simplificadas o ajustadas — no reflejan la versión completa del código.
 
 Algunas diferencias incluyen:
+
 - DTOs con mapeos hardcodeados en algunos casos
 - Endpoints con menos validaciones de seguridad
 - Features de observabilidad (logging, rate limiting) no incluidos
